@@ -1,0 +1,59 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+This project is based on React with TypeScript and uses Vite as the build tool.
+
+Even though the project is based on React, preference is given to web components and React is used to enhance the web components and fill gaps in the web platform.
+
+Code must always adhere to the web content accessibility guidelines.
+
+Always use well formed and semantic HTML.
+
+The project uses pure CSS with no external libraries.
+
+## JavaScript
+
+For code such as the following:
+
+```
+if (!metadata) return null;
+```
+
+Always use curcly braces. In other words:
+
+```
+if (!metadata) {
+    return null;
+}
+```
+
+### Function and class comments
+
+When providing function and class comments, always use JSDoc style comments.
+Ensure that comments are concise, but clear.
+
+---
+
+The project code will be hosted in a public repository on GitHub and deployed using Netlify.
+
+This project will use Netlfiy functions to get data about a provided URL.
+Documentation can be found at the following URL:
+@Web https://docs.netlify.com/functions/overview/
+
+The project will use Browserless and specifically their screenshot functionality.
+Documentation can be found at the following URL: 
+@Web https://docs.browserless.io/rest-apis/screenshot
+
+If screenshots are taken, the resulting files will be stored in an Amazon Web Service S3 bucket.
+Documentation on the Node.js SDK which can be used with Netlify function can be found at the following URL:
+@Web https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/s3-node-examples.html
+
+Data about the submitted URLs will be persisted using Turso.
+Documentation of their TypeScript API can be found at the following URL:
+@Web https://docs.turso.tech/sdk/ts/quickstart
+
+The project uses Drizzle ORM.
+Drizzle Schema documentation:
+@Web https://orm.drizzle.team/docs/column-types/sqlite
