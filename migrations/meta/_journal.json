@@ -8,6 +8,13 @@
       "when": 1750454070112,
       "tag": "0000_freezing_white_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1766781368370,
+      "tag": "0001_strong_leopardon",
+      "breakpoints": true
     }
   ]
 }

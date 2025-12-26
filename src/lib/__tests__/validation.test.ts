@@ -4,8 +4,6 @@ import {
   validateUrl,
   validateTags,
   parseTagsFromString,
-  toolSubmissionSchema,
-  tagSchema
 } from '../validation';
 
 describe('Validation Schemas', () => {
