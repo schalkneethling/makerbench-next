@@ -35,4 +35,3 @@ describe("extractMetadata", () => {
     expect(result.error).toBeDefined();
   });
 });
-

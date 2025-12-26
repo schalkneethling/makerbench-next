@@ -15,7 +15,9 @@ export const bookmarksTable = sqliteTable(
       .default("pending")
       .notNull(),
     imageUrl: text("image_url"),
-    imageSource: text("image_source", { enum: ["og", "screenshot", "fallback"] }),
+    imageSource: text("image_source", {
+      enum: ["og", "screenshot", "fallback"],
+    }),
     submitterName: text("submitter_name"),
     submitterGithubUrl: text("submitter_github_url"),
     metadata: text("metadata"), // JSON string for additional info

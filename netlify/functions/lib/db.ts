@@ -40,4 +40,3 @@ export function getDb() {
 
 // Re-export schema for convenience
 export * from "../../../src/db/schema";
-

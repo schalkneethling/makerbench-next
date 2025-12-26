@@ -40,7 +40,7 @@ function configureCloudinary(): boolean {
  */
 export async function uploadScreenshot(
   buffer: Buffer,
-  bookmarkId: string
+  bookmarkId: string,
 ): Promise<UploadResult> {
   if (!configureCloudinary()) {
     return {
@@ -92,7 +92,7 @@ export async function uploadScreenshot(
           url: result.secure_url,
           publicId: result.public_id,
         });
-      }
+      },
     );
 
     uploadStream.end(buffer);
@@ -108,4 +108,3 @@ function getEnv(key: string): string | undefined {
   }
   return process.env[key];
 }
-

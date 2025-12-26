@@ -67,4 +67,3 @@ export const handlers = [
     return HttpResponse.error();
   }),
 ];
-

@@ -40,24 +40,17 @@
       "indexes": {
         "bookmark_id_idx": {
           "name": "bookmark_id_idx",
-          "columns": [
-            "bookmark_id"
-          ],
+          "columns": ["bookmark_id"],
           "isUnique": false
         },
         "tag_id_idx": {
           "name": "tag_id_idx",
-          "columns": [
-            "tag_id"
-          ],
+          "columns": ["tag_id"],
           "isUnique": false
         },
         "unique_bookmark_tag": {
           "name": "unique_bookmark_tag",
-          "columns": [
-            "bookmark_id",
-            "tag_id"
-          ],
+          "columns": ["bookmark_id", "tag_id"],
           "isUnique": false
         }
       },
@@ -66,12 +59,8 @@
           "name": "bookmark_tags_bookmark_id_bookmarks_id_fk",
           "tableFrom": "bookmark_tags",
           "tableTo": "bookmarks",
-          "columnsFrom": [
-            "bookmark_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["bookmark_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -79,12 +68,8 @@
           "name": "bookmark_tags_tag_id_tags_id_fk",
           "tableFrom": "bookmark_tags",
           "tableTo": "tags",
-          "columnsFrom": [
-            "tag_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["tag_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -166,23 +151,17 @@
       "indexes": {
         "url_idx": {
           "name": "url_idx",
-          "columns": [
-            "url"
-          ],
+          "columns": ["url"],
           "isUnique": false
         },
         "status_idx": {
           "name": "status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         },
         "created_at_idx": {
           "name": "created_at_idx",
-          "columns": [
-            "created_at"
-          ],
+          "columns": ["created_at"],
           "isUnique": false
         }
       },
@@ -227,16 +206,12 @@
       "indexes": {
         "tags_name_unique": {
           "name": "tags_name_unique",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": true
         },
         "name_idx": {
           "name": "name_idx",
-          "columns": [
-            "name"
-          ],
+          "columns": ["name"],
           "isUnique": false
         }
       },

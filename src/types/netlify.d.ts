@@ -7,4 +7,3 @@ import type { NetlifyGlobal } from "@netlify/types";
 declare global {
   const Netlify: NetlifyGlobal | undefined;
 }
-

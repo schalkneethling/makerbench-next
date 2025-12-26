@@ -117,42 +117,42 @@ Phase 1 establishes the backend infrastructure needed to accept, process, and re
 
 ### FR-1: Bookmark Submission Endpoint
 
-| Requirement | Description |
-|-------------|-------------|
-| **FR-1.1** | Accept POST requests with URL and tags |
-| **FR-1.2** | Validate URL format (must be valid HTTP/HTTPS URL) |
-| **FR-1.3** | Validate tags (at least 1, non-empty strings) |
-| **FR-1.4** | Check for duplicate URLs in database |
-| **FR-1.5** | Fetch and parse target page HTML |
-| **FR-1.6** | Extract title, description, OG image from HTML |
-| **FR-1.7** | Capture screenshot when OG image unavailable |
-| **FR-1.8** | Store screenshot in cloud storage |
-| **FR-1.9** | Create bookmark record with pending status |
-| **FR-1.10** | Create/link tag records |
-| **FR-1.11** | Return success response with bookmark ID |
-| **FR-1.12** | Return appropriate error responses |
+| Requirement | Description                                        |
+| ----------- | -------------------------------------------------- |
+| **FR-1.1**  | Accept POST requests with URL and tags             |
+| **FR-1.2**  | Validate URL format (must be valid HTTP/HTTPS URL) |
+| **FR-1.3**  | Validate tags (at least 1, non-empty strings)      |
+| **FR-1.4**  | Check for duplicate URLs in database               |
+| **FR-1.5**  | Fetch and parse target page HTML                   |
+| **FR-1.6**  | Extract title, description, OG image from HTML     |
+| **FR-1.7**  | Capture screenshot when OG image unavailable       |
+| **FR-1.8**  | Store screenshot in cloud storage                  |
+| **FR-1.9**  | Create bookmark record with pending status         |
+| **FR-1.10** | Create/link tag records                            |
+| **FR-1.11** | Return success response with bookmark ID           |
+| **FR-1.12** | Return appropriate error responses                 |
 
 ### FR-2: Bookmark Retrieval Endpoint
 
-| Requirement | Description |
-|-------------|-------------|
-| **FR-2.1** | Accept GET requests with pagination params |
-| **FR-2.2** | Return only approved bookmarks |
-| **FR-2.3** | Include associated tags for each bookmark |
-| **FR-2.4** | Order by creation date descending |
-| **FR-2.5** | Support limit (default 20, max 100) and offset |
-| **FR-2.6** | Return total count for pagination |
+| Requirement | Description                                    |
+| ----------- | ---------------------------------------------- |
+| **FR-2.1**  | Accept GET requests with pagination params     |
+| **FR-2.2**  | Return only approved bookmarks                 |
+| **FR-2.3**  | Include associated tags for each bookmark      |
+| **FR-2.4**  | Order by creation date descending              |
+| **FR-2.5**  | Support limit (default 20, max 100) and offset |
+| **FR-2.6**  | Return total count for pagination              |
 
 ### FR-3: Search Endpoint
 
-| Requirement | Description |
-|-------------|-------------|
-| **FR-3.1** | Accept search query parameter (optional) |
-| **FR-3.2** | Accept tag filter parameter (optional, comma-separated) |
-| **FR-3.3** | Perform case-insensitive partial title matching |
-| **FR-3.4** | Filter by tags with OR logic |
-| **FR-3.5** | Combine title and tag filters with AND logic |
-| **FR-3.6** | Support pagination |
+| Requirement | Description                                             |
+| ----------- | ------------------------------------------------------- |
+| **FR-3.1**  | Accept search query parameter (optional)                |
+| **FR-3.2**  | Accept tag filter parameter (optional, comma-separated) |
+| **FR-3.3**  | Perform case-insensitive partial title matching         |
+| **FR-3.4**  | Filter by tags with OR logic                            |
+| **FR-3.5**  | Combine title and tag filters with AND logic            |
+| **FR-3.6**  | Support pagination                                      |
 
 ---
 
@@ -160,27 +160,27 @@ Phase 1 establishes the backend infrastructure needed to accept, process, and re
 
 ### NFR-1: Performance
 
-| Requirement | Target |
-|-------------|--------|
-| **NFR-1.1** | API response time < 500ms for retrieval/search |
-| **NFR-1.2** | Bookmark processing (with screenshot) < 30 seconds |
+| Requirement | Target                                                |
+| ----------- | ----------------------------------------------------- |
+| **NFR-1.1** | API response time < 500ms for retrieval/search        |
+| **NFR-1.2** | Bookmark processing (with screenshot) < 30 seconds    |
 | **NFR-1.3** | Handle concurrent submissions without data corruption |
 
 ### NFR-2: Reliability
 
-| Requirement | Description |
-|-------------|-------------|
-| **NFR-2.1** | Screenshot failures must not block submission |
-| **NFR-2.2** | External service failures must use fallbacks |
+| Requirement | Description                                            |
+| ----------- | ------------------------------------------------------ |
+| **NFR-2.1** | Screenshot failures must not block submission          |
+| **NFR-2.2** | External service failures must use fallbacks           |
 | **NFR-2.3** | All errors logged with sufficient detail for debugging |
 
 ### NFR-3: Security
 
-| Requirement | Description |
-|-------------|-------------|
-| **NFR-3.1** | Database credentials never exposed to client |
+| Requirement | Description                                      |
+| ----------- | ------------------------------------------------ |
+| **NFR-3.1** | Database credentials never exposed to client     |
 | **NFR-3.2** | API keys stored securely (environment variables) |
-| **NFR-3.3** | Input sanitized before database operations |
+| **NFR-3.3** | Input sanitized before database operations       |
 
 ---
 
@@ -191,16 +191,18 @@ Phase 1 establishes the backend infrastructure needed to accept, process, and re
 Submit a new bookmark.
 
 **Request Body:**
+
 ```json
 {
   "url": "https://example.com/tool",
   "tags": ["design", "svg", "icons"],
-  "submitterName": "Jane Doe",           // optional
-  "submitterGithubUrl": "https://github.com/jane"  // optional
+  "submitterName": "Jane Doe", // optional
+  "submitterGithubUrl": "https://github.com/jane" // optional
 }
 ```
 
 **Success Response (201):**
+
 ```json
 {
   "success": true,
@@ -212,6 +214,7 @@ Submit a new bookmark.
 ```
 
 **Validation Error (422):**
+
 ```json
 {
   "success": false,
@@ -224,6 +227,7 @@ Submit a new bookmark.
 ```
 
 **Duplicate Error (409):**
+
 ```json
 {
   "success": false,
@@ -244,6 +248,7 @@ Retrieve approved bookmarks.
 | offset | number | 0 | Skip N results |
 
 **Success Response (200):**
+
 ```json
 {
   "success": true,
@@ -287,6 +292,7 @@ Search and filter bookmarks.
 | offset | number | Skip N results |
 
 **Examples:**
+
 - `/api/bookmarks/search?q=icon` — Title contains "icon"
 - `/api/bookmarks/search?tags=design,svg` — Has "design" OR "svg" tag
 - `/api/bookmarks/search?q=react&tags=ui` — Title contains "react" AND has "ui" tag
@@ -299,33 +305,33 @@ Search and filter bookmarks.
 
 ### Bookmark Record
 
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| id | UUID | Yes | Primary key |
-| url | String | Yes | Unique, validated URL |
-| title | String | No | Extracted from page or defaults to URL |
-| description | String | No | Extracted from page |
-| status | Enum | Yes | pending, approved, rejected |
-| imageUrl | String | No | OG image, screenshot URL, or fallback path |
-| imageSource | Enum | No | og, screenshot, fallback |
-| submitterName | String | No | Optional attribution |
-| submitterGithubUrl | String | No | Optional attribution |
-| createdAt | Timestamp | Yes | Submission time |
-| approvedAt | Timestamp | No | Set when approved |
+| Field              | Type      | Required | Notes                                      |
+| ------------------ | --------- | -------- | ------------------------------------------ |
+| id                 | UUID      | Yes      | Primary key                                |
+| url                | String    | Yes      | Unique, validated URL                      |
+| title              | String    | No       | Extracted from page or defaults to URL     |
+| description        | String    | No       | Extracted from page                        |
+| status             | Enum      | Yes      | pending, approved, rejected                |
+| imageUrl           | String    | No       | OG image, screenshot URL, or fallback path |
+| imageSource        | Enum      | No       | og, screenshot, fallback                   |
+| submitterName      | String    | No       | Optional attribution                       |
+| submitterGithubUrl | String    | No       | Optional attribution                       |
+| createdAt          | Timestamp | Yes      | Submission time                            |
+| approvedAt         | Timestamp | No       | Set when approved                          |
 
 ### Tag Record
 
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| id | UUID | Yes | Primary key |
-| name | String | Yes | Unique, lowercase, trimmed |
+| Field | Type   | Required | Notes                      |
+| ----- | ------ | -------- | -------------------------- |
+| id    | UUID   | Yes      | Primary key                |
+| name  | String | Yes      | Unique, lowercase, trimmed |
 
 ### Bookmark-Tag Relationship
 
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| bookmarkId | UUID | Yes | FK to bookmark |
-| tagId | UUID | Yes | FK to tag |
+| Field      | Type | Required | Notes          |
+| ---------- | ---- | -------- | -------------- |
+| bookmarkId | UUID | Yes      | FK to bookmark |
+| tagId      | UUID | Yes      | FK to tag      |
 
 **Constraint:** bookmarkId + tagId must be unique (no duplicate associations)
 
@@ -382,15 +388,15 @@ Search and filter bookmarks.
 
 ## Error Handling Requirements
 
-| Scenario | Expected Behavior |
-|----------|-------------------|
-| Invalid URL format | 422 with validation details |
-| Missing required fields | 422 with validation details |
-| Duplicate URL | 409 with clear message |
-| Target page unreachable | Continue with fallback image |
-| Screenshot service error | Continue with fallback image |
-| Image storage error | Continue with fallback image, log error |
-| Database error | 500 with generic message, log details |
+| Scenario                 | Expected Behavior                       |
+| ------------------------ | --------------------------------------- |
+| Invalid URL format       | 422 with validation details             |
+| Missing required fields  | 422 with validation details             |
+| Duplicate URL            | 409 with clear message                  |
+| Target page unreachable  | Continue with fallback image            |
+| Screenshot service error | Continue with fallback image            |
+| Image storage error      | Continue with fallback image, log error |
+| Database error           | 500 with generic message, log details   |
 
 ---
 
@@ -439,5 +445,5 @@ The following are explicitly NOT part of Phase 1:
 
 ---
 
-*Document Version: 2.0*
-*Last Updated: December 2024*
+_Document Version: 2.0_
+_Last Updated: December 2024_

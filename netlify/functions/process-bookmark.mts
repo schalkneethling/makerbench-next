@@ -35,15 +35,25 @@ export default async (req: Request, _context: Context) => {
   // Validate request using Zod
   const validation = validateBookmarkRequest(body);
   if (!validation.success) {
-    return validationError("Validation failed", validation.error.flatten().fieldErrors);
+    return validationError(
+      "Validation failed",
+      validation.error.flatten().fieldErrors,
+    );
   }
 
-  const { url, tags: rawTags, submitterName, submitterGithubUrl } = validation.data;
+  const {
+    url,
+    tags: rawTags,
+    submitterName,
+    submitterGithubUrl,
+  } = validation.data;
 
   // Normalize URL (additional check for HTTP/HTTPS)
   const normalizedUrl = parseAndNormalizeUrl(url);
   if (!normalizedUrl) {
-    return validationError("Validation failed", { url: ["Please enter a valid HTTP/HTTPS URL"] });
+    return validationError("Validation failed", {
+      url: ["Please enter a valid HTTP/HTTPS URL"],
+    });
   }
 
   // Normalize tags
@@ -141,4 +151,3 @@ export const config: Config = {
   path: "/api/bookmarks",
   method: "POST",
 };
-

@@ -17,9 +17,9 @@ describe("captureScreenshot", () => {
       http.post("https://chrome.browserless.io/screenshot", () => {
         return HttpResponse.json(
           { error: "Rate limit exceeded" },
-          { status: 429 }
+          { status: 429 },
         );
-      })
+      }),
     );
 
     const result = await captureScreenshot("https://example.com");
@@ -35,7 +35,7 @@ describe("captureScreenshot", () => {
       http.post("https://chrome.browserless.io/screenshot", async () => {
         await new Promise((resolve) => setTimeout(resolve, 35000));
         return HttpResponse.arrayBuffer(new ArrayBuffer(100));
-      })
+      }),
     );
 
     const result = await captureScreenshot("https://example.com");
@@ -48,12 +48,15 @@ describe("captureScreenshot", () => {
     let capturedBody: unknown;
 
     server.use(
-      http.post("https://chrome.browserless.io/screenshot", async ({ request }) => {
-        capturedBody = await request.json();
-        return HttpResponse.arrayBuffer(new ArrayBuffer(100), {
-          headers: { "Content-Type": "image/png" },
-        });
-      })
+      http.post(
+        "https://chrome.browserless.io/screenshot",
+        async ({ request }) => {
+          capturedBody = await request.json();
+          return HttpResponse.arrayBuffer(new ArrayBuffer(100), {
+            headers: { "Content-Type": "image/png" },
+          });
+        },
+      ),
     );
 
     await captureScreenshot("https://example.com/test");
@@ -74,4 +77,3 @@ describe("captureScreenshot", () => {
     });
   });
 });
-

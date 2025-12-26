@@ -6,14 +6,16 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "format": "prettier --write .",
     "lint": "eslint .",
+    "lint:css": "stylelint \"**/*.css\" --ignore-path .gitignore",
     "preview": "vite preview",
     "test": "vitest --run",
     "test:watch": "vitest",
+    "quality": "npm run format && npm run lint && npm run lint:css && npm run test && npm run build",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio",
-    "lint:css": "stylelint **/*.css"
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@libsql/client": "^0.15.9",

@@ -111,7 +111,10 @@ export default async (req: Request, _context: Context) => {
         tagName: tagsTable.name,
       })
       .from(bookmarksTable)
-      .leftJoin(bookmarkTagsTable, eq(bookmarksTable.id, bookmarkTagsTable.bookmarkId))
+      .leftJoin(
+        bookmarkTagsTable,
+        eq(bookmarksTable.id, bookmarkTagsTable.bookmarkId),
+      )
       .leftJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
       .where(whereClause)
       .orderBy(desc(bookmarksTable.createdAt))
@@ -161,4 +164,3 @@ export default async (req: Request, _context: Context) => {
 export const config: Config = {
   path: "/api/bookmarks/search",
 };
-

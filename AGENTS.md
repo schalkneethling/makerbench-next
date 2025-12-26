@@ -33,6 +33,7 @@ bd sync               # Sync with git
 7. **Hand off** - Provide context for next session
 
 **CRITICAL RULES:**
+
 - Work is NOT complete until `git push` succeeds
 - NEVER stop before pushing - that leaves work stranded locally
 - NEVER say "ready to push when you are" - YOU must push
@@ -47,6 +48,7 @@ Use 'bd' for task tracking
 ### Documentation First
 
 1. **Use MCP Context7** to fetch current documentation:
+
    ```
    mcp_context7_resolve-library-id  # Find library ID
    mcp_context7_get-library-docs    # Get current docs
@@ -57,11 +59,11 @@ Use 'bd' for task tracking
 
 ### Current External Services
 
-| Service | Purpose | Doc Reference |
-|---------|---------|---------------|
-| Browserless | Screenshot capture | https://docs.browserless.io/rest-apis/screenshot-api |
-| Cloudinary | Image storage/delivery | https://cloudinary.com/documentation |
-| Turso | SQLite database | https://docs.turso.tech |
+| Service     | Purpose                | Doc Reference                                        |
+| ----------- | ---------------------- | ---------------------------------------------------- |
+| Browserless | Screenshot capture     | https://docs.browserless.io/rest-apis/screenshot-api |
+| Cloudinary  | Image storage/delivery | https://cloudinary.com/documentation                 |
+| Turso       | SQLite database        | https://docs.turso.tech                              |
 
 ### Key Implementation Notes
 
@@ -92,7 +94,7 @@ declare global {
 
 // BAD: Manual type definition
 declare const Netlify: {
-  env: { get: (key: string) => string | undefined; };
+  env: { get: (key: string) => string | undefined };
 };
 ```
 

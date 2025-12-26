@@ -18,4 +18,3 @@
   },
   "include": ["netlify/functions", "src/types", "src/db", "src/lib"]
 }
-

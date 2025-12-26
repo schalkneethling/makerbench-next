@@ -47,4 +47,3 @@ vi.stubGlobal("Netlify", {
     },
   },
 });
-

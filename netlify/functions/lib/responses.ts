@@ -53,7 +53,7 @@ export function badRequest(error: string): Response {
  */
 export function validationError(
   error: string,
-  details?: Record<string, string[]>
+  details?: Record<string, string[]>,
 ): Response {
   return jsonResponse({ success: false, error, details }, 422);
 }
@@ -94,7 +94,6 @@ export function methodNotAllowed(allowed: string[]): Response {
         "Content-Type": "application/json",
         Allow: allowed.join(", "),
       },
-    }
+    },
   );
 }
-

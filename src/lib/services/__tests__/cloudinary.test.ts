@@ -23,7 +23,8 @@ describe("uploadScreenshot", () => {
       // Simulate successful upload
       setTimeout(() => {
         callback(null, {
-          secure_url: "https://res.cloudinary.com/test/image/upload/v123/screenshot.png",
+          secure_url:
+            "https://res.cloudinary.com/test/image/upload/v123/screenshot.png",
           public_id: "screenshots/2024/12/test-id",
         });
       }, 0);
@@ -34,8 +35,10 @@ describe("uploadScreenshot", () => {
       };
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(cloudinary.uploader.upload_stream).mockImplementation(mockUploadStream as any);
+    vi.mocked(cloudinary.uploader.upload_stream).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockUploadStream as any,
+    );
 
     const buffer = Buffer.from("fake-png-data");
     const result = await uploadScreenshot(buffer, "test-bookmark-id");
@@ -56,8 +59,10 @@ describe("uploadScreenshot", () => {
       };
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(cloudinary.uploader.upload_stream).mockImplementation(mockUploadStream as any);
+    vi.mocked(cloudinary.uploader.upload_stream).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockUploadStream as any,
+    );
 
     const buffer = Buffer.from("fake-png-data");
     const result = await uploadScreenshot(buffer, "test-id");
@@ -84,8 +89,10 @@ describe("uploadScreenshot", () => {
       };
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(cloudinary.uploader.upload_stream).mockImplementation(mockUploadStream as any);
+    vi.mocked(cloudinary.uploader.upload_stream).mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockUploadStream as any,
+    );
 
     const buffer = Buffer.from("fake-png-data");
     await uploadScreenshot(buffer, "my-bookmark");
@@ -95,4 +102,3 @@ describe("uploadScreenshot", () => {
     expect(capturedOptions.resource_type).toBe("image");
   });
 });
-

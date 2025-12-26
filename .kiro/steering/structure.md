@@ -1,6 +1,7 @@
 # Project Structure
 
 ## Root Directory
+
 ```
 ├── src/                    # Source code
 ├── public/                 # Static assets
@@ -11,6 +12,7 @@
 ```
 
 ## Source Code Organization (`src/`)
+
 ```
 src/
 ├── db/                    # Database layer
@@ -28,11 +30,13 @@ src/
 ```
 
 ## Database Schema
+
 - **bookmarks** - Main bookmark entries with approval status
 - **tags** - Tag definitions for categorization
 - **bookmark_tags** - Many-to-many relationship table
 
 ## Configuration Files
+
 - `drizzle.config.ts` - Database configuration
 - `vite.config.ts` - Build tool configuration
 - `netlify.toml` - Deployment configuration
@@ -40,12 +44,14 @@ src/
 - `.env` - Environment variables (not committed)
 
 ## Naming Conventions
+
 - **Files**: kebab-case for directories, camelCase for TypeScript files
 - **Components**: PascalCase for React components
 - **Database**: snake_case for table and column names
 - **Types**: PascalCase with descriptive prefixes (Insert*, Select*)
 
 ## Key Patterns
+
 - Database operations centralized in `src/db/queries/`
 - Type-safe database operations using Drizzle ORM
 - Serverless functions for backend processing

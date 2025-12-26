@@ -61,12 +61,14 @@ graph TB
 #### Core Layout Components
 
 **AppLayout Component**
+
 - Renders main application structure with header, search, and content areas
 - Manages global state for search and form visibility
 - Implements responsive design breakpoints
 - Provides semantic HTML structure for accessibility
 
 **Header Component**
+
 - Displays Makerbench logo and branding
 - Implements proper heading hierarchy (h1 for main title)
 - Includes skip navigation links for accessibility
@@ -74,6 +76,7 @@ graph TB
 #### Search and Discovery Components
 
 **SearchBar Component**
+
 ```typescript
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -81,12 +84,14 @@ interface SearchBarProps {
   ariaLabel?: string;
 }
 ```
+
 - Implements debounced search input (300ms delay)
 - Provides real-time search suggestions
 - Includes clear search functionality
 - Supports keyboard navigation (Enter to search, Escape to clear)
 
 **ToolGrid Component**
+
 ```typescript
 interface ToolGridProps {
   tools: Tool[];
@@ -94,18 +99,21 @@ interface ToolGridProps {
   error?: string;
 }
 ```
+
 - Renders responsive CSS Grid layout
 - Uses native HTML `loading="lazy"` for image performance
 - Handles empty states and error states
 - Provides keyboard navigation between tool cards
 
 **ToolCard Component**
+
 ```typescript
 interface ToolCardProps {
   tool: Tool;
   onImageError: (toolId: string) => void;
 }
 ```
+
 - Displays tool information with proper semantic markup
 - Uses native HTML `loading="lazy"` attribute for image lazy loading
 - Provides fallback for missing screenshots using `onerror` event
@@ -114,6 +122,7 @@ interface ToolCardProps {
 #### Form Components
 
 **ToolSubmissionForm Component**
+
 ```typescript
 interface ToolSubmissionFormProps {
   onSubmit: (data: ToolSubmissionData) => Promise<void>;
@@ -121,6 +130,7 @@ interface ToolSubmissionFormProps {
   isVisible: boolean;
 }
 ```
+
 - Uses native HTML5 form validation with Zod schema validation
 - Leverages HTML `required`, `type="url"`, and `pattern` attributes
 - Provides accessible error messaging using native form validation API
@@ -128,6 +138,7 @@ interface ToolSubmissionFormProps {
 - Includes proper form labeling and fieldset grouping
 
 **TagInput Component**
+
 ```typescript
 interface TagInputProps {
   value: string[];
@@ -135,6 +146,7 @@ interface TagInputProps {
   suggestions?: string[];
 }
 ```
+
 - Handles comma-separated tag input
 - Provides tag suggestions based on existing tags
 - Implements tag removal functionality
@@ -145,6 +157,7 @@ interface TagInputProps {
 #### Netlify Functions
 
 **Submit Tool Function** (`/.netlify/functions/submit-tool`)
+
 ```typescript
 interface SubmitToolRequest {
   url: string;
@@ -162,6 +175,7 @@ interface SubmitToolResponse {
 ```
 
 **Get Tools Function** (`/.netlify/functions/get-tools`)
+
 ```typescript
 interface GetToolsRequest {
   search?: string;
@@ -182,18 +196,28 @@ interface GetToolsResponse {
 #### Zod Validation Schemas
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 // URL validation schema
-const urlSchema = z.string().url('Please enter a valid URL');
+const urlSchema = z.string().url("Please enter a valid URL");
 
 // Tool submission validation
 export const toolSubmissionSchema = z.object({
   url: urlSchema,
-  githubUrl: z.string().url('Please enter a valid GitHub URL').optional().or(z.literal('')),
-  tags: z.array(z.string().min(1, 'Tag cannot be empty')).min(1, 'At least one tag is required'),
+  githubUrl: z
+    .string()
+    .url("Please enter a valid GitHub URL")
+    .optional()
+    .or(z.literal("")),
+  tags: z
+    .array(z.string().min(1, "Tag cannot be empty"))
+    .min(1, "At least one tag is required"),
   submitterName: z.string().optional(),
-  submitterGithubUrl: z.string().url('Please enter a valid GitHub URL').optional().or(z.literal(''))
+  submitterGithubUrl: z
+    .string()
+    .url("Please enter a valid GitHub URL")
+    .optional()
+    .or(z.literal("")),
 });
 
 // Tool data schema
@@ -206,22 +230,22 @@ export const toolSchema = z.object({
   githubUrl: z.string().url().optional(),
   tags: z.array(tagSchema),
   submitter: submitterSchema.optional(),
-  status: z.enum(['pending', 'approved', 'rejected']),
+  status: z.enum(["pending", "approved", "rejected"]),
   createdAt: z.string().datetime(),
-  approvedAt: z.string().datetime().optional()
+  approvedAt: z.string().datetime().optional(),
 });
 
 // Tag schema
 export const tagSchema = z.object({
   id: z.string().uuid(),
-  name: z.string().min(1, 'Tag name is required'),
-  description: z.string().optional()
+  name: z.string().min(1, "Tag name is required"),
+  description: z.string().optional(),
 });
 
 // Submitter schema
 export const submitterSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  githubUrl: z.string().url('Please enter a valid GitHub URL')
+  name: z.string().min(1, "Name is required"),
+  githubUrl: z.string().url("Please enter a valid GitHub URL"),
 });
 
 // Tool metadata schema
@@ -230,7 +254,7 @@ export const toolMetadataSchema = z.object({
   description: z.string().optional(),
   imageUrl: z.string().url().optional(),
   screenshotUrl: z.string().url().optional(),
-  extractedAt: z.string().datetime()
+  extractedAt: z.string().datetime(),
 });
 ```
 
@@ -261,18 +285,21 @@ ALTER TABLE bookmarks ADD COLUMN image_url TEXT;
 ### Frontend Error Handling
 
 **Network Errors**
+
 - Implement retry logic for failed API requests
 - Display user-friendly error messages
 - Provide offline state detection and messaging
 - Cache successful responses for offline viewing
 
 **Form Validation Errors**
+
 - Real-time validation with debounced feedback
 - Accessible error announcements using ARIA live regions
 - Field-level and form-level error states
 - Clear error recovery instructions
 
 **Image Loading Errors**
+
 - Fallback to placeholder images for missing screenshots
 - Retry mechanism for failed image loads
 - Progressive image loading with blur-up effect
@@ -280,16 +307,19 @@ ALTER TABLE bookmarks ADD COLUMN image_url TEXT;
 ### Backend Error Handling
 
 **Metadata Extraction Failures**
+
 - Graceful degradation when page metadata is unavailable
 - Fallback to basic URL information
 - Logging for debugging failed extractions
 
 **Screenshot Generation Failures**
+
 - Retry logic for Browserless API failures
 - Fallback to default placeholder images
 - Error logging and admin notifications for persistent failures
 
 **Database Operation Failures**
+
 - Transaction rollback for failed submissions
 - Proper error responses to frontend
 - Database connection retry logic
@@ -299,6 +329,7 @@ ALTER TABLE bookmarks ADD COLUMN image_url TEXT;
 ### Frontend Testing
 
 **Unit Tests**
+
 - Component rendering and prop handling
 - Form validation logic
 - Search functionality and debouncing
@@ -306,12 +337,14 @@ ALTER TABLE bookmarks ADD COLUMN image_url TEXT;
 - Accessibility compliance testing
 
 **Integration Tests**
+
 - API integration with Netlify functions
 - Search flow from input to results display
 - Form submission flow with success/error states
 - Image loading and error handling
 
 **End-to-End Tests**
+
 - Complete tool submission workflow
 - Search and discovery user journeys
 - Responsive design across device sizes
@@ -320,12 +353,14 @@ ALTER TABLE bookmarks ADD COLUMN image_url TEXT;
 ### Backend Testing
 
 **Function Tests**
+
 - Metadata extraction from various URL types
 - Screenshot generation and S3 upload
 - Database operations and error handling
 - Email notification functionality
 
 **API Contract Tests**
+
 - Request/response validation
 - Error response formats
 - Rate limiting behavior
@@ -333,12 +368,14 @@ ALTER TABLE bookmarks ADD COLUMN image_url TEXT;
 ### Performance Testing
 
 **Frontend Performance**
+
 - Core Web Vitals measurement
 - Bundle size optimization
 - Image loading performance
 - Search response times
 
 **Backend Performance**
+
 - Function cold start optimization
 - Database query performance
 - External API response times
@@ -347,11 +384,13 @@ ALTER TABLE bookmarks ADD COLUMN image_url TEXT;
 ### Accessibility Testing
 
 **Automated Testing**
+
 - axe-core integration for automated a11y checks
 - Color contrast validation
 - Semantic HTML structure validation
 
 **Manual Testing**
+
 - Screen reader navigation testing
 - Keyboard-only navigation
 - Focus management and visual indicators
@@ -378,7 +417,7 @@ ALTER TABLE bookmarks ADD COLUMN image_url TEXT;
 
   /* Typography */
   --font-family-sans: system-ui, -apple-system, sans-serif;
-  --font-family-mono: 'SF Mono', Monaco, monospace;
+  --font-family-mono: "SF Mono", Monaco, monospace;
 
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
@@ -429,17 +468,20 @@ ALTER TABLE bookmarks ADD COLUMN image_url TEXT;
 ### Component Architecture
 
 **Base Styles** (`src/styles/base.css`)
+
 - CSS reset and normalization
 - Typography base styles
 - Focus management styles
 - Print styles
 
 **Layout Styles** (`src/styles/layout.css`)
+
 - Container and grid systems
 - Responsive breakpoint utilities
 - Flexbox utilities
 
 **Component Styles** (`src/styles/components/`)
+
 - Individual component stylesheets
 - BEM methodology for class naming
 - Component-specific custom properties
@@ -447,15 +489,25 @@ ALTER TABLE bookmarks ADD COLUMN image_url TEXT;
 ### Responsive Design Strategy
 
 **Breakpoint System**
+
 ```css
 /* Mobile-first approach */
-@media (min-width: 640px) { /* sm */ }
-@media (min-width: 768px) { /* md */ }
-@media (min-width: 1024px) { /* lg */ }
-@media (min-width: 1280px) { /* xl */ }
+@media (min-width: 640px) {
+  /* sm */
+}
+@media (min-width: 768px) {
+  /* md */
+}
+@media (min-width: 1024px) {
+  /* lg */
+}
+@media (min-width: 1280px) {
+  /* xl */
+}
 ```
 
 **Grid Layout**
+
 - CSS Grid for tool card layout
 - Responsive column counts based on viewport
 - Flexible gap spacing using design tokens
@@ -465,16 +517,19 @@ ALTER TABLE bookmarks ADD COLUMN image_url TEXT;
 ### Frontend Optimization
 
 **Code Splitting**
+
 - Route-based code splitting for admin functionality
 - Component-level lazy loading for heavy components
 - Dynamic imports for non-critical features
 
 **Asset Optimization**
+
 - Image optimization with WebP format support using `<picture>` element
 - Native lazy loading for tool screenshots using `loading="lazy"`
 - Critical CSS inlining
 
 **Caching Strategy**
+
 - Service worker for offline functionality
 - API response caching with appropriate TTL
 - Static asset caching with versioning
@@ -482,11 +537,13 @@ ALTER TABLE bookmarks ADD COLUMN image_url TEXT;
 ### Backend Optimization
 
 **Function Optimization**
+
 - Minimize cold start times through bundling
 - Connection pooling for database operations
 - Efficient metadata extraction algorithms
 
 **Database Optimization**
+
 - Proper indexing for search queries
 - Query optimization for tag-based searches
 - Connection management and pooling
@@ -494,16 +551,19 @@ ALTER TABLE bookmarks ADD COLUMN image_url TEXT;
 ## Security Considerations
 
 ### Input Validation
+
 - URL validation and sanitization
 - Tag input sanitization
 - XSS prevention in user-generated content
 
 ### API Security
+
 - Rate limiting on submission endpoints
 - CORS configuration for frontend domains
 - Input validation on all function endpoints
 
 ### Data Protection
+
 - Secure handling of admin email addresses
 - Proper error message sanitization
 - Secure S3 bucket configuration with appropriate permissions

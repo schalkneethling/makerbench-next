@@ -59,4 +59,3 @@ export async function extractMetadata(url: string): Promise<MetadataResult> {
     };
   }
 }
-

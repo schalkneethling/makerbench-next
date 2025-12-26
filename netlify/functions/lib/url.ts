@@ -59,4 +59,3 @@ export function parseAndNormalizeUrl(urlString: string): string | null {
     return null;
   }
 }
-

@@ -34,7 +34,7 @@ interface BrowserlessPayload {
  */
 export async function captureScreenshot(
   url: string,
-  apiKey?: string
+  apiKey?: string,
 ): Promise<ScreenshotResult> {
   const key = apiKey ?? getApiKey();
 
@@ -71,7 +71,7 @@ export async function captureScreenshot(
         },
         body: JSON.stringify(payload),
         signal: AbortSignal.timeout(30000), // 30s timeout
-      }
+      },
     );
 
     if (!response.ok) {
@@ -92,8 +92,7 @@ export async function captureScreenshot(
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    const isTimeout =
-      message.includes("timeout") || message.includes("abort");
+    const isTimeout = message.includes("timeout") || message.includes("abort");
 
     return {
       success: false,
@@ -114,4 +113,3 @@ function getApiKey(): string | undefined {
   // In Node.js/test context
   return process.env.BROWSERLESS_API_KEY;
 }
-
