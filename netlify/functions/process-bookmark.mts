@@ -16,29 +16,9 @@ import {
 import { extractMetadata } from "../../src/lib/services/metadata";
 import { captureScreenshot } from "../../src/lib/services/screenshot";
 import { uploadScreenshot } from "../../src/lib/services/cloudinary";
-import {
-  validateBookmarkRequest,
-  type BookmarkRequest,
-} from "../../src/lib/validation";
+import { validateBookmarkRequest } from "../../src/lib/validation";
 
 const FALLBACK_IMAGE = "/images/fallback-screenshot.png";
-
-/**
- * Converts Zod errors to field-keyed error object
- */
-function formatZodErrors(
-  issues: { path: (string | number)[]; message: string }[]
-): Record<string, string[]> {
-  const errors: Record<string, string[]> = {};
-  for (const issue of issues) {
-    const key = issue.path[0]?.toString() || "body";
-    if (!errors[key]) {
-      errors[key] = [];
-    }
-    errors[key].push(issue.message);
-  }
-  return errors;
-}
 
 export default async (req: Request, _context: Context) => {
   if (req.method !== "POST") {
@@ -55,7 +35,7 @@ export default async (req: Request, _context: Context) => {
   // Validate request using Zod
   const validation = validateBookmarkRequest(body);
   if (!validation.success) {
-    return validationError("Validation failed", formatZodErrors(validation.error.issues));
+    return validationError("Validation failed", validation.error.flatten().fieldErrors);
   }
 
   const { url, tags: rawTags, submitterName, submitterGithubUrl } = validation.data;
