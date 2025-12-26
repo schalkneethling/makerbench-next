@@ -25,6 +25,32 @@ export const toolSubmissionSchema = z.object({
   submitterGithubUrl: z.string().url('Please enter a valid GitHub URL').optional().or(z.literal(''))
 });
 
+// Bookmark request schema (for API endpoint)
+export const bookmarkRequestSchema = z.object({
+  url: z.string()
+    .min(1, 'URL is required')
+    .max(2000, 'URL must be 2000 characters or less')
+    .url('Please enter a valid URL'),
+  tags: z.array(
+    z.string()
+      .min(1, 'Tag cannot be empty')
+      .max(50, 'Tag must be 50 characters or less')
+  )
+    .min(1, 'At least one tag is required')
+    .max(10, 'Maximum 10 tags allowed'),
+  submitterName: z.string()
+    .max(100, 'Name must be 100 characters or less')
+    .optional(),
+  submitterGithubUrl: z.string()
+    .url('Please enter a valid URL')
+    .refine(
+      (url) => url.includes('github.com'),
+      'Please enter a valid GitHub URL'
+    )
+    .optional()
+    .or(z.literal(''))
+});
+
 // Tool metadata validation schema
 export const toolMetadataSchema = z.object({
   title: z.string().optional(),
@@ -74,6 +100,7 @@ export const getToolsResponseSchema = z.object({
 export type Tag = z.infer<typeof tagSchema>;
 export type Submitter = z.infer<typeof submitterSchema>;
 export type ToolSubmissionData = z.infer<typeof toolSubmissionSchema>;
+export type BookmarkRequest = z.infer<typeof bookmarkRequestSchema>;
 export type ToolMetadata = z.infer<typeof toolMetadataSchema>;
 export type Tool = z.infer<typeof toolSchema>;
 export type SearchRequest = z.infer<typeof searchRequestSchema>;
@@ -83,6 +110,10 @@ export type GetToolsResponse = z.infer<typeof getToolsResponseSchema>;
 // Utility validation functions
 export const validateToolSubmission = (data: unknown) => {
   return toolSubmissionSchema.safeParse(data);
+};
+
+export const validateBookmarkRequest = (data: unknown) => {
+  return bookmarkRequestSchema.safeParse(data);
 };
 
 export const validateSearchRequest = (data: unknown) => {

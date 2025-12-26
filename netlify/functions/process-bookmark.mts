@@ -16,85 +16,28 @@ import {
 import { extractMetadata } from "../../src/lib/services/metadata";
 import { captureScreenshot } from "../../src/lib/services/screenshot";
 import { uploadScreenshot } from "../../src/lib/services/cloudinary";
+import {
+  validateBookmarkRequest,
+  type BookmarkRequest,
+} from "../../src/lib/validation";
 
 const FALLBACK_IMAGE = "/images/fallback-screenshot.png";
-const MAX_TAGS = 10;
-
-interface BookmarkRequest {
-  url: string;
-  tags: string[];
-  submitterName?: string;
-  submitterGithubUrl?: string;
-}
 
 /**
- * Validates the bookmark submission request
+ * Converts Zod errors to field-keyed error object
  */
-function validateRequest(
-  body: unknown
-): { valid: true; data: BookmarkRequest } | { valid: false; errors: Record<string, string[]> } {
+function formatZodErrors(
+  issues: { path: (string | number)[]; message: string }[]
+): Record<string, string[]> {
   const errors: Record<string, string[]> = {};
-
-  if (!body || typeof body !== "object") {
-    return { valid: false, errors: { body: ["Request body is required"] } };
-  }
-
-  const data = body as Record<string, unknown>;
-
-  // Validate URL
-  if (!data.url || typeof data.url !== "string") {
-    errors.url = ["URL is required"];
-  } else if (!parseAndNormalizeUrl(data.url)) {
-    errors.url = ["Please enter a valid HTTP/HTTPS URL"];
-  } else if (data.url.length > 2000) {
-    errors.url = ["URL must be 2000 characters or less"];
-  }
-
-  // Validate tags
-  if (!data.tags || !Array.isArray(data.tags)) {
-    errors.tags = ["At least one tag is required"];
-  } else if (data.tags.length === 0) {
-    errors.tags = ["At least one tag is required"];
-  } else if (data.tags.length > MAX_TAGS) {
-    errors.tags = [`Maximum ${MAX_TAGS} tags allowed`];
-  } else {
-    const invalidTags = data.tags.filter(
-      (t) => typeof t !== "string" || t.trim().length === 0 || t.length > 50
-    );
-    if (invalidTags.length > 0) {
-      errors.tags = ["Tags must be non-empty strings of 50 characters or less"];
+  for (const issue of issues) {
+    const key = issue.path[0]?.toString() || "body";
+    if (!errors[key]) {
+      errors[key] = [];
     }
+    errors[key].push(issue.message);
   }
-
-  // Validate optional fields
-  if (data.submitterName && typeof data.submitterName === "string" && data.submitterName.length > 100) {
-    errors.submitterName = ["Name must be 100 characters or less"];
-  }
-
-  if (data.submitterGithubUrl && typeof data.submitterGithubUrl === "string") {
-    try {
-      const ghUrl = new URL(data.submitterGithubUrl);
-      if (!ghUrl.hostname.includes("github.com")) {
-        errors.submitterGithubUrl = ["Please enter a valid GitHub URL"];
-      }
-    } catch {
-      errors.submitterGithubUrl = ["Please enter a valid GitHub URL"];
-    }
-  }
-
-  if (Object.keys(errors).length > 0) {
-    return { valid: false, errors };
-  }
-
-  return {
-    valid: true,
-    data: {
-      url: data.url as string,
-      tags: (data.tags as string[]).map((t) => t.trim().toLowerCase()),
-      submitterName: data.submitterName as string | undefined,
-      submitterGithubUrl: data.submitterGithubUrl as string | undefined,
-    },
-  };
+  return errors;
 }
 
 export default async (req: Request, _context: Context) => {
@@ -109,14 +52,22 @@ export default async (req: Request, _context: Context) => {
     return validationError("Invalid JSON in request body");
   }
 
-  // Validate request
-  const validation = validateRequest(body);
-  if (!validation.valid) {
-    return validationError("Validation failed", validation.errors);
+  // Validate request using Zod
+  const validation = validateBookmarkRequest(body);
+  if (!validation.success) {
+    return validationError("Validation failed", formatZodErrors(validation.error.issues));
   }
 
-  const { url, tags, submitterName, submitterGithubUrl } = validation.data;
-  const normalizedUrl = parseAndNormalizeUrl(url)!;
+  const { url, tags: rawTags, submitterName, submitterGithubUrl } = validation.data;
+
+  // Normalize URL (additional check for HTTP/HTTPS)
+  const normalizedUrl = parseAndNormalizeUrl(url);
+  if (!normalizedUrl) {
+    return validationError("Validation failed", { url: ["Please enter a valid HTTP/HTTPS URL"] });
+  }
+
+  // Normalize tags
+  const tags = rawTags.map((t) => t.trim().toLowerCase());
 
   try {
     const db = getDb();
