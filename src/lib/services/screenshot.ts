@@ -9,18 +9,21 @@ export interface ScreenshotResult {
 
 /**
  * Browserless API request payload
+ * @see https://docs.browserless.io/rest-apis/screenshot-api
  */
 interface BrowserlessPayload {
   url: string;
   options: {
-    type: "png" | "jpeg";
+    type: "png" | "jpeg"; // WebP not supported by Browserless
     fullPage: boolean;
   };
   viewport: {
     width: number;
     height: number;
   };
-  waitForTimeout?: number;
+  gotoOptions?: {
+    waitUntil: "load" | "domcontentloaded" | "networkidle0" | "networkidle2";
+  };
 }
 
 /**
@@ -53,7 +56,9 @@ export async function captureScreenshot(
       width: 1280,
       height: 800,
     },
-    waitForTimeout: 3000, // Wait 3s for page to settle
+    gotoOptions: {
+      waitUntil: "networkidle2", // Wait for network to be idle (per Browserless docs)
+    },
   };
 
   try {

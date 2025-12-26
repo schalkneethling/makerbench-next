@@ -39,3 +39,33 @@ bd sync               # Sync with git
 - If push fails, resolve and retry until it succeeds
 
 Use 'bd' for task tracking
+
+## External APIs and Services
+
+**ALWAYS consult up-to-date documentation** when working with external APIs and services. Do NOT make assumptions about best practices or available features.
+
+### Documentation First
+
+1. **Use MCP Context7** to fetch current documentation:
+   ```
+   mcp_context7_resolve-library-id  # Find library ID
+   mcp_context7_get-library-docs    # Get current docs
+   ```
+
+2. **Verify implementation** against official docs before finalizing
+3. **Include doc references** in code comments for complex integrations
+
+### Current External Services
+
+| Service | Purpose | Doc Reference |
+|---------|---------|---------------|
+| Browserless | Screenshot capture | https://docs.browserless.io/rest-apis/screenshot-api |
+| Cloudinary | Image storage/delivery | https://cloudinary.com/documentation |
+| Turso | SQLite database | https://docs.turso.tech |
+
+### Key Implementation Notes
+
+- **Browserless**: Only supports `png`/`jpeg` (not WebP). Use `gotoOptions.waitUntil: "networkidle2"` for reliable captures.
+- **Cloudinary**: Upload source format (PNG), use `f_auto,q_auto` at delivery for WebP/AVIF optimization.
+
+**When in doubt, consult the documentation.**

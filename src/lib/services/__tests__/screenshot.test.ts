@@ -68,6 +68,9 @@ describe("captureScreenshot", () => {
         width: 1280,
         height: 800,
       },
+      gotoOptions: {
+        waitUntil: "networkidle2",
+      },
     });
   });
 });
