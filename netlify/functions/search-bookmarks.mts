@@ -1,5 +1,5 @@
 import type { Context, Config } from "@netlify/functions";
-import { eq, desc, like, inArray, and, count, sql } from "drizzle-orm";
+import { eq, desc, like, inArray, and, count } from "drizzle-orm";
 
 import {
   getDb,

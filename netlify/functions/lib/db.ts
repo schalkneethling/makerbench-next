@@ -6,6 +6,10 @@ import { createClient } from "@libsql/client";
  * Uses Netlify.env.get() instead of import.meta.env
  */
 function createDbClient() {
+  if (typeof Netlify === "undefined") {
+    throw new Error("Must run in Netlify Functions context");
+  }
+
   const url = Netlify.env.get("TURSO_DATABASE_URL");
   const authToken = Netlify.env.get("TURSO_AUTH_TOKEN");
 
