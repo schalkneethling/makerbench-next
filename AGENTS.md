@@ -69,3 +69,35 @@ Use 'bd' for task tracking
 - **Cloudinary**: Upload source format (PNG), use `f_auto,q_auto` at delivery for WebP/AVIF optimization.
 
 **When in doubt, consult the documentation.**
+
+## TypeScript Type Declarations
+
+**CRITICAL: NEVER create custom `.d.ts` files without first checking for official types.**
+
+### Before Creating Type Declarations
+
+1. **Check if package ships types** - Look for `types` or `typings` in `package.json`
+2. **Check for `@types/*` package** - Run `npm info @types/<package-name>`
+3. **Check transitive dependencies** - Types may be in a dependency (e.g., `@netlify/types` ships with `@netlify/functions`)
+4. **Search package exports** - Look for exported type interfaces to use with `declare global`
+
+### When Official Types Exist
+
+```typescript
+// GOOD: Import from official package
+import type { NetlifyGlobal } from "@netlify/types";
+declare global {
+  const Netlify: NetlifyGlobal;
+}
+
+// BAD: Manual type definition
+declare const Netlify: {
+  env: { get: (key: string) => string | undefined; };
+};
+```
+
+### Only Create Custom Types When
+
+- No official types exist after thorough search
+- You've verified with documentation and npm registry
+- Document WHY custom types were necessary in the file
