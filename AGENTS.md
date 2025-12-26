@@ -101,3 +101,53 @@ declare const Netlify: {
 - No official types exist after thorough search
 - You've verified with documentation and npm registry
 - Document WHY custom types were necessary in the file
+
+## Validation
+
+**CRITICAL: NEVER write custom validation logic - use Zod.**
+
+### Always Use Zod For
+
+- API request/response validation
+- Form data validation
+- Environment variable validation
+- Any data shape verification
+
+### Benefits
+
+- Type inference from schemas (no duplicate type definitions)
+- Consistent error formatting
+- Composable and reusable schemas
+- Runtime + compile-time safety
+
+### Pattern
+
+```typescript
+// Define schema once
+export const bookmarkRequestSchema = z.object({
+  url: z.string().url().max(2000),
+  tags: z.array(z.string().min(1).max(50)).min(1).max(10),
+});
+
+// Infer type from schema
+export type BookmarkRequest = z.infer<typeof bookmarkRequestSchema>;
+
+// Validate with safeParse
+const result = bookmarkRequestSchema.safeParse(data);
+if (!result.success) {
+  return formatErrors(result.error.issues);
+}
+```
+
+### Never Do This
+
+```typescript
+// BAD: Manual validation
+if (!data.url || typeof data.url !== "string") {
+  errors.url = ["URL is required"];
+} else if (data.url.length > 2000) {
+  errors.url = ["URL too long"];
+}
+```
+
+Existing schemas are in `src/lib/validation.ts` - extend them, don't reinvent.
