@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "test": "vitest --run",
     "test:watch": "vitest",
-    "quality": "npm run format && npm run lint && npm run lint:css && npm run test && npm run build",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.functions.json --noEmit",
+    "quality": "npm run format && npm run lint && npm run lint:css && npm run typecheck && npm run test && npm run build",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"

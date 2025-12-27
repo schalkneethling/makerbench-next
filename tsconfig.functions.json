@@ -16,5 +16,11 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["netlify/functions", "src/types", "src/db", "src/lib"]
+  "include": [
+    "netlify/functions",
+    "src/types",
+    "src/db/schema.ts",
+    "src/db/errors.ts",
+    "src/lib"
+  ]
 }
