@@ -1,7 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Context } from "@netlify/functions";
+import type { ErrorResponse, SuccessResponse } from "../lib/responses";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/** Success data shape for process-bookmark */
+interface BookmarkCreated {
+  bookmarkId: string;
+  message: string;
+}
 
 // Mock the database module
 vi.mock("../lib/db", () => ({
@@ -111,7 +116,7 @@ describe("process-bookmark", () => {
       const res = await processBookmark(req, mockContext);
 
       expect(res.status).toBe(405);
-      const body = (await res.json()) as any;
+      const body = (await res.json()) as ErrorResponse;
       expect(body.error).toContain("Method not allowed");
     });
 
@@ -137,7 +142,7 @@ describe("process-bookmark", () => {
       const res = await processBookmark(req, mockContext);
 
       expect(res.status).toBe(422);
-      const body = (await res.json()) as any;
+      const body = (await res.json()) as ErrorResponse;
       expect(body.details?.url).toBeDefined();
     });
 
@@ -151,7 +156,7 @@ describe("process-bookmark", () => {
       const res = await processBookmark(req, mockContext);
 
       expect(res.status).toBe(422);
-      const body = (await res.json()) as any;
+      const body = (await res.json()) as ErrorResponse;
       expect(body.details?.tags).toBeDefined();
     });
 
@@ -185,7 +190,7 @@ describe("process-bookmark", () => {
       const res = await processBookmark(req, mockContext);
 
       expect(res.status).toBe(409);
-      const body = (await res.json()) as any;
+      const body = (await res.json()) as ErrorResponse;
       expect(body.error).toContain("already been submitted");
     });
   });
@@ -204,7 +209,7 @@ describe("process-bookmark", () => {
       const res = await processBookmark(req, mockContext);
 
       expect(res.status).toBe(201);
-      const body = (await res.json()) as any;
+      const body = (await res.json()) as SuccessResponse<BookmarkCreated>;
       expect(body.success).toBe(true);
       expect(body.data.bookmarkId).toBeDefined();
       expect(body.data.message).toContain("submitted");

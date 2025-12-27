@@ -2,18 +2,18 @@
  * Standard API response helpers for Netlify Functions
  */
 
-interface SuccessResponse<T> {
+export interface SuccessResponse<T> {
   success: true;
   data: T;
 }
 
-interface ErrorResponse {
+export interface ErrorResponse {
   success: false;
   error: string;
   details?: Record<string, string[]>;
 }
 
-type ApiResponse<T> = SuccessResponse<T> | ErrorResponse;
+export type ApiResponse<T> = SuccessResponse<T> | ErrorResponse;
 
 /**
  * Creates a JSON response with proper headers

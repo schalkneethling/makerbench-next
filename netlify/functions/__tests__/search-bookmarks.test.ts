@@ -1,7 +1,31 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Context } from "@netlify/functions";
+import type { ErrorResponse, SuccessResponse } from "../lib/responses";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/** Bookmark shape returned from search */
+interface BookmarkWithTags {
+  id: string;
+  url: string;
+  title: string | null;
+  description: string | null;
+  imageUrl: string | null;
+  createdAt: string;
+  tags: { id: string; name: string }[];
+}
+
+/** Pagination metadata */
+interface Pagination {
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+}
+
+/** Success data shape for search-bookmarks */
+interface SearchResultsData {
+  bookmarks: BookmarkWithTags[];
+  pagination: Pagination;
+}
 
 // Mock the database module
 vi.mock("../lib/db", () => ({
@@ -80,7 +104,7 @@ describe("search-bookmarks", () => {
       const res = await searchBookmarks(req, mockContext);
 
       expect(res.status).toBe(400);
-      const body = (await res.json()) as any;
+      const body = (await res.json()) as ErrorResponse;
       expect(body.error).toContain("limit");
     });
 
@@ -107,7 +131,7 @@ describe("search-bookmarks", () => {
       const res = await searchBookmarks(req, mockContext);
 
       expect(res.status).toBe(200);
-      const body = (await res.json()) as any;
+      const body = (await res.json()) as SuccessResponse<SearchResultsData>;
       expect(body.success).toBe(true);
       expect(body.data.bookmarks).toEqual([]);
       expect(body.data.pagination.total).toBe(0);
@@ -138,7 +162,7 @@ describe("search-bookmarks", () => {
       const res = await searchBookmarks(req, mockContext);
 
       expect(res.status).toBe(200);
-      const body = (await res.json()) as any;
+      const body = (await res.json()) as SuccessResponse<SearchResultsData>;
       expect(body.data.bookmarks).toHaveLength(1);
       expect(body.data.bookmarks[0].title).toContain("React");
     });
@@ -154,7 +178,7 @@ describe("search-bookmarks", () => {
       const res = await searchBookmarks(req, mockContext);
 
       expect(res.status).toBe(200);
-      const body = (await res.json()) as any;
+      const body = (await res.json()) as SuccessResponse<SearchResultsData>;
       expect(body.data.bookmarks).toEqual([]);
       expect(body.data.pagination.total).toBe(0);
     });
@@ -188,7 +212,7 @@ describe("search-bookmarks", () => {
       const res = await searchBookmarks(req, mockContext);
 
       expect(res.status).toBe(200);
-      const body = (await res.json()) as any;
+      const body = (await res.json()) as SuccessResponse<SearchResultsData>;
       expect(body.data.bookmarks).toHaveLength(1);
     });
 
@@ -221,7 +245,7 @@ describe("search-bookmarks", () => {
       const res = await searchBookmarks(req, mockContext);
 
       expect(res.status).toBe(200);
-      const body = (await res.json()) as any;
+      const body = (await res.json()) as SuccessResponse<SearchResultsData>;
       expect(body.data.bookmarks).toHaveLength(1);
     });
   });
@@ -252,7 +276,7 @@ describe("search-bookmarks", () => {
       const res = await searchBookmarks(req, mockContext);
 
       expect(res.status).toBe(200);
-      const body = (await res.json()) as any;
+      const body = (await res.json()) as SuccessResponse<SearchResultsData>;
       expect(body.data.pagination.total).toBe(50);
       expect(body.data.pagination.hasMore).toBe(true);
     });
@@ -282,7 +306,7 @@ describe("search-bookmarks", () => {
       const res = await searchBookmarks(req, mockContext);
 
       expect(res.status).toBe(200);
-      const body = (await res.json()) as any;
+      const body = (await res.json()) as SuccessResponse<SearchResultsData>;
       expect(body.data.pagination.hasMore).toBe(false);
     });
   });
