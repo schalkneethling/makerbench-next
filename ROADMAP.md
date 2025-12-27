@@ -25,69 +25,25 @@ This roadmap outlines the path from current state to MVP and beyond. Tasks are o
 | **v2.0**       | +4 weeks | User accounts, starring, collections |
 | **v3.0**       | +3 weeks | AI-powered "Find Similar" discovery  |
 
-**See [PHASE_1_IMPLEMENTATION.md](./PHASE_1_IMPLEMENTATION.md) for detailed Phase 1 developer handoff.**
+**Implementation Documents:**
+
+- [PHASE_1_IMPLEMENTATION.md](./PHASE_1_IMPLEMENTATION.md) — ✅ Complete
+- [PHASE_2_IMPLEMENTATION.md](./PHASE_2_IMPLEMENTATION.md) — 🚧 Current Phase
 
 ---
 
-## Phase 1: Foundation & Core Backend (MVP Critical)
+## Phase 1: Foundation & Core Backend ✅ COMPLETE
 
-### 1.1 Install Missing Dependencies
+**Delivered:**
 
-- [ ] Install Cheerio for HTML parsing
-- [ ] Install @netlify/functions for serverless types
-- [ ] Install AWS SDK v3 for S3 integration
-
-```bash
-npm install cheerio @netlify/functions @aws-sdk/client-s3
-```
-
-### 1.2 Create Netlify Functions
-
-#### `process-bookmark.mts`
-
-Core bookmark processing function:
-
-- [ ] Receive URL + tags from frontend
-- [ ] Validate input using Zod schemas
-- [ ] Fetch page HTML
-- [ ] Extract metadata with Cheerio (title, description, OG image)
-- [ ] If OG image exists → store bookmark
-- [ ] If no OG image → call Browserless for screenshot
-- [ ] Upload screenshot to S3
-- [ ] Store bookmark with image path
-- [ ] Handle errors with fallback image
-- [ ] Return success/failure response
-
-#### `get-bookmarks.mts`
-
-Fetch approved bookmarks:
-
-- [ ] Accept pagination params (limit, offset)
-- [ ] Query approved bookmarks from Turso
-- [ ] Include associated tags
-- [ ] Return formatted response
-
-#### `search-bookmarks.mts`
-
-Search functionality:
-
-- [ ] Accept search query + tag filters
-- [ ] Search by title and/or tags
-- [ ] Return paginated results
-
-#### `admin-bookmarks.mts` (can defer)
-
-Admin operations:
-
-- [ ] Get pending bookmarks
-- [ ] Approve/reject bookmarks
-- [ ] Require admin authentication
-
-### 1.3 Fix Environment Variable Strategy
-
-- [ ] Use `Netlify.env.get()` in functions (not VITE\_ prefix)
-- [ ] Update DATABASE_SETUP.md with server vs client env var guidance
-- [ ] Remove VITE\_ prefix from server-only vars
+- ✅ Dependencies installed (Cheerio, @netlify/functions, Cloudinary)
+- ✅ `process-bookmark.mts` — Submission with validation, metadata extraction, screenshot fallback
+- ✅ `get-bookmarks.mts` — Paginated retrieval of approved bookmarks with tags
+- ✅ `search-bookmarks.mts` — Title search and tag filtering
+- ✅ Cloudinary integration for screenshot storage
+- ✅ Sentry error tracking
+- ✅ Comprehensive test coverage
+- ⏳ `admin-bookmarks.mts` — Deferred to Phase 5
 
 ---
 
@@ -563,6 +519,7 @@ Enable users to discover tools similar to ones they already like using LLM-power
 
 | Version | Date     | Changes                                                                   |
 | ------- | -------- | ------------------------------------------------------------------------- |
+| 1.2     | Dec 2024 | Phase 1 complete, added Phase 2 implementation doc                        |
 | 1.1     | Dec 2024 | Added Phase 6 (User Accounts), Phase 7 (AI Discovery), updated milestones |
 | 1.0     | Dec 2024 | Initial roadmap                                                           |
 

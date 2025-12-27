@@ -1,0 +1,93 @@
+/**
+ * MakerBench Styles Entry Point
+ *
+ * Layer order (lowest to highest priority):
+ * 1. reset - CSS reset (lowest)
+ * 2. base - Design tokens, typography, logo
+ * 3. components - Component-specific styles
+ * 4. utilities - Utility classes (highest - can override anything)
+ */
+
+@layer reset, base, components, utilities;
+
+@import url("./reset.css") layer(reset);
+@import url("./tokens.css") layer(base);
+@import url("./logo.css") layer(base);
+@import url("./utilities.css") layer(utilities);
+
+/* ========================================
+ * Base Styles
+ * Applied after reset, using design tokens.
+ * ======================================== */
+@layer base {
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-family-base);
+    font-size: var(--text-base);
+  }
+
+  /* Headings */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--color-text);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  h1 {
+    font-size: var(--text-4xl);
+  }
+
+  h2 {
+    font-size: var(--text-3xl);
+  }
+
+  h3 {
+    font-size: var(--text-2xl);
+  }
+
+  h4 {
+    font-size: var(--text-xl);
+  }
+
+  /* Links */
+  a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    transition: color var(--transition-fast);
+  }
+
+  a:hover {
+    color: var(--color-primary-hover);
+  }
+
+  /* Code */
+  code,
+  pre {
+    font-family: var(--font-family-mono);
+  }
+
+  code {
+    background-color: var(--color-surface-sunken);
+    border-radius: var(--radius-sm);
+    font-size: 0.875em;
+    padding: var(--size-4) var(--size-8);
+  }
+
+  pre {
+    background-color: var(--color-surface-sunken);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    padding: var(--size-16);
+  }
+
+  pre code {
+    background-color: transparent;
+    padding: 0;
+  }
+}

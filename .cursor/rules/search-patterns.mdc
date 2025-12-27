@@ -1,0 +1,256 @@
+---
+description: "Search patterns reference documentation"
+---
+# Search Patterns Reference
+
+Detailed search patterns for component usage analysis.
+
+## Twig Include Patterns
+
+### Basic Include Search
+
+```bash
+# Find all includes of a specific component
+grep -rn '{% include "@elements/image' src/components/
+
+# Find includes with word boundaries (avoid partial matches)
+grep -rn '{% include "@elements/image/' src/components/
+```
+
+### Include Variations
+
+Twig supports several include syntaxes:
+
+```twig
+{# Standard include #}
+{% include "@elements/image/image.twig" %}
+
+{# Include with context #}
+{% include "@elements/image/image.twig" with { src: url } %}
+
+{# Include with only (isolates context) #}
+{% include "@elements/image/image.twig" with { src: url } only %}
+
+{# Conditional include #}
+{% include image ? "@elements/image/image.twig" : "@elements/placeholder/placeholder.twig" %}
+```
+
+**Search for all variations:**
+```bash
+grep -rn '@elements/image/image.twig' src/components/
+```
+
+### Embed Blocks
+
+Components may use `{% embed %}` instead of `{% include %}`:
+
+```twig
+{% embed "@elements/image/image.twig" with { src: url } %}
+    {% block caption %}Custom caption{% endblock %}
+{% endembed %}
+```
+
+**Search pattern:**
+```bash
+grep -rn '{% embed "@elements/image' src/components/
+```
+
+### Multi-line With Blocks
+
+The `with` block often spans multiple lines:
+
+```twig
+{% include "@elements/image/image.twig" with {
+    src: item.src,
+    alt: item.alt,
+    description: item.description,
+    copyright: item.copyright
+} %}
+```
+
+**Strategy 1: Search for property within file context**
+```bash
+# Find files with includes, then search those for the property
+grep -l '{% include "@elements/image' src/components/**/*.twig | \
+    xargs grep -l 'description:'
+```
+
+**Strategy 2: Use awk for multi-line matching**
+```bash
+awk '/{% include "@elements\/image/,/\%}/' src/components/**/*.twig
+```
+
+**Strategy 3: Direct file inspection**
+
+For complex cases, open the file and examine the include block directly.
+
+## Mock Reference Patterns
+
+### Basic $ref Search
+
+```bash
+# Find all mock references to a component
+grep -rn '\$ref: elements/image#' src/components/
+
+# Find references to any variant
+grep -rn '\$ref: elements/image' src/components/
+```
+
+### Reference Syntax
+
+Mock files use `$ref` to reference other component variants:
+
+```yaml
+# Reference a specific variant
+image:
+  $ref: elements/image#with-caption
+
+# Reference default (no variant specified)
+image:
+  $ref: elements/image
+```
+
+### Extracting Variant Names
+
+```bash
+# List all referenced variants
+grep -rh '\$ref: elements/image#' src/components/ | \
+    sed 's/.*#//' | \
+    sort -u
+```
+
+### Cross-Reference Variant Definitions
+
+After finding which variants are referenced, check the source component's mocks:
+
+```bash
+# View the target component's mocks
+cat src/components/elements/image/mocks.yaml
+```
+
+Look for `$variants` entries matching the referenced names:
+
+```yaml
+$variants:
+  - $name: default
+    src: /images/photo.jpg
+    alt: Photo description
+
+  - $name: with-caption
+    src: /images/photo.jpg
+    alt: Photo description
+    description: This is the caption
+    copyright: © 2024 Photographer
+```
+
+## Property-Specific Searches
+
+### Find Property in Twig Files
+
+```bash
+# Find components passing a specific property
+grep -rn 'description:' src/components/**/*.twig | \
+    grep -v 'node_modules'
+```
+
+### Find Property in Mock Files
+
+```bash
+# Find mocks defining a specific property
+grep -rn '^[[:space:]]*description:' src/components/**/mocks.yaml
+```
+
+### Exclude Comments
+
+```bash
+# Exclude commented lines
+grep -rn 'description:' src/components/**/*.twig | \
+    grep -v '{#' | \
+    grep -v '#}'
+```
+
+## Comprehensive Search Script
+
+For thorough analysis, combine searches:
+
+```bash
+#!/usr/bin/env bash
+# Usage: ./find-component-usage.sh <tier/component> [property]
+# Example: ./find-component-usage.sh elements/image description
+
+COMPONENT="$1"
+PROPERTY="${2:-}"
+COMPONENT_PATH=$(echo "$COMPONENT" | tr '/' '\/')
+
+echo "=== Twig Includes ==="
+grep -rn "{% include \"@${COMPONENT}" src/components/
+
+echo ""
+echo "=== Twig Embeds ==="
+grep -rn "{% embed \"@${COMPONENT}" src/components/
+
+echo ""
+echo "=== Mock References ==="
+grep -rn "\$ref: ${COMPONENT}" src/components/
+
+if [[ -n "$PROPERTY" ]]; then
+    echo ""
+    echo "=== Files with property '${PROPERTY}' ==="
+    grep -l "@${COMPONENT}" src/components/**/*.twig 2>/dev/null | \
+        xargs grep -l "${PROPERTY}:" 2>/dev/null
+fi
+```
+
+## File Counting for Verification
+
+```bash
+# Count all Twig files
+find src/components -name "*.twig" | wc -l
+
+# Count all mock files
+find src/components -name "mocks.yaml" | wc -l
+
+# Count components per tier
+find src/components/elements -maxdepth 1 -type d | wc -l
+find src/components/patterns -maxdepth 1 -type d | wc -l
+find src/components/template-components -maxdepth 1 -type d | wc -l
+find src/components/templates -maxdepth 1 -type d | wc -l
+```
+
+## Edge Cases
+
+### Variable Includes
+
+Some components use variables for template paths:
+
+```twig
+{% set image_template = "@elements/image/image.twig" %}
+{% include image_template with { src: url } %}
+```
+
+**Detection:**
+```bash
+grep -rn 'image.twig' src/components/ | grep -v '{% include'
+```
+
+### Dynamic Component Selection
+
+```twig
+{% include "@elements/" ~ type ~ "/" ~ type ~ ".twig" %}
+```
+
+These are harder to trace statically — note them as potential indirect dependencies.
+
+### Macro Imports
+
+Components may import macros from other components:
+
+```twig
+{% import "@elements/image/macros.twig" as image_macros %}
+```
+
+**Search pattern:**
+```bash
+grep -rn '{% import "@elements/image' src/components/
+grep -rn '{% from "@elements/image' src/components/
+```

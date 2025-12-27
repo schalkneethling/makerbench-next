@@ -192,3 +192,89 @@ if (!data.url || typeof data.url !== "string") {
 ```
 
 Existing schemas are in `src/lib/validation.ts` - extend them, don't reinvent.
+
+## CSS: Shared First Approach
+
+**CRITICAL: Use Shared First CSS, NOT mobile-first.**
+
+Reference: https://www.mgrossklaus.de/notes/2023-02-18-mobile-first-versus-shared-first-css/
+
+### Why Not Mobile First
+
+Mobile-first `min-width` queries "bleed up" - changes to mobile styles affect larger viewports unless explicitly overridden. This is error-prone and creates debugging headaches (lots of struck-through properties in DevTools).
+
+### Shared First Rules
+
+1. **Define only shared styles outside media queries** - styles that apply to ALL viewports
+2. **Use bounded queries** - scope viewport-specific styles to exact ranges
+3. **Use modern range syntax** - `(width < 48rem)` not `(max-width: 47.99rem)`
+
+### Standard Breakpoints
+
+```css
+@media (width < 48rem) /* < 768px - mobile */ @media (width >= 48rem) /* >= 768px - tablet+ */ @media (width >= 64rem) /* >= 1024px - desktop+ */ @media (width >= 100rem); /* >= 1600px - wide (occasional) */
+```
+
+### Pattern: Standard
+
+```css
+.Component {
+  display: flex;
+}
+
+@media (width < 48rem) {
+  .Component {
+    flex-direction: column;
+    gap: var(--size-16);
+  }
+}
+
+@media (width >= 48rem) {
+  .Component {
+    flex-direction: row;
+    gap: var(--size-32);
+  }
+}
+```
+
+### Pattern: Scoped Custom Properties
+
+Use sparingly when the same property changes across breakpoints. Readability is paramount.
+
+```css
+.Component {
+  display: flex;
+  flex-direction: var(--Component-flex-direction);
+}
+
+@media (width < 48rem) {
+  .Component {
+    --Component-flex-direction: column;
+    gap: var(--size-16);
+  }
+}
+
+@media (width >= 48rem) {
+  .Component {
+    --Component-flex-direction: row;
+    gap: var(--size-32);
+  }
+}
+```
+
+### Never Do This
+
+```css
+/* BAD: Mobile-first - styles bleed up */
+.Component {
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 48rem) {
+  .Component {
+    flex-direction: row; /* Must override mobile */
+    gap: 2rem; /* Must override mobile */
+  }
+}
+```

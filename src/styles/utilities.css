@@ -1,0 +1,74 @@
+/**
+ * Utility Classes
+ * Accessibility-focused utilities and common patterns.
+ */
+
+/* ========================================
+ * Visually Hidden (Screen Reader Only)
+ * Content accessible to assistive technologies but not visible on screen.
+ * ======================================== */
+.visually-hidden {
+  block-size: 1px;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  inline-size: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+}
+
+/* ========================================
+ * Skip Link
+ * Visible on focus for keyboard navigation.
+ * ======================================== */
+.skip-link {
+  background-color: var(--color-primary);
+  border-radius: var(--radius-md);
+  color: var(--color-text-inverted);
+  font-weight: var(--font-weight-semibold);
+  inset-block-start: var(--size-8);
+  inset-inline-start: var(--size-8);
+  padding: var(--size-12) var(--size-16);
+  position: absolute;
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform var(--transition-fast);
+  z-index: var(--layer-modal);
+}
+
+.skip-link:focus {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  transform: translateY(0);
+}
+
+/* ========================================
+ * Focus Visible Styles
+ * Enhanced focus indicators for keyboard navigation.
+ * ======================================== */
+:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Remove default focus for mouse users where supported */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ========================================
+ * Reduced Motion
+ * Respect user preference for reduced motion.
+ * ======================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
