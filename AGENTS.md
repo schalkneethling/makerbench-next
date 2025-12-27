@@ -104,6 +104,45 @@ declare const Netlify: {
 - You've verified with documentation and npm registry
 - Document WHY custom types were necessary in the file
 
+## TypeScript Silencing
+
+**CRITICAL: Be EXTREMELY cautious when silencing TypeScript errors.**
+
+TypeScript exists to help write better, less brittle code. Silencing it should be a last resort, not a convenience.
+
+### Rules
+
+1. **Prefer fixing the root cause** - If TypeScript complains, the code likely needs improvement
+2. **Use proper types first** - Import/define correct types before considering suppression
+3. **ALWAYS document why** - Every `@ts-ignore`, `@ts-expect-error`, or `as any` MUST have an explanatory comment
+
+### When Suppression is Acceptable
+
+- Third-party library type bugs (document the issue link)
+- Complex mocking scenarios where types are impractical
+- Transition code with a TODO to fix later
+
+### Required Comment Format
+
+```typescript
+// @ts-expect-error - Library types don't match runtime behavior, see https://github.com/...
+someCall();
+
+// Using 'as unknown as X' because mock doesn't implement full interface
+const mock = mockFn() as unknown as FullInterface;
+```
+
+### Never Do This
+
+```typescript
+// BAD: Silent suppression with no explanation
+// @ts-ignore
+someCall();
+
+// BAD: Lazy any cast
+const data = response as any;
+```
+
 ## Validation
 
 **CRITICAL: NEVER write custom validation logic - use Zod.**
