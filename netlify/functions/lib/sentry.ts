@@ -26,11 +26,7 @@ export function initSentry(): void {
   }
 
   // Get Netlify deploy context (production, deploy-preview, branch-deploy, dev)
-  const environment =
-    typeof Netlify !== "undefined"
-      ? Netlify.env.get("CONTEXT") || "development"
-      : "development";
-
+  const environment = Netlify.env.get("CONTEXT") || "development";
   isProduction = environment === "production";
 
   Sentry.init({
