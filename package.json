@@ -21,6 +21,7 @@
   "dependencies": {
     "@libsql/client": "^0.15.9",
     "@netlify/functions": "^5.1.2",
+    "@sentry/node": "^10.32.1",
     "cheerio": "^1.1.2",
     "cloudinary": "^2.8.0",
     "drizzle-orm": "^0.44.2",

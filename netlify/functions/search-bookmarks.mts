@@ -10,6 +10,9 @@ import {
   badRequest,
   serverError,
   methodNotAllowed,
+  initSentry,
+  captureError,
+  flushSentry,
 } from "./lib";
 
 const DEFAULT_LIMIT = 20;
@@ -26,6 +29,8 @@ interface BookmarkWithTags {
 }
 
 export default async (req: Request, _context: Context) => {
+  initSentry();
+
   if (req.method !== "GET") {
     return methodNotAllowed(["GET"]);
   }
@@ -156,7 +161,8 @@ export default async (req: Request, _context: Context) => {
       },
     });
   } catch (error) {
-    console.error("Error searching bookmarks:", error);
+    captureError(error, { query, tagFilters, limit, offset });
+    await flushSentry();
     return serverError("An error occurred while searching bookmarks");
   }
 };

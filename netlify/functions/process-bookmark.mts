@@ -12,6 +12,9 @@ import {
   serverError,
   methodNotAllowed,
   parseAndNormalizeUrl,
+  initSentry,
+  captureError,
+  flushSentry,
 } from "./lib";
 import { extractMetadata } from "../../src/lib/services/metadata";
 import { captureScreenshot } from "../../src/lib/services/screenshot";
@@ -21,6 +24,8 @@ import { validateBookmarkRequest } from "../../src/lib/validation";
 const FALLBACK_IMAGE = "/images/fallback-screenshot.png";
 
 export default async (req: Request, _context: Context) => {
+  initSentry();
+
   if (req.method !== "POST") {
     return methodNotAllowed(["POST"]);
   }
@@ -142,7 +147,8 @@ export default async (req: Request, _context: Context) => {
       message: "Bookmark submitted. It will be reviewed shortly.",
     });
   } catch (error) {
-    console.error("Error processing bookmark:", error);
+    captureError(error, { url, tags: rawTags });
+    await flushSentry();
     return serverError("An error occurred while processing the bookmark");
   }
 };
