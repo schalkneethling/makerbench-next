@@ -7,6 +7,7 @@
 import * as Sentry from "@sentry/node";
 
 let initialized = false;
+let isProduction = false;
 
 /**
  * Initialize Sentry SDK (idempotent - safe to call multiple times)
@@ -30,6 +31,8 @@ export function initSentry(): void {
       ? Netlify.env.get("CONTEXT") || "development"
       : "development";
 
+  isProduction = environment === "production";
+
   Sentry.init({
     dsn,
     environment,
@@ -49,8 +52,10 @@ export function captureError(
   error: unknown,
   context?: Record<string, unknown>,
 ): void {
-  // Always log to console for local debugging
-  console.error(error);
+  // Only log to console in non-production for local debugging
+  if (!isProduction) {
+    console.error(error);
+  }
 
   if (!initialized) {
     return;
