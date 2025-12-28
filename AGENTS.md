@@ -278,6 +278,8 @@ line-clamp: 2;
 overflow: hidden;
 ```
 
+Note: `line-clamp` requires `overflow: hidden` to clip content; otherwise only the ellipsis shows.
+
 If a feature requires vendor prefixes, it's likely not ready for production or there's a standard alternative.
 
 ## CSS: Logical Properties
