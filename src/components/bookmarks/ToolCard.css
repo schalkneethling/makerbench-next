@@ -1,0 +1,96 @@
+/**
+ * ToolCard Component Styles
+ */
+
+.ToolCard {
+  background-color: var(--color-surface-raised);
+  border: var(--border-default);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.ToolCard:hover {
+  border-color: var(--color-border-strong);
+}
+
+.ToolCard:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 var(--size-4) var(--color-focus-ring);
+}
+
+.ToolCard-link {
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  text-decoration: none;
+}
+
+.ToolCard-link:focus {
+  outline: none;
+}
+
+.ToolCard-imageWrapper {
+  aspect-ratio: 16 / 9;
+  background-color: var(--color-surface-sunken);
+  overflow: hidden;
+}
+
+.ToolCard-image {
+  block-size: 100%;
+  inline-size: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-base);
+}
+
+.ToolCard:hover .ToolCard-image {
+  transform: scale(1.03);
+}
+
+.ToolCard-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: var(--size-4);
+  padding: var(--size-16);
+}
+
+.ToolCard-title {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  display: -webkit-box;
+  font: var(--typography-heading-sm);
+  line-height: var(--line-height-snug);
+  margin: 0;
+  overflow: hidden;
+}
+
+.ToolCard-hostname {
+  color: var(--color-text-muted);
+  font: var(--typography-caption);
+  margin: 0;
+}
+
+.ToolCard-description {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  color: var(--color-text-muted);
+  display: -webkit-box;
+  font: var(--typography-body-sm);
+  margin: 0;
+  overflow: hidden;
+}
+
+.ToolCard-tags {
+  border-block-start: var(--border-default);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-8);
+  padding: var(--size-12);
+}
+
