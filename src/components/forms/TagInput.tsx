@@ -98,13 +98,32 @@ export function TagInput({
     // Handle comma in pasted/typed content
     if (value.includes(",")) {
       const parts = value.split(",");
-      parts.forEach((part, index) => {
-        if (index < parts.length - 1) {
-          addTag(part);
-        } else {
-          setInputValue(part);
+      const lastPart = parts.pop() ?? "";
+
+      // Collect valid new tags, avoiding duplicates within paste and existing tags
+      const newTags: string[] = [];
+      const existingLower = tags.map((t) => t.toLowerCase());
+
+      for (const part of parts) {
+        const trimmedValue = part.trim();
+        if (!trimmedValue) {
+          continue;
         }
-      });
+
+        const lowerValue = trimmedValue.toLowerCase();
+        const isDuplicate =
+          existingLower.includes(lowerValue) ||
+          newTags.some((t) => t.toLowerCase() === lowerValue);
+
+        if (!isDuplicate && tags.length + newTags.length < maxTags) {
+          newTags.push(trimmedValue);
+        }
+      }
+
+      if (newTags.length > 0) {
+        onTagsChange([...tags, ...newTags]);
+      }
+      setInputValue(lastPart);
     } else {
       setInputValue(value);
     }

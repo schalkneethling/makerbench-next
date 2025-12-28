@@ -139,5 +139,69 @@ describe("TagInput", () => {
     const items = screen.getAllByRole("listitem");
     expect(items).toHaveLength(2);
   });
+
+  it("adds multiple tags when pasting comma-separated values", async () => {
+    const onTagsChange = vi.fn();
+    const user = userEvent.setup();
+    render(<TagInput {...defaultProps} onTagsChange={onTagsChange} />);
+
+    const input = screen.getByRole("textbox", { name: "Tags" });
+    await user.click(input);
+    await user.paste("React, Vue, Angular,");
+
+    expect(onTagsChange).toHaveBeenCalledWith(["React", "Vue", "Angular"]);
+  });
+
+  it("filters out duplicates within pasted content", async () => {
+    const onTagsChange = vi.fn();
+    const user = userEvent.setup();
+    render(<TagInput {...defaultProps} onTagsChange={onTagsChange} />);
+
+    const input = screen.getByRole("textbox", { name: "Tags" });
+    await user.click(input);
+    await user.paste("React, Vue, react, REACT,");
+
+    // Only first "React" should be added, duplicates ignored
+    expect(onTagsChange).toHaveBeenCalledWith(["React", "Vue"]);
+  });
+
+  it("filters out duplicates against existing tags when pasting", async () => {
+    const onTagsChange = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <TagInput
+        {...defaultProps}
+        tags={["React"]}
+        onTagsChange={onTagsChange}
+      />
+    );
+
+    const input = screen.getByRole("textbox", { name: "Tags" });
+    await user.click(input);
+    await user.paste("Vue, react, Angular,");
+
+    // "react" is duplicate of existing "React", should be skipped
+    expect(onTagsChange).toHaveBeenCalledWith(["React", "Vue", "Angular"]);
+  });
+
+  it("respects maxTags when pasting multiple values", async () => {
+    const onTagsChange = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <TagInput
+        {...defaultProps}
+        tags={["Existing"]}
+        maxTags={3}
+        onTagsChange={onTagsChange}
+      />
+    );
+
+    const input = screen.getByRole("textbox", { name: "Tags" });
+    await user.click(input);
+    await user.paste("React, Vue, Angular, Svelte,");
+
+    // Only 2 more can be added (maxTags=3, existing=1)
+    expect(onTagsChange).toHaveBeenCalledWith(["Existing", "React", "Vue"]);
+  });
 });
 
