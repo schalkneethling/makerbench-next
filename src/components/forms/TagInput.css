@@ -38,9 +38,6 @@
 
 .TagInput-container:focus-within {
   border-color: var(--color-primary);
-}
-
-.TagInput-container:focus-within:has(.TagInput-field:focus-visible) {
   box-shadow: 0 0 0 var(--size-4) var(--color-focus-ring);
 }
 
