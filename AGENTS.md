@@ -278,3 +278,45 @@ Use sparingly when the same property changes across breakpoints. Readability is 
   }
 }
 ```
+
+## Barrel Files (index.ts re-exports)
+
+Barrel files are an API design tool, not a file organization pattern. Use them when you need to expose a curated set of exports that other parts of your application consume as a unit (like a component library's public components, a feature's external interface, or a utility package's functions), but avoid them for internal implementation details or as a reflex in every directory - indiscriminate use obscures file locations, slows HMR, and creates maintenance overhead that outweighs any refactoring convenience.
+
+## Testing Philosophy
+
+**NEVER write tests for coverage metrics or for the sake of having tests.** Every test MUST provide definable value.
+
+### What to Test
+
+- **Your logic** - Custom behavior, derived state, business rules
+- **Your API contracts** - Props produce expected output
+- **Edge cases** - Boundary conditions in YOUR code
+
+### What NOT to Test
+
+- **Platform behavior** - Buttons fire onClick, disabled prevents clicks, form submission works
+- **Framework behavior** - React renders children, props spread, refs forward
+- **Third-party libraries** - Their tests cover their code
+
+### Example
+
+```tsx
+// GOOD: Tests our derived state logic
+it("is disabled when loading", () => {
+  render(<Button isLoading>Save</Button>);
+  expect(screen.getByRole("button")).toBeDisabled();
+});
+
+// BAD: Tests browser behavior
+it("does not fire click when disabled", async () => {
+  // The browser already guarantees this
+});
+
+// BAD: Tests React behavior
+it("passes onClick to button", () => {
+  // React's spread operator already guarantees this
+});
+```
+
+If you find yourself testing that native elements do what they're supposed to do, you're testing the platform, not your code.

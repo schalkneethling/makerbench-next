@@ -1,6 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { Button } from "../Button";
 
 describe("Button", () => {
@@ -15,27 +14,14 @@ describe("Button", () => {
     render(<Button>Primary</Button>);
     const button = screen.getByRole("button");
     expect(button).toHaveClass("Button--primary");
+    expect(button).not.toHaveClass("Button--secondary");
   });
 
   it("applies secondary variant when specified", () => {
     render(<Button variant="secondary">Secondary</Button>);
     const button = screen.getByRole("button");
     expect(button).toHaveClass("Button--secondary");
-  });
-
-  it("handles click events", async () => {
-    const handleClick = vi.fn();
-    const user = userEvent.setup();
-
-    render(<Button onClick={handleClick}>Click me</Button>);
-    await user.click(screen.getByRole("button"));
-
-    expect(handleClick).toHaveBeenCalledTimes(1);
-  });
-
-  it("is disabled when disabled prop is true", () => {
-    render(<Button disabled>Disabled</Button>);
-    expect(screen.getByRole("button")).toBeDisabled();
+    expect(button).not.toHaveClass("Button--primary");
   });
 
   it("is disabled when loading", () => {
@@ -50,47 +36,9 @@ describe("Button", () => {
     expect(button.querySelector(".Button-spinner")).toBeInTheDocument();
   });
 
-  it("does not fire click when disabled", async () => {
-    const handleClick = vi.fn();
-    const user = userEvent.setup();
-
-    render(
-      <Button disabled onClick={handleClick}>
-        Disabled
-      </Button>,
-    );
-    await user.click(screen.getByRole("button"));
-
-    expect(handleClick).not.toHaveBeenCalled();
-  });
-
-  it("does not fire click when loading", async () => {
-    const handleClick = vi.fn();
-    const user = userEvent.setup();
-
-    render(
-      <Button isLoading onClick={handleClick}>
-        Loading
-      </Button>,
-    );
-    await user.click(screen.getByRole("button"));
-
-    expect(handleClick).not.toHaveBeenCalled();
-  });
-
   it("merges custom className", () => {
     render(<Button className="custom-class">Custom</Button>);
     const button = screen.getByRole("button");
     expect(button).toHaveClass("Button", "custom-class");
-  });
-
-  it("passes through additional button attributes", () => {
-    render(
-      <Button type="submit" data-testid="submit-btn">
-        Submit
-      </Button>,
-    );
-    const button = screen.getByTestId("submit-btn");
-    expect(button).toHaveAttribute("type", "submit");
   });
 });
