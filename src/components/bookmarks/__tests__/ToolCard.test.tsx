@@ -39,6 +39,13 @@ describe("ToolCard", () => {
     expect(link).toHaveAttribute("href", "https://example.com/tool");
   });
 
+  it("link accessible name is the title via aria-labelledby", () => {
+    render(<ToolCard {...defaultProps} />);
+    // Link should be accessible by title name, not all content
+    const link = screen.getByRole("link", { name: "Example Tool" });
+    expect(link).toBeInTheDocument();
+  });
+
   it("renders tag badges when tags provided", () => {
     render(
       <ToolCard

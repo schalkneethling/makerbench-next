@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { TagBadge } from "../tags";
 
 import "./ToolCard.css";
@@ -31,12 +32,13 @@ export function ToolCard({
   tags = [],
   className = "",
 }: ToolCardProps) {
+  const titleId = useId();
   // Extract hostname for display
   const hostname = new URL(url).hostname.replace(/^www\./, "");
 
   return (
     <article className={`ToolCard ${className}`.trim()}>
-      <a href={url} className="ToolCard-link">
+      <a href={url} className="ToolCard-link" aria-labelledby={titleId}>
         <div className="ToolCard-imageWrapper">
           <img
             src={imageUrl || FALLBACK_IMAGE}
@@ -47,7 +49,7 @@ export function ToolCard({
         </div>
 
         <div className="ToolCard-content">
-          <h3 className="ToolCard-title">{title}</h3>
+          <h3 id={titleId} className="ToolCard-title">{title}</h3>
           <p className="ToolCard-hostname">{hostname}</p>
 
           {description && (
