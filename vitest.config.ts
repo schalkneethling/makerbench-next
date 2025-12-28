@@ -2,13 +2,29 @@ import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    environment: "node",
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     exclude: [...configDefaults.exclude, "**/e2e/**"],
-    environmentMatchGlobs: [
-      ["src/components/**/*.test.tsx", "happy-dom"],
-      ["src/components/**/__tests__/*.test.tsx", "happy-dom"],
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "unit",
+          include: [
+            "src/**/*.test.ts",
+            "netlify/**/*.test.ts",
+          ],
+          environment: "node",
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "components",
+          include: ["src/components/**/*.test.tsx"],
+          environment: "happy-dom",
+        },
+      },
     ],
   },
 });
