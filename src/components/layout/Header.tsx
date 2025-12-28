@@ -1,4 +1,4 @@
-import { Button } from "../ui/Button";
+import { Button, Logo } from "../ui";
 
 /**
  * Site header with logo and primary navigation.
@@ -7,10 +7,7 @@ export function Header() {
   return (
     <header className="Header">
       <div className="Header-inner">
-        <a href="/" className="Logo">
-          <span className="Logo-maker">Maker</span>
-          <span className="Logo-bench">Bench</span>
-        </a>
+        <Logo href="/" />
         <nav className="Header-nav" aria-label="Primary">
           <Button
             variant="primary"
