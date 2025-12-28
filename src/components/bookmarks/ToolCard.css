@@ -61,10 +61,8 @@
 }
 
 .ToolCard-title {
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  display: -webkit-box;
   font: var(--typography-heading-sm);
+  line-clamp: 2;
   line-height: var(--line-height-snug);
   margin: 0;
   overflow: hidden;
@@ -77,11 +75,9 @@
 }
 
 .ToolCard-description {
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
   color: var(--color-text-muted);
-  display: -webkit-box;
   font: var(--typography-body-sm);
+  line-clamp: 3;
   margin: 0;
   overflow: hidden;
 }

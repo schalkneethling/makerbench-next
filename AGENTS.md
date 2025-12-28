@@ -255,6 +255,31 @@ Existing schemas are in `src/lib/validation.ts` - extend them, don't reinvent.
 - Truly static, non-translatable labels
 - Third-party components where you can't add DOM elements
 
+## CSS: No Vendor Prefixes
+
+**CRITICAL: NEVER use vendor prefixes.**
+
+Modern CSS features are well-supported. Use standard properties only - build tools or browsers handle prefixing if needed.
+
+### Never Do This
+
+```css
+/* BAD: Vendor prefixes */
+-webkit-box-orient: vertical;
+-webkit-line-clamp: 2;
+display: -webkit-box;
+```
+
+### Use Standard Properties
+
+```css
+/* GOOD: Standard property */
+line-clamp: 2;
+overflow: hidden;
+```
+
+If a feature requires vendor prefixes, it's likely not ready for production or there's a standard alternative.
+
 ## CSS: Logical Properties
 
 **CRITICAL: Use logical properties instead of physical shorthand properties.**
