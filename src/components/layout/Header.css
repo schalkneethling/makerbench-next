@@ -1,0 +1,29 @@
+/**
+ * Header Component Styles
+ */
+
+.Header {
+  background-color: var(--color-surface-raised);
+  border-block-end: var(--border-default);
+  padding: var(--size-16);
+}
+
+.Header-inner {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-inline: auto;
+  max-inline-size: 75rem; /* 1200px */
+}
+
+.Header-nav {
+  display: flex;
+  gap: var(--size-16);
+}
+
+@media (width < 48rem) {
+  .Header-inner {
+    flex-direction: column;
+    gap: var(--size-16);
+  }
+}

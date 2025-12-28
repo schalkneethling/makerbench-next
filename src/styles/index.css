@@ -15,6 +15,11 @@
 @import url("./typography.css") layer(base);
 @import url("./borders-outlines.css") layer(base);
 @import url("./logo.css") layer(base);
+@import url("../components/ui/Button.css") layer(components);
+@import url("../components/ui/TextInput.css") layer(components);
+@import url("../components/tags/TagBadge.css") layer(components);
+@import url("../components/layout/Header.css") layer(components);
+@import url("../components/layout/Footer.css") layer(components);
 @import url("./utilities.css") layer(utilities);
 
 /* ========================================
@@ -27,6 +32,13 @@
     color: var(--color-text);
     font-family: var(--font-family-base);
     font-size: var(--text-base);
+  }
+
+  /* App layout - sticky footer */
+  .App {
+    display: flex;
+    flex-direction: column;
+    min-block-size: 100dvh;
   }
 
   /* Headings */

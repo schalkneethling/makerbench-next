@@ -1,5 +1,6 @@
 import { beforeAll, afterAll, afterEach, vi } from "vitest";
 import { server } from "./mocks/server";
+import "@testing-library/jest-dom/vitest";
 
 /**
  * Global test setup for Vitest with MSW
