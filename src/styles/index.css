@@ -12,6 +12,8 @@
 
 @import url("./reset.css") layer(reset);
 @import url("./tokens.css") layer(base);
+@import url("./typography.css") layer(base);
+@import url("./borders-outlines.css") layer(base);
 @import url("./logo.css") layer(base);
 @import url("./utilities.css") layer(utilities);
 

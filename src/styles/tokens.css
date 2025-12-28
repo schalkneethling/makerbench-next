@@ -46,6 +46,7 @@
    * Spacing / Size Scale
    * Token name = pixel value (--size-16 = 16px = 1rem)
    * ======================================== */
+  --size-1: 0.0625rem; /* 1px */
   --size-4: 0.25rem; /* 4px */
   --size-8: 0.5rem; /* 8px */
   --size-12: 0.75rem; /* 12px */
@@ -60,22 +61,22 @@
   --size-96: 6rem; /* 96px */
 
   /* ========================================
-   * Border Radius
+   * Border Radius (uses size tokens)
    * ======================================== */
-  --radius-sm: 0.25rem; /* 4px */
-  --radius-md: 0.5rem; /* 8px */
-  --radius-lg: 0.75rem; /* 12px */
-  --radius-xl: 1rem; /* 16px */
-  --radius-full: 9999px;
+  --radius-sm: var(--size-4);
+  --radius-md: var(--size-8);
+  --radius-lg: var(--size-12);
+  --radius-xl: var(--size-16);
+  --radius-full: 50%;
 
   /* ========================================
    * Z-Index Layers
    * ======================================== */
-  --layer-base: 0;
+  --layer-send-to-back: -1;
   --layer-dropdown: 100;
-  --layer-sticky: 200;
   --layer-modal: 300;
   --layer-toast: 400;
+  --layer-bring-to-front: 9999;
 
   /* ========================================
    * Transitions
@@ -126,6 +127,9 @@
 
   /* Focus ring */
   --color-focus-ring: oklch(55% 0.15 185deg / 50%);
+  --focus-ring-width: 0.1875rem; /* 3px */
+  --focus-ring-offset: var(--size-4);
+  --focus-ring-offset-sm: 0.125rem; /* 2px - tighter for inline elements */
 }
 
 /* ========================================

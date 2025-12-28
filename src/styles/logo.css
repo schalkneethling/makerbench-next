@@ -5,10 +5,7 @@
 
 .Logo {
   display: inline-flex;
-  font-family: var(--font-family-base);
-  font-size: var(--text-2xl);
-  font-weight: var(--font-weight-semibold);
-  line-height: 1;
+  font: var(--typography-logo-base);
   text-decoration: none;
 }
 
@@ -18,8 +15,8 @@
 
 .Logo:focus-visible {
   border-radius: var(--radius-sm);
-  outline: 3px solid var(--color-focus-ring);
-  outline-offset: 4px;
+  outline: var(--outline-focus);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .Logo-maker {
@@ -32,13 +29,13 @@
 
 /* Size variants */
 .Logo--sm {
-  font-size: var(--text-lg);
+  font: var(--typography-logo-sm);
 }
 
 .Logo--lg {
-  font-size: var(--text-3xl);
+  font: var(--typography-logo-lg);
 }
 
 .Logo--xl {
-  font-size: var(--text-4xl);
+  font: var(--typography-logo-xl);
 }
