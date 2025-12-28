@@ -1,0 +1,135 @@
+/**
+ * TagInput Component Styles
+ */
+
+.TagInput {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4);
+}
+
+.TagInput-label {
+  color: var(--color-text);
+  font: var(--typography-label);
+}
+
+.TagInput-required {
+  color: var(--color-error);
+}
+
+.TagInput-hint {
+  color: var(--color-text-muted);
+  font: var(--typography-caption);
+  margin: 0;
+}
+
+.TagInput-container {
+  background-color: var(--color-surface-raised);
+  border: var(--border-default);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-8);
+  padding: var(--size-8);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.TagInput-container:focus-within {
+  border-color: var(--color-primary);
+}
+
+.TagInput-container:focus-within:has(.TagInput-field:focus-visible) {
+  box-shadow: 0 0 0 var(--size-4) var(--color-focus-ring);
+}
+
+.TagInput-tags {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-4);
+}
+
+.TagInput-tag {
+  align-items: center;
+  background-color: var(--color-surface-sunken);
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  gap: var(--size-4);
+  padding-block: var(--size-4);
+  padding-inline-end: var(--size-4);
+  padding-inline-start: var(--size-12);
+}
+
+.TagInput-tagLabel {
+  color: var(--color-text);
+  font: var(--typography-caption);
+}
+
+.TagInput-tagRemove {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 1rem;
+  justify-content: center;
+  line-height: var(--line-height-none);
+  padding: var(--size-4);
+  transition: color var(--transition-fast);
+}
+
+.TagInput-tagRemove:hover {
+  color: var(--color-error);
+}
+
+.TagInput-tagRemove:focus-visible {
+  outline: var(--outline-focus);
+  outline-offset: var(--focus-ring-offset-sm);
+}
+
+.TagInput-field {
+  background: transparent;
+  border: none;
+  color: var(--color-text);
+  flex-grow: 1;
+  font: var(--typography-body-base);
+  min-inline-size: 8rem;
+  outline: none;
+  padding-block: var(--size-4);
+  padding-inline: var(--size-8);
+}
+
+.TagInput-field::placeholder {
+  color: var(--color-text-muted);
+}
+
+.TagInput-field:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.TagInput-count {
+  color: var(--color-text-muted);
+  font: var(--typography-caption);
+  margin: 0;
+}
+
+.TagInput-error {
+  color: var(--color-error);
+  font: var(--typography-caption);
+  margin: 0;
+}
+
+/* Error state */
+.TagInput--error .TagInput-container {
+  border-color: var(--color-error);
+}
+
+.TagInput--error .TagInput-container:focus-within {
+  box-shadow: 0 0 0 var(--size-4) oklch(55% 0.2 25deg / 30%);
+}
+
