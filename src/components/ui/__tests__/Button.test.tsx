@@ -43,11 +43,11 @@ describe("Button", () => {
     expect(screen.getByRole("button")).toBeDisabled();
   });
 
-  it("shows loading state with screen reader announcement", () => {
-    render(<Button isLoading>Save</Button>);
-    const button = screen.getByRole("button");
+  it("shows loading state with spinner and visible text", () => {
+    render(<Button isLoading>Saving...</Button>);
+    const button = screen.getByRole("button", { name: "Saving..." });
     expect(button).toHaveClass("Button--loading");
-    expect(screen.getByText("Loading")).toBeInTheDocument();
+    expect(button.querySelector(".Button-spinner")).toBeInTheDocument();
   });
 
   it("does not fire click when disabled", async () => {

@@ -34,15 +34,8 @@ export function Button({
       disabled={isDisabled}
       {...props}
     >
-      {isLoading && (
-        <>
-          <span className="Button-spinner" aria-hidden="true" />
-          <span className="visually-hidden">Loading</span>
-        </>
-      )}
-      <span className={isLoading ? "Button-content--hidden" : ""}>
-        {children}
-      </span>
+      {isLoading && <span className="Button-spinner" aria-hidden="true" />}
+      {children}
     </button>
   );
 }
