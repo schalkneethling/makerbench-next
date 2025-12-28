@@ -213,10 +213,20 @@ inline-size: auto;
 min-block-size: 100dvh;
 ```
 
+### Exception: Uniform Values
+
+When all sides have the same value, shorthand is fine—no directional mapping occurs:
+
+```css
+/* OK: Single value applies uniformly */
+padding: var(--size-16);
+margin: var(--size-8);
+```
+
 ### Never Do This
 
 ```css
-/* BAD: Physical shorthands */
+/* BAD: Physical shorthands with different values */
 padding: var(--size-12) var(--size-16);
 margin: var(--size-8) 0;
 height: 100%;
