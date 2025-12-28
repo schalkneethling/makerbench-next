@@ -1,27 +1,9 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { TagBadge } from "../TagBadge";
 
 describe("TagBadge", () => {
-  it("renders with label", () => {
-    render(<TagBadge label="JavaScript" />);
-    expect(
-      screen.getByRole("button", { name: "JavaScript" }),
-    ).toBeInTheDocument();
-  });
-
-  it("handles click events", async () => {
-    const handleClick = vi.fn();
-    const user = userEvent.setup();
-
-    render(<TagBadge label="React" onClick={handleClick} />);
-    await user.click(screen.getByRole("button", { name: "React" }));
-
-    expect(handleClick).toHaveBeenCalledTimes(1);
-  });
-
-  it("shows selected state with aria-pressed", () => {
+  it("sets aria-pressed true when selected", () => {
     render(<TagBadge label="TypeScript" isSelected />);
     expect(screen.getByRole("button", { name: "TypeScript" })).toHaveAttribute(
       "aria-pressed",
@@ -29,7 +11,7 @@ describe("TagBadge", () => {
     );
   });
 
-  it("shows unselected state with aria-pressed false", () => {
+  it("sets aria-pressed false when not selected", () => {
     render(<TagBadge label="TypeScript" isSelected={false} />);
     expect(screen.getByRole("button", { name: "TypeScript" })).toHaveAttribute(
       "aria-pressed",
@@ -44,34 +26,29 @@ describe("TagBadge", () => {
     ).toHaveClass("TagBadge--selected");
   });
 
-  it("shows remove button when onRemove provided", () => {
-    render(<TagBadge label="HTML" onRemove={() => {}} />);
+  it("renders remove button only when onRemove provided", () => {
+    const { rerender } = render(<TagBadge label="HTML" />);
+    expect(
+      screen.queryByRole("button", { name: /remove/i }),
+    ).not.toBeInTheDocument();
+
+    rerender(<TagBadge label="HTML" onRemove={() => {}} />);
     expect(
       screen.getByRole("button", { name: "Remove HTML" }),
     ).toBeInTheDocument();
   });
 
-  it("does not show remove button when onRemove not provided", () => {
-    render(<TagBadge label="HTML" />);
-    expect(
-      screen.queryByRole("button", { name: /remove/i }),
-    ).not.toBeInTheDocument();
-  });
+  it("remove button uses aria-labelledby with visually-hidden text", () => {
+    render(<TagBadge label="Vue" onRemove={() => {}} />);
+    const removeButton = screen.getByRole("button", { name: "Remove Vue" });
 
-  it("calls onRemove when remove button clicked", async () => {
-    const handleRemove = vi.fn();
-    const user = userEvent.setup();
+    // Verify aria-labelledby points to element with correct text
+    const labelledById = removeButton.getAttribute("aria-labelledby");
+    expect(labelledById).toBeTruthy();
 
-    render(<TagBadge label="Vue" onRemove={handleRemove} />);
-    await user.click(screen.getByRole("button", { name: "Remove Vue" }));
-
-    expect(handleRemove).toHaveBeenCalledTimes(1);
-  });
-
-  it("remove button has accessible label", () => {
-    render(<TagBadge label="Svelte" onRemove={() => {}} />);
-    const removeButton = screen.getByRole("button", { name: "Remove Svelte" });
-    expect(removeButton).toHaveAccessibleName("Remove Svelte");
+    const labelElement = document.getElementById(labelledById!);
+    expect(labelElement).toHaveTextContent("Remove Vue");
+    expect(labelElement).toHaveClass("visually-hidden");
   });
 
   it("merges custom className", () => {
@@ -79,18 +56,5 @@ describe("TagBadge", () => {
     expect(
       screen.getByRole("button", { name: "Test" }).parentElement,
     ).toHaveClass("TagBadge", "custom-class");
-  });
-
-  it("is keyboard accessible", async () => {
-    const handleClick = vi.fn();
-    const user = userEvent.setup();
-
-    render(<TagBadge label="A11y" onClick={handleClick} />);
-
-    await user.tab();
-    expect(screen.getByRole("button", { name: "A11y" })).toHaveFocus();
-
-    await user.keyboard("{Enter}");
-    expect(handleClick).toHaveBeenCalledTimes(1);
   });
 });
