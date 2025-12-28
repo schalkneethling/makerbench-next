@@ -320,3 +320,35 @@ it("passes onClick to button", () => {
 ```
 
 If you find yourself testing that native elements do what they're supposed to do, you're testing the platform, not your code.
+
+### Playwright: Use ARIA Snapshots
+
+**MUST use `toMatchAriaSnapshot()` for component/page structure tests.** This captures the full accessibility tree in a single assertion.
+
+```typescript
+// GOOD: Single snapshot captures entire accessible structure
+test("has correct accessible structure", async ({ page }) => {
+  await expect(page.locator("header")).toMatchAriaSnapshot(`
+    - banner:
+      - link "Maker Bench":
+        - /url: /
+      - navigation "Primary":
+        - button "Submit Tool"
+  `);
+});
+
+// BAD: Multiple fragmented assertions
+test("displays the logo", async ({ page }) => {
+  await expect(page.getByRole("link", { name: /maker/ })).toBeVisible();
+});
+test("logo links to home", async ({ page }) => {
+  await expect(page.getByRole("link", { name: /maker/ })).toHaveAttribute("href", "/");
+});
+// ...more repetitive tests
+```
+
+Benefits:
+- Tests the full accessibility tree hierarchy
+- Single assertion = less maintenance
+- Diffs show exactly what changed
+- Aligned with how screen readers perceive the page
