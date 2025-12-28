@@ -43,11 +43,11 @@ describe("Button", () => {
     expect(screen.getByRole("button")).toBeDisabled();
   });
 
-  it("shows loading state with aria-busy", () => {
-    render(<Button isLoading>Loading</Button>);
+  it("shows loading state with screen reader announcement", () => {
+    render(<Button isLoading>Save</Button>);
     const button = screen.getByRole("button");
-    expect(button).toHaveAttribute("aria-busy", "true");
     expect(button).toHaveClass("Button--loading");
+    expect(screen.getByText("Loading")).toBeInTheDocument();
   });
 
   it("does not fire click when disabled", async () => {

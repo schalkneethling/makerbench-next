@@ -32,10 +32,14 @@ export function Button({
     <button
       className={`Button ${variantClass} ${stateClass} ${className}`.trim()}
       disabled={isDisabled}
-      aria-busy={isLoading}
       {...props}
     >
-      {isLoading && <span className="Button-spinner" aria-hidden="true" />}
+      {isLoading && (
+        <>
+          <span className="Button-spinner" aria-hidden="true" />
+          <span className="visually-hidden">Loading</span>
+        </>
+      )}
       <span className={isLoading ? "Button-content--hidden" : ""}>
         {children}
       </span>
