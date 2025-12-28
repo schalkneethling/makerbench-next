@@ -30,7 +30,8 @@
   font-weight: var(--font-weight-semibold);
   inset-block-start: var(--size-8);
   inset-inline-start: var(--size-8);
-  padding: var(--size-12) var(--size-16);
+  padding-block: var(--size-12);
+  padding-inline: var(--size-16);
   position: absolute;
   text-decoration: none;
   transform: translateY(-200%);

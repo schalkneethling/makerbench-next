@@ -29,7 +29,8 @@
   border-radius: var(--radius-md);
   color: var(--color-text);
   font: var(--typography-body-base);
-  padding: var(--size-12) var(--size-16);
+  padding-block: var(--size-12);
+  padding-inline: var(--size-16);
   transition:
     border-color var(--transition-fast),
     box-shadow var(--transition-fast);

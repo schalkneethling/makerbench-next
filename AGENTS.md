@@ -193,6 +193,36 @@ if (!data.url || typeof data.url !== "string") {
 
 Existing schemas are in `src/lib/validation.ts` - extend them, don't reinvent.
 
+## CSS: Logical Properties
+
+**CRITICAL: Use logical properties instead of physical shorthand properties.**
+
+Shorthand properties like `padding: X Y` and `margin: X Y` map to physical directions (top/right/bottom/left), which don't adapt for RTL languages or vertical writing modes.
+
+### Always Use
+
+```css
+/* GOOD: Logical properties */
+padding-block: var(--size-12);
+padding-inline: var(--size-16);
+margin-block-start: var(--size-8);
+
+/* Also use logical sizing */
+block-size: 100%;
+inline-size: auto;
+min-block-size: 100dvh;
+```
+
+### Never Do This
+
+```css
+/* BAD: Physical shorthands */
+padding: var(--size-12) var(--size-16);
+margin: var(--size-8) 0;
+height: 100%;
+width: auto;
+```
+
 ## CSS: Shared First Approach
 
 **CRITICAL: Use Shared First CSS, NOT mobile-first.**

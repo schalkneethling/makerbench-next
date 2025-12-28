@@ -6,7 +6,8 @@
   background-color: var(--color-surface-sunken);
   border-block-start: var(--border-default);
   margin-block-start: auto;
-  padding: var(--size-24) var(--size-16);
+  padding-block: var(--size-24);
+  padding-inline: var(--size-16);
 }
 
 .Footer-inner {

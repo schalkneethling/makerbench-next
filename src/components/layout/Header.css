@@ -5,7 +5,8 @@
 .Header {
   background-color: var(--color-surface-raised);
   border-block-end: var(--border-default);
-  padding: var(--size-16);
+  padding-block: var(--size-16);
+  padding-inline: var(--size-16);
 }
 
 .Header-inner {

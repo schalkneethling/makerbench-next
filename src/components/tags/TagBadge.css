@@ -17,7 +17,8 @@
   color: var(--color-text);
   cursor: pointer;
   font: var(--typography-caption);
-  padding: var(--size-4) var(--size-12);
+  padding-block: var(--size-4);
+  padding-inline: var(--size-12);
   transition:
     background-color var(--transition-fast),
     color var(--transition-fast);
@@ -44,7 +45,8 @@
   font-size: 1rem;
   justify-content: center;
   line-height: 1;
-  padding: var(--size-4);
+  padding-block: var(--size-4);
+  padding-inline: var(--size-4);
   transition: color var(--transition-fast);
 }
 

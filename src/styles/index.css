@@ -90,14 +90,16 @@
     background-color: var(--color-surface-sunken);
     border-radius: var(--radius-sm);
     font-size: 0.875em;
-    padding: var(--size-4) var(--size-8);
+    padding-block: var(--size-4);
+    padding-inline: var(--size-8);
   }
 
   pre {
     background-color: var(--color-surface-sunken);
     border-radius: var(--radius-md);
     overflow-x: auto;
-    padding: var(--size-16);
+    padding-block: var(--size-16);
+    padding-inline: var(--size-16);
   }
 
   pre code {

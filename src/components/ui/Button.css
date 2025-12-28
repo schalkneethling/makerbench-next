@@ -11,7 +11,8 @@
   font: var(--typography-button);
   gap: var(--size-8);
   justify-content: center;
-  padding: var(--size-12) var(--size-24);
+  padding-block: var(--size-12);
+  padding-inline: var(--size-24);
   text-decoration: none;
   transition:
     background-color var(--transition-fast),
