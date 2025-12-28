@@ -7,8 +7,8 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     exclude: [...configDefaults.exclude, "**/e2e/**"],
     environmentMatchGlobs: [
-      ["src/components/**/*.test.tsx", "jsdom"],
-      ["src/components/**/__tests__/*.test.tsx", "jsdom"],
+      ["src/components/**/*.test.tsx", "happy-dom"],
+      ["src/components/**/__tests__/*.test.tsx", "happy-dom"],
     ],
   },
 });
