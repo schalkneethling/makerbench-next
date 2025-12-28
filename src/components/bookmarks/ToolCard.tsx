@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { TagBadge } from "../tags";
 
 import "./ToolCard.css";
@@ -32,12 +31,6 @@ export function ToolCard({
   tags = [],
   className = "",
 }: ToolCardProps) {
-  const [imgSrc, setImgSrc] = useState(imageUrl || FALLBACK_IMAGE);
-
-  function handleImageError() {
-    setImgSrc(FALLBACK_IMAGE);
-  }
-
   // Extract hostname for display
   const hostname = new URL(url).hostname.replace(/^www\./, "");
 
@@ -46,11 +39,10 @@ export function ToolCard({
       <a href={url} className="ToolCard-link">
         <div className="ToolCard-imageWrapper">
           <img
-            src={imgSrc}
+            src={imageUrl || FALLBACK_IMAGE}
             alt=""
             className="ToolCard-image"
             loading="lazy"
-            onError={handleImageError}
           />
         </div>
 
