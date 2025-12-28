@@ -63,7 +63,7 @@ export function TagInput({
       return;
     }
 
-    if (tags.length >= maxTags) {
+    if (!canAddMore) {
       return;
     }
 
