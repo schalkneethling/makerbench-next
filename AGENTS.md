@@ -215,7 +215,7 @@ min-block-size: 100dvh;
 
 ### Exception: Uniform Values
 
-When all sides have the same value, shorthand is fine—no directional mapping occurs:
+When all sides have the same value, shorthand is fine—directional mapping doesn't matter:
 
 ```css
 /* OK: Single value applies uniformly */
