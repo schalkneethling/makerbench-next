@@ -53,13 +53,13 @@ export function TagInput({
    * Adds a tag if valid and not duplicate.
    */
   function addTag(value: string) {
-    const trimmed = value.trim();
-    if (!trimmed) {
+    const trimmedValue = value.trim();
+    if (!trimmedValue) {
       return;
     }
 
     // Check for duplicates (case-insensitive)
-    if (tags.some((tag) => tag.toLowerCase() === trimmed.toLowerCase())) {
+    if (tags.some((tag) => tag.toLowerCase() === trimmedValue.toLowerCase())) {
       return;
     }
 
@@ -67,7 +67,7 @@ export function TagInput({
       return;
     }
 
-    onTagsChange([...tags, trimmed]);
+    onTagsChange([...tags, trimmedValue]);
     setInputValue("");
   }
 
