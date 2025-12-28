@@ -33,12 +33,10 @@ describe("ToolCard", () => {
     expect(screen.getByText("A helpful development tool")).toBeInTheDocument();
   });
 
-  it("links to external URL with security attributes", () => {
+  it("links to tool URL", () => {
     render(<ToolCard {...defaultProps} />);
     const link = screen.getByRole("link");
     expect(link).toHaveAttribute("href", "https://example.com/tool");
-    expect(link).toHaveAttribute("target", "_blank");
-    expect(link).toHaveAttribute("rel", "noopener noreferrer");
   });
 
   it("renders tag badges when tags provided", () => {

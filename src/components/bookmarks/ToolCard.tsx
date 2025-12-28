@@ -43,7 +43,7 @@ export function ToolCard({
 
   return (
     <article className={`ToolCard ${className}`.trim()}>
-      <a href={url} className="ToolCard-link" target="_blank" rel="noopener noreferrer">
+      <a href={url} className="ToolCard-link">
         <div className="ToolCard-imageWrapper">
           <img
             src={imgSrc}

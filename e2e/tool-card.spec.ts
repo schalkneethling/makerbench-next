@@ -19,13 +19,5 @@ test.describe("ToolCard", () => {
         - button "Tag2"
     `);
   });
-
-  test.skip("external link has proper security attributes", async ({
-    page,
-  }) => {
-    const link = page.locator(".ToolCard-link").first();
-    await expect(link).toHaveAttribute("target", "_blank");
-    await expect(link).toHaveAttribute("rel", "noopener noreferrer");
-  });
 });
 
