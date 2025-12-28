@@ -59,12 +59,17 @@ Zombie node processes drain system resources. Follow these rules:
 - If a background server is started, **kill it before session ends**
 - Check for running servers: `ps aux | grep node`
 
+### Playwright
+
+- **Never leave Playwright test-servers running** after tests complete
+- Kill any lingering Playwright processes: `pkill -f "playwright/test/cli.js"`
+
 ### Before Ending Session
 
 Verify no orphan processes:
 
 ```bash
-ps aux | grep -E "node|vitest" | grep -v grep
+ps aux | grep -E "node|vitest|playwright" | grep -v grep
 ```
 
 Kill any lingering processes from this workspace before handing off.
