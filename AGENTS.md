@@ -41,6 +41,34 @@ bd sync               # Sync with git
 
 Use 'bd' for task tracking
 
+## Process Management
+
+**CRITICAL: Ensure all node processes terminate properly.**
+
+Zombie node processes drain system resources. Follow these rules:
+
+### Running Tests
+
+- **Always use `npm test`** (includes `--run` flag) - exits after completion
+- **Never start vitest in watch mode** unless explicitly requested
+- If watch mode is needed, terminate it before session ends
+
+### Dev Servers
+
+- **Never start dev servers in background** unless explicitly requested
+- If a background server is started, **kill it before session ends**
+- Check for running servers: `ps aux | grep node`
+
+### Before Ending Session
+
+Verify no orphan processes:
+
+```bash
+ps aux | grep -E "node|vitest" | grep -v grep
+```
+
+Kill any lingering processes from this workspace before handing off.
+
 ## External APIs and Services
 
 **ALWAYS consult up-to-date documentation** when working with external APIs and services. Do NOT make assumptions about best practices or available features.
