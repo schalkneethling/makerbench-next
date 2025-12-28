@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from "react";
+import { useId, type ButtonHTMLAttributes } from "react";
 
 export interface TagBadgeProps
   extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
@@ -22,6 +22,8 @@ export function TagBadge({
   onClick,
   ...props
 }: TagBadgeProps) {
+  const removeLabelId = useId();
+
   return (
     <span
       className={`TagBadge ${isSelected ? "TagBadge--selected" : ""} ${className}`.trim()}
@@ -40,8 +42,11 @@ export function TagBadge({
           type="button"
           className="TagBadge-remove"
           onClick={onRemove}
-          aria-label={`Remove ${label}`}
+          aria-labelledby={removeLabelId}
         >
+          <span id={removeLabelId} className="visually-hidden">
+            Remove {label}
+          </span>
           <span aria-hidden="true">×</span>
         </button>
       )}

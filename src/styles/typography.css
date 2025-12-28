@@ -9,56 +9,56 @@
    * Heading Presets (t-shirt sizing)
    * Use with any heading level as needed
    * ======================================== */
-  --typography-heading-4xl: var(--font-weight-bold) var(--text-4xl) / 1.1
-    var(--font-family-base);
-  --typography-heading-3xl: var(--font-weight-semibold) var(--text-4xl) / 1.2
-    var(--font-family-base);
-  --typography-heading-2xl: var(--font-weight-semibold) var(--text-3xl) / 1.2
-    var(--font-family-base);
-  --typography-heading-xl: var(--font-weight-semibold) var(--text-2xl) / 1.3
-    var(--font-family-base);
-  --typography-heading-lg: var(--font-weight-semibold) var(--text-xl) / 1.3
-    var(--font-family-base);
-  --typography-heading-base: var(--font-weight-semibold) var(--text-lg) / 1.3
-    var(--font-family-base);
+  --typography-heading-4xl: var(--font-weight-bold) var(--text-4xl) /
+    var(--line-height-tight) var(--font-family-base);
+  --typography-heading-3xl: var(--font-weight-semibold) var(--text-4xl) /
+    var(--line-height-snug) var(--font-family-base);
+  --typography-heading-2xl: var(--font-weight-semibold) var(--text-3xl) /
+    var(--line-height-snug) var(--font-family-base);
+  --typography-heading-xl: var(--font-weight-semibold) var(--text-2xl) /
+    var(--line-height-snug) var(--font-family-base);
+  --typography-heading-lg: var(--font-weight-semibold) var(--text-xl) /
+    var(--line-height-snug) var(--font-family-base);
+  --typography-heading-base: var(--font-weight-semibold) var(--text-lg) /
+    var(--line-height-snug) var(--font-family-base);
 
   /* ========================================
    * Body Presets
    * ======================================== */
-  --typography-body-lg: var(--font-weight-regular) var(--text-lg) / 1.5
-    var(--font-family-base);
-  --typography-body-base: var(--font-weight-regular) var(--text-base) / 1.5
-    var(--font-family-base);
-  --typography-body-sm: var(--font-weight-regular) var(--text-sm) / 1.5
-    var(--font-family-base);
+  --typography-body-lg: var(--font-weight-regular) var(--text-lg) /
+    var(--line-height-normal) var(--font-family-base);
+  --typography-body-base: var(--font-weight-regular) var(--text-base) /
+    var(--line-height-normal) var(--font-family-base);
+  --typography-body-sm: var(--font-weight-regular) var(--text-sm) /
+    var(--line-height-normal) var(--font-family-base);
 
   /* ========================================
    * UI Presets
    * ======================================== */
-  --typography-label: var(--font-weight-medium) var(--text-sm) / 1.1
-    var(--font-family-base);
-  --typography-button: var(--font-weight-semibold) var(--text-base) / 1.1
-    var(--font-family-base);
-  --typography-caption: var(--font-weight-regular) var(--text-xs) / 1.4
-    var(--font-family-base);
+  --typography-label: var(--font-weight-medium) var(--text-sm) /
+    var(--line-height-tight) var(--font-family-base);
+  --typography-button: var(--font-weight-semibold) var(--text-base) /
+    var(--line-height-tight) var(--font-family-base);
+  --typography-caption: var(--font-weight-regular) var(--text-xs) /
+    var(--line-height-snug) var(--font-family-base);
 
   /* ========================================
    * Brand Presets
    * ======================================== */
-  --typography-logo-xl: var(--font-weight-semibold) var(--text-4xl) / 1
-    var(--font-family-base);
-  --typography-logo-lg: var(--font-weight-semibold) var(--text-3xl) / 1
-    var(--font-family-base);
-  --typography-logo-base: var(--font-weight-semibold) var(--text-2xl) / 1
-    var(--font-family-base);
-  --typography-logo-sm: var(--font-weight-semibold) var(--text-lg) / 1
-    var(--font-family-base);
+  --typography-logo-xl: var(--font-weight-semibold) var(--text-4xl) /
+    var(--line-height-none) var(--font-family-base);
+  --typography-logo-lg: var(--font-weight-semibold) var(--text-3xl) /
+    var(--line-height-none) var(--font-family-base);
+  --typography-logo-base: var(--font-weight-semibold) var(--text-2xl) /
+    var(--line-height-none) var(--font-family-base);
+  --typography-logo-sm: var(--font-weight-semibold) var(--text-lg) /
+    var(--line-height-none) var(--font-family-base);
 
   /* ========================================
    * Code Presets
    * ======================================== */
-  --typography-code-base: var(--font-weight-regular) var(--text-sm) / 1.5
-    var(--font-family-mono);
-  --typography-code-sm: var(--font-weight-regular) var(--text-xs) / 1.5
-    var(--font-family-mono);
+  --typography-code-base: var(--font-weight-regular) var(--text-sm) /
+    var(--line-height-normal) var(--font-family-mono);
+  --typography-code-sm: var(--font-weight-regular) var(--text-xs) /
+    var(--line-height-normal) var(--font-family-mono);
 }

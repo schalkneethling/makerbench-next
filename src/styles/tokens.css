@@ -5,11 +5,16 @@
 
 :root {
   /* ========================================
-   * Reset Custom Properties
-   * Required by css-community-reset
+   * Typography - Line Heights
    * ======================================== */
-  --minimalist-typography-document-line-height: 1.5;
-  --minimalist-typography-interactive-line-height: 1.1;
+  --line-height-none: 1; /* Icons, badges, logos */
+  --line-height-tight: 1.1; /* Buttons, labels, UI */
+  --line-height-snug: 1.3; /* Headings */
+  --line-height-normal: 1.5; /* Body text */
+
+  /* Reset Custom Properties (required by css-community-reset) */
+  --minimalist-typography-document-line-height: var(--line-height-normal);
+  --minimalist-typography-interactive-line-height: var(--line-height-tight);
 
   /* ========================================
    * Typography - Font Families

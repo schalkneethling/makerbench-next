@@ -193,6 +193,35 @@ if (!data.url || typeof data.url !== "string") {
 
 Existing schemas are in `src/lib/validation.ts` - extend them, don't reinvent.
 
+## Accessible Labels: Prefer aria-labelledby over aria-label
+
+**Use `aria-labelledby` with visually-hidden text instead of `aria-label`.**
+
+### Why
+
+- Text is in the DOM (not just an attribute)—more maintainable
+- Automated translation tools can find and translate it
+- Screen readers handle it more consistently
+- Easier to debug/inspect
+
+### Pattern
+
+```tsx
+// GOOD: Visible text referenced by ID
+<button aria-labelledby="remove-tag-1">
+  <span id="remove-tag-1" className="visually-hidden">Remove JavaScript</span>
+  ×
+</button>
+
+// BAD: String hidden in attribute
+<button aria-label="Remove JavaScript">×</button>
+```
+
+### When aria-label is Acceptable
+
+- Truly static, non-translatable labels
+- Third-party components where you can't add DOM elements
+
 ## CSS: Logical Properties
 
 **CRITICAL: Use logical properties instead of physical shorthand properties.**
