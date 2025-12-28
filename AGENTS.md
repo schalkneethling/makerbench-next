@@ -342,12 +342,16 @@ test("displays the logo", async ({ page }) => {
   await expect(page.getByRole("link", { name: /maker/ })).toBeVisible();
 });
 test("logo links to home", async ({ page }) => {
-  await expect(page.getByRole("link", { name: /maker/ })).toHaveAttribute("href", "/");
+  await expect(page.getByRole("link", { name: /maker/ })).toHaveAttribute(
+    "href",
+    "/",
+  );
 });
 // ...more repetitive tests
 ```
 
 Benefits:
+
 - Tests the full accessibility tree hierarchy
 - Single assertion = less maintenance
 - Diffs show exactly what changed

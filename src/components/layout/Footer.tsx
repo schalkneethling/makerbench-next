@@ -11,7 +11,7 @@ export function Footer() {
           © {currentYear} MakerBench. All rights reserved.
         </p>
         <nav className="Footer-nav" aria-label="Footer">
-          <ul className="Footer-links">
+          <ul className="Footer-links reset-list">
             <li>
               <a href="/about">About</a>
             </li>
