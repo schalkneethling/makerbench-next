@@ -408,6 +408,59 @@ Use sparingly when the same property changes across breakpoints. Readability is 
 }
 ```
 
+## Build on Existing Foundations
+
+**CRITICAL: Always check for existing styles, components, and patterns before writing new ones.**
+
+Duplication creates maintenance burden, inconsistency, and technical debt. Every new style or component should build on what already exists.
+
+### Before Writing New Code
+
+1. **Search the codebase** - Check `src/styles/` for base styles, `src/components/` for existing components
+2. **Understand the layer system** - Base styles in `index.css` apply globally; only add component-specific overrides
+3. **Reuse design tokens** - Use `var(--token)` values from `tokens.css`, never hardcode values
+
+### Example: Link Styling
+
+Base link styles already exist in `src/styles/index.css`:
+
+```css
+a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+}
+```
+
+```css
+/* BAD: Duplicating base styles in component */
+.MyComponent-link {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: var(--size-4);
+}
+
+/* GOOD: Only add what's unique to this component */
+.MyComponent-link {
+  font-weight: var(--font-weight-bold);
+}
+```
+
+### Composable Components
+
+Build components that:
+
+- **Inherit sensible defaults** - Leverage base styles and design tokens
+- **Accept customization** - Use props/classes for variations, not duplication
+- **Stay focused** - Single responsibility; compose for complex needs
+
+When a component needs special treatment, extend the foundation—don't rebuild it.
+
 ## Barrel Files (index.ts re-exports)
 
 Barrel files are an API design tool, not a file organization pattern. Use them when you need to expose a curated set of exports that other parts of your application consume as a unit (like a component library's public components, a feature's external interface, or a utility package's functions), but avoid them for internal implementation details or as a reflex in every directory - indiscriminate use obscures file locations, slows HMR, and creates maintenance overhead that outweighs any refactoring convenience.
