@@ -12,9 +12,7 @@ export function NotFoundPage() {
       <p className="NotFoundPage-message">
         The page you're looking for doesn't exist.
       </p>
-      <Link to="/" className="NotFoundPage-link">
-        Return to home
-      </Link>
+      <Link to="/">Return to home</Link>
     </div>
   );
 }
