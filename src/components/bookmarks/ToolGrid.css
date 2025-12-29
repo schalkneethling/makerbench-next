@@ -1,0 +1,63 @@
+/**
+ * ToolGrid Component Styles
+ * Responsive grid for ToolCard and ToolCardSkeleton components.
+ */
+
+.ToolGrid {
+  display: grid;
+  gap: var(--size-24);
+}
+
+/* 1 column on mobile */
+@media (width < 48rem) {
+  .ToolGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 2 columns on tablet */
+@media (width >= 48rem) {
+  .ToolGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 3 columns on desktop */
+@media (width >= 64rem) {
+  .ToolGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* 4 columns on wide screens */
+@media (width >= 100rem) {
+  .ToolGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Empty state */
+.ToolGrid-empty {
+  grid-column: 1 / -1;
+  padding-block: var(--size-48);
+  text-align: center;
+}
+
+.ToolGrid-emptyIcon {
+  color: var(--color-text-muted);
+  font-size: var(--text-4xl);
+  margin-block-end: var(--size-16);
+}
+
+.ToolGrid-emptyTitle {
+  color: var(--color-text);
+  font: var(--typography-heading-md);
+  margin: 0 0 var(--size-8);
+}
+
+.ToolGrid-emptyDescription {
+  color: var(--color-text-muted);
+  font: var(--typography-body-base);
+  margin: 0;
+}
+

@@ -1,0 +1,123 @@
+/**
+ * ToolCardSkeleton Component Styles
+ * Animated loading placeholder matching ToolCard dimensions.
+ */
+
+.ToolCardSkeleton {
+  background-color: var(--color-surface-raised);
+  border: var(--border-default);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ToolCardSkeleton-image {
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-sunken) 0%,
+    var(--color-border) 50%,
+    var(--color-surface-sunken) 100%
+  );
+  background-size: 200% 100%;
+}
+
+.ToolCardSkeleton-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-8);
+  padding: var(--size-16);
+}
+
+.ToolCardSkeleton-title {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-sunken) 0%,
+    var(--color-border) 50%,
+    var(--color-surface-sunken) 100%
+  );
+  background-size: 200% 100%;
+  block-size: 1.5rem;
+  border-radius: var(--radius-sm);
+  inline-size: 75%;
+}
+
+.ToolCardSkeleton-hostname {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-sunken) 0%,
+    var(--color-border) 50%,
+    var(--color-surface-sunken) 100%
+  );
+  background-size: 200% 100%;
+  block-size: 0.875rem;
+  border-radius: var(--radius-sm);
+  inline-size: 40%;
+}
+
+.ToolCardSkeleton-description {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-sunken) 0%,
+    var(--color-border) 50%,
+    var(--color-surface-sunken) 100%
+  );
+  background-size: 200% 100%;
+  block-size: 2.5rem;
+  border-radius: var(--radius-sm);
+  inline-size: 100%;
+}
+
+.ToolCardSkeleton-tags {
+  border-block-start: var(--border-default);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-8);
+  padding: var(--size-12);
+}
+
+.ToolCardSkeleton-tag {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-sunken) 0%,
+    var(--color-border) 50%,
+    var(--color-surface-sunken) 100%
+  );
+  background-size: 200% 100%;
+  block-size: 1.5rem;
+  border-radius: var(--radius-full);
+  inline-size: 4rem;
+}
+
+/* Shimmer animation */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.ToolCardSkeleton-image,
+.ToolCardSkeleton-title,
+.ToolCardSkeleton-hostname,
+.ToolCardSkeleton-description,
+.ToolCardSkeleton-tag {
+  animation: shimmer 1.5s infinite linear;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .ToolCardSkeleton-image,
+  .ToolCardSkeleton-title,
+  .ToolCardSkeleton-hostname,
+  .ToolCardSkeleton-description,
+  .ToolCardSkeleton-tag {
+    animation: none;
+    background: var(--color-surface-sunken);
+  }
+}
+
