@@ -1,9 +1,11 @@
+import { Link } from "react-router-dom";
+
 export type LogoSize = "sm" | "base" | "lg" | "xl";
 
 export interface LogoProps {
   /** Size variant */
   size?: LogoSize;
-  /** Link destination - renders as anchor when provided */
+  /** Link destination - renders as Link when provided */
   href?: string;
   /** Additional class names */
   className?: string;
@@ -11,7 +13,7 @@ export interface LogoProps {
 
 /**
  * MakerBench logo component.
- * Renders as link when href provided, otherwise as span.
+ * Renders as Link when href provided, otherwise as span.
  */
 export function Logo({ size = "base", href, className = "" }: LogoProps) {
   const sizeClass = size !== "base" ? `Logo--${size}` : "";
@@ -26,12 +28,11 @@ export function Logo({ size = "base", href, className = "" }: LogoProps) {
 
   if (href) {
     return (
-      <a href={href} className={classes}>
+      <Link to={href} className={classes}>
         {content}
-      </a>
+      </Link>
     );
   }
 
   return <span className={classes}>{content}</span>;
 }
-
