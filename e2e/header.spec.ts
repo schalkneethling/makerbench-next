@@ -11,7 +11,8 @@ test.describe("Header", () => {
         - link "Maker Bench":
           - /url: /
         - navigation "Primary":
-          - button "Submit Tool"
+          - link "Submit Tool":
+            - /url: /submit
     `);
   });
 });

@@ -7,9 +7,9 @@ test.describe("Navigation", () => {
     await expect(page).toHaveURL("/");
   });
 
-  test("Submit Tool button navigates to submit page", async ({ page }) => {
+  test("Submit Tool link navigates to submit page", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: "Submit Tool" }).click();
+    await page.getByRole("link", { name: "Submit Tool" }).click();
     await expect(page).toHaveURL("/submit");
   });
 
