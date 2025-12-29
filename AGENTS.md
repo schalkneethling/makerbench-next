@@ -43,26 +43,34 @@ Use 'bd' for task tracking
 
 ## Process Management
 
-**CRITICAL: Ensure all node processes terminate properly.**
+**CRITICAL: Zombie node processes drain system resources. Be proactive, not reactive.**
 
-Zombie node processes drain system resources. Follow these rules:
+### Kill Before You Run
+
+**ALWAYS check for and kill orphan processes BEFORE running tests or starting servers:**
+
+```bash
+pkill -9 -f "vitest" 2>/dev/null
+pkill -9 -f "playwright" 2>/dev/null
+```
+
+This prevents process accumulation across test runs. Vitest workers often zombie when sandbox restrictions interrupt cleanup.
 
 ### Running Tests
 
 - **Always use `npm test`** (includes `--run` flag) - exits after completion
 - **Never start vitest in watch mode** unless explicitly requested
-- If watch mode is needed, terminate it before session ends
+- **After each test run**, verify cleanup: `ps aux | grep vitest | grep -v grep | wc -l` should be 0
 
 ### Dev Servers
 
 - **Never start dev servers in background** unless explicitly requested
 - If a background server is started, **kill it before session ends**
-- Check for running servers: `ps aux | grep node`
 
 ### Playwright
 
 - **Never leave Playwright test-servers running** after tests complete
-- Kill any lingering Playwright processes: `pkill -f "playwright/test/cli.js"`
+- Kill lingering processes: `pkill -f "playwright/test/cli.js"`
 
 ### Before Ending Session
 
