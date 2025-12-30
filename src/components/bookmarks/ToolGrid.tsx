@@ -4,17 +4,11 @@ import { ToolCardSkeleton } from "./ToolCardSkeleton";
 import "./ToolGrid.css";
 
 export interface ToolGridProps {
-  /** Array of tools to display */
   tools?: Array<ToolCardProps & { id: string }>;
-  /** Loading state - shows skeleton cards */
   isLoading?: boolean;
-  /** Number of skeleton cards to show when loading */
   skeletonCount?: number;
-  /** Empty state title */
   emptyTitle?: string;
-  /** Empty state description */
   emptyDescription?: string;
-  /** Additional className */
   className?: string;
 }
 
