@@ -646,3 +646,99 @@ Benefits:
 - Single assertion = less maintenance
 - Diffs show exactly what changed
 - Aligned with how screen readers perceive the page
+
+## React: You Might Not Need useEffect
+
+**CRITICAL: Before reaching for `useEffect`, ALWAYS consult https://react.dev/learn/you-might-not-need-an-effect**
+
+Effects are an escape hatch, not a default pattern. Modern React codebases use them sparingly.
+
+### When You DON'T Need useEffect
+
+| Scenario | Better Approach |
+| -------- | --------------- |
+| Transforming data for render | Calculate during render |
+| Caching expensive calculations | `useMemo` |
+| Resetting state when prop changes | Use a `key` prop or set state during render |
+| Handling user events | Event handlers |
+| Sharing logic between handlers | Extract to a function |
+
+### When You DO Need useEffect
+
+- **Synchronizing with external systems** - network requests, browser APIs, third-party widgets
+- **Subscriptions** - WebSockets, event listeners, external stores
+- **Setting up/tearing down** - timers, observers, connections
+
+### Pattern: Data Fetching
+
+If you must fetch in an Effect, handle race conditions:
+
+```typescript
+useEffect(() => {
+  let ignore = false;
+  fetchData().then((data) => {
+    if (!ignore) {
+      setData(data);
+    }
+  });
+  return () => { ignore = true; };
+}, [dependency]);
+```
+
+### The Litmus Test
+
+Ask: "Am I synchronizing with something outside React?"
+
+- **Yes** → Effect may be appropriate
+- **No** → There's almost certainly a better pattern
+
+## React 19: Leverage Modern Features
+
+This project runs React 19. Use its strengths instead of older patterns.
+
+### Prefer These React 19 Features
+
+| Feature | Use Case |
+| ------- | -------- |
+| `use()` hook | Reading promises/context in render |
+| Actions (`useActionState`) | Form submissions with pending/error states |
+| `useOptimistic` | Optimistic UI updates |
+| `useFormStatus` | Form pending states without prop drilling |
+| Server Components | Data fetching at component level (when applicable) |
+
+### Form Handling Example
+
+```tsx
+// GOOD: React 19 Actions pattern
+function SubmitForm() {
+  const [state, submitAction, isPending] = useActionState(
+    async (prev, formData) => {
+      const result = await submitBookmark(formData);
+      return result;
+    },
+    null
+  );
+
+  return (
+    <form action={submitAction}>
+      <button disabled={isPending}>Submit</button>
+    </form>
+  );
+}
+
+// LESS IDEAL: Manual state management
+function SubmitForm() {
+  const [isPending, setIsPending] = useState(false);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsPending(true);
+    // ...
+  };
+}
+```
+
+### Avoid Legacy Patterns
+
+- Don't use `forwardRef` - refs are now regular props
+- Don't use `useContext` for simple reads - `use(Context)` works in conditionals
+- Don't manually manage form state when Actions fit the use case
