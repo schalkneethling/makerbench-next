@@ -59,41 +59,6 @@ test.describe("ToolGrid", () => {
     `);
   });
 
-  // TODO: Unskip when ToolGrid is rendered on a page
-  test.skip("responsive: 1 column on mobile", async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/");
-
-    const grid = page.locator(".ToolGrid");
-    await expect(grid).toHaveCSS("grid-template-columns", /^[^,]+$/);
-  });
-
-  // TODO: Unskip when ToolGrid is rendered on a page
-  test.skip("responsive: 2 columns on tablet", async ({ page }) => {
-    await page.setViewportSize({ width: 768, height: 1024 });
-    await page.goto("/");
-
-    const grid = page.locator(".ToolGrid");
-    // 2 columns shows as two values in computed style
-    const columns = await grid.evaluate((el) =>
-      getComputedStyle(el).gridTemplateColumns
-    );
-    const columnCount = columns.split(" ").length;
-    expect(columnCount).toBe(2);
-  });
-
-  // TODO: Unskip when ToolGrid is rendered on a page
-  test.skip("responsive: 3 columns on desktop", async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto("/");
-
-    const grid = page.locator(".ToolGrid");
-    const columns = await grid.evaluate((el) =>
-      getComputedStyle(el).gridTemplateColumns
-    );
-    const columnCount = columns.split(" ").length;
-    expect(columnCount).toBe(3);
-  });
 });
 
 
