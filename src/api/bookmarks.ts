@@ -141,20 +141,20 @@ export async function getBookmarks(
   const response = await fetch(`${getBaseUrl()}${path}`);
   const json = await response.json();
 
+  // HTTP error - extract structured error if available
   if (!response.ok) {
-    const errorResult = errorResponseSchema.safeParse(json);
-    if (errorResult.success) {
-      throw new BookmarkApiError(
-        errorResult.data.error,
-        response.status,
-        errorResult.data.details,
-      );
-    }
-    throw new BookmarkApiError("An unexpected error occurred", response.status);
+    const parsed = errorResponseSchema.safeParse(json);
+    throw new BookmarkApiError(
+      parsed.success ? parsed.data.error : "An unexpected error occurred",
+      response.status,
+      parsed.success ? parsed.data.details : undefined,
+    );
   }
 
+  // HTTP success - validate expected shape
   const result = bookmarksResponseSchema.safeParse(json);
   if (!result.success) {
+    // Server returned 2xx but body doesn't match - this is a bug
     throw new BookmarkApiError("Invalid response from server", 500);
   }
 
@@ -191,20 +191,20 @@ export async function searchBookmarks(
   const response = await fetch(`${getBaseUrl()}${path}`);
   const json = await response.json();
 
+  // HTTP error - extract structured error if available
   if (!response.ok) {
-    const errorResult = errorResponseSchema.safeParse(json);
-    if (errorResult.success) {
-      throw new BookmarkApiError(
-        errorResult.data.error,
-        response.status,
-        errorResult.data.details,
-      );
-    }
-    throw new BookmarkApiError("An unexpected error occurred", response.status);
+    const parsed = errorResponseSchema.safeParse(json);
+    throw new BookmarkApiError(
+      parsed.success ? parsed.data.error : "An unexpected error occurred",
+      response.status,
+      parsed.success ? parsed.data.details : undefined,
+    );
   }
 
+  // HTTP success - validate expected shape
   const result = bookmarksResponseSchema.safeParse(json);
   if (!result.success) {
+    // Server returned 2xx but body doesn't match - this is a bug
     throw new BookmarkApiError("Invalid response from server", 500);
   }
 
@@ -230,20 +230,20 @@ export async function submitBookmark(
 
   const json = await response.json();
 
+  // HTTP error - extract structured error if available
   if (!response.ok) {
-    const errorResult = errorResponseSchema.safeParse(json);
-    if (errorResult.success) {
-      throw new BookmarkApiError(
-        errorResult.data.error,
-        response.status,
-        errorResult.data.details,
-      );
-    }
-    throw new BookmarkApiError("An unexpected error occurred", response.status);
+    const parsed = errorResponseSchema.safeParse(json);
+    throw new BookmarkApiError(
+      parsed.success ? parsed.data.error : "An unexpected error occurred",
+      response.status,
+      parsed.success ? parsed.data.details : undefined,
+    );
   }
 
+  // HTTP success - validate expected shape
   const result = submitResponseSchema.safeParse(json);
   if (!result.success) {
+    // Server returned 2xx but body doesn't match - this is a bug
     throw new BookmarkApiError("Invalid response from server", 500);
   }
 
