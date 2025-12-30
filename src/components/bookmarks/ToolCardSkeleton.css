@@ -4,6 +4,13 @@
  */
 
 .ToolCardSkeleton {
+  --shimmer-gradient: linear-gradient(
+    90deg,
+    var(--color-surface-sunken) 0%,
+    var(--color-border) 50%,
+    var(--color-surface-sunken) 100%
+  );
+
   background-color: var(--color-surface-raised);
   border: var(--border-default);
   border-radius: var(--radius-lg);
@@ -14,12 +21,7 @@
 
 .ToolCardSkeleton-image {
   aspect-ratio: 16 / 9;
-  background: linear-gradient(
-    90deg,
-    var(--color-surface-sunken) 0%,
-    var(--color-border) 50%,
-    var(--color-surface-sunken) 100%
-  );
+  background: var(--shimmer-gradient);
   background-size: 200% 100%;
 }
 
@@ -31,12 +33,7 @@
 }
 
 .ToolCardSkeleton-title {
-  background: linear-gradient(
-    90deg,
-    var(--color-surface-sunken) 0%,
-    var(--color-border) 50%,
-    var(--color-surface-sunken) 100%
-  );
+  background: var(--shimmer-gradient);
   background-size: 200% 100%;
   block-size: var(--size-24);
   border-radius: var(--radius-sm);
@@ -44,12 +41,7 @@
 }
 
 .ToolCardSkeleton-hostname {
-  background: linear-gradient(
-    90deg,
-    var(--color-surface-sunken) 0%,
-    var(--color-border) 50%,
-    var(--color-surface-sunken) 100%
-  );
+  background: var(--shimmer-gradient);
   background-size: 200% 100%;
   block-size: var(--size-14);
   border-radius: var(--radius-sm);
@@ -57,12 +49,7 @@
 }
 
 .ToolCardSkeleton-description {
-  background: linear-gradient(
-    90deg,
-    var(--color-surface-sunken) 0%,
-    var(--color-border) 50%,
-    var(--color-surface-sunken) 100%
-  );
+  background: var(--shimmer-gradient);
   background-size: 200% 100%;
   block-size: var(--size-40);
   border-radius: var(--radius-sm);
@@ -78,12 +65,7 @@
 }
 
 .ToolCardSkeleton-tag {
-  background: linear-gradient(
-    90deg,
-    var(--color-surface-sunken) 0%,
-    var(--color-border) 50%,
-    var(--color-surface-sunken) 100%
-  );
+  background: var(--shimmer-gradient);
   background-size: 200% 100%;
   block-size: var(--size-24);
   border-radius: var(--radius-full);
