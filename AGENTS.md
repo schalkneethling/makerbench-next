@@ -208,6 +208,48 @@ someCall();
 const data = response as any;
 ```
 
+## Leverage Library Strengths
+
+**CRITICAL: Use the full power of the libraries we depend on.**
+
+Adding a dependency without leveraging its strengths wastes the opportunity and bloats the bundle for little gain. Before writing custom code, check if the library already provides the feature.
+
+### Principle
+
+If a library offers a capability, use it. Don't maintain parallel implementations.
+
+### Example: Zod Type Inference
+
+```typescript
+// BAD: Duplicate definitions to maintain
+const bookmarkSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+});
+
+interface Bookmark {  // Redundant! Will drift out of sync
+  id: string;
+  title: string;
+}
+
+// GOOD: Single source of truth
+const bookmarkSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+});
+
+type Bookmark = z.infer<typeof bookmarkSchema>;  // Always in sync
+```
+
+### When to Use Zod Schemas vs Plain Types
+
+| Scenario | Approach |
+|----------|----------|
+| API response data | Zod schema + `z.infer` (needs runtime validation) |
+| External input (forms, user data) | Zod schema + `z.infer` (needs runtime validation) |
+| Function parameters (internal) | Plain TypeScript interface (no runtime validation needed) |
+| Internal state shapes | Plain TypeScript interface |
+
 ## Validation
 
 **CRITICAL: NEVER write custom validation logic - use Zod.**

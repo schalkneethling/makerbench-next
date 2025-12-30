@@ -65,20 +65,8 @@ const errorResponseSchema = z.object({
   details: z.record(z.array(z.string())).optional(),
 });
 
-const getBookmarksParamsSchema = z.object({
-  limit: z.number().optional(),
-  offset: z.number().optional(),
-});
-
-const searchBookmarksParamsSchema = z.object({
-  q: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  limit: z.number().optional(),
-  offset: z.number().optional(),
-});
-
 // ============================================================================
-// Types - Inferred from Zod schemas
+// Types - Inferred from Zod schemas (for validated data)
 // ============================================================================
 
 export type BookmarkTag = z.infer<typeof bookmarkTagSchema>;
@@ -87,8 +75,19 @@ export type Bookmark = z.infer<typeof bookmarkSchema>;
 export type BookmarksResponse = z.infer<typeof bookmarksDataSchema>;
 export type SubmitBookmarkResponse = z.infer<typeof submitDataSchema>;
 export type ApiError = z.infer<typeof errorResponseSchema>;
-export type GetBookmarksParams = z.infer<typeof getBookmarksParamsSchema>;
-export type SearchBookmarksParams = z.infer<typeof searchBookmarksParamsSchema>;
+
+// Function parameter types (no runtime validation needed - we control the input)
+export interface GetBookmarksParams {
+  limit?: number;
+  offset?: number;
+}
+
+export interface SearchBookmarksParams {
+  q?: string;
+  tags?: string[];
+  limit?: number;
+  offset?: number;
+}
 
 // ============================================================================
 // Error Class
