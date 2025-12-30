@@ -227,7 +227,8 @@ const bookmarkSchema = z.object({
   title: z.string(),
 });
 
-interface Bookmark {  // Redundant! Will drift out of sync
+interface Bookmark {
+  // Redundant! Will drift out of sync
   id: string;
   title: string;
 }
@@ -238,17 +239,17 @@ const bookmarkSchema = z.object({
   title: z.string(),
 });
 
-type Bookmark = z.infer<typeof bookmarkSchema>;  // Always in sync
+type Bookmark = z.infer<typeof bookmarkSchema>; // Always in sync
 ```
 
 ### When to Use Zod Schemas vs Plain Types
 
-| Scenario | Approach |
-|----------|----------|
-| API response data | Zod schema + `z.infer` (needs runtime validation) |
-| External input (forms, user data) | Zod schema + `z.infer` (needs runtime validation) |
-| Function parameters (internal) | Plain TypeScript interface (no runtime validation needed) |
-| Internal state shapes | Plain TypeScript interface |
+| Scenario                          | Approach                                                  |
+| --------------------------------- | --------------------------------------------------------- |
+| API response data                 | Zod schema + `z.infer` (needs runtime validation)         |
+| External input (forms, user data) | Zod schema + `z.infer` (needs runtime validation)         |
+| Function parameters (internal)    | Plain TypeScript interface (no runtime validation needed) |
+| Internal state shapes             | Plain TypeScript interface                                |
 
 ## API Client Error Handling Pattern
 
@@ -278,6 +279,7 @@ See `src/api/bookmarks.ts` for the reference implementation. Key elements:
 ### Comments Are Critical
 
 This pattern can confuse readers. Always include comments explaining:
+
 - Why we parse error bodies (to extract structured details)
 - Why success validation throws (it indicates a bug)
 - That errors propagate intentionally (consumers handle them)
