@@ -113,6 +113,21 @@ export class BookmarkApiError extends Error {
   }
 }
 
+/**
+ * Throws a BookmarkApiError, extracting structured error details if available.
+ * @param json - Response body to parse for error details
+ * @param status - HTTP status code
+ * @throws BookmarkApiError always
+ */
+function throwApiError(json: unknown, status: number): never {
+  const parsed = errorResponseSchema.safeParse(json);
+  throw new BookmarkApiError(
+    parsed.success ? parsed.data.error : "An unexpected error occurred",
+    status,
+    parsed.success ? parsed.data.details : undefined,
+  );
+}
+
 // ============================================================================
 // API Client Functions
 // ============================================================================
@@ -143,12 +158,7 @@ export async function getBookmarks(
 
   // HTTP error - extract structured error if available
   if (!response.ok) {
-    const parsed = errorResponseSchema.safeParse(json);
-    throw new BookmarkApiError(
-      parsed.success ? parsed.data.error : "An unexpected error occurred",
-      response.status,
-      parsed.success ? parsed.data.details : undefined,
-    );
+    throwApiError(json, response.status);
   }
 
   // HTTP success - validate expected shape
@@ -193,12 +203,7 @@ export async function searchBookmarks(
 
   // HTTP error - extract structured error if available
   if (!response.ok) {
-    const parsed = errorResponseSchema.safeParse(json);
-    throw new BookmarkApiError(
-      parsed.success ? parsed.data.error : "An unexpected error occurred",
-      response.status,
-      parsed.success ? parsed.data.details : undefined,
-    );
+    throwApiError(json, response.status);
   }
 
   // HTTP success - validate expected shape
@@ -232,12 +237,7 @@ export async function submitBookmark(
 
   // HTTP error - extract structured error if available
   if (!response.ok) {
-    const parsed = errorResponseSchema.safeParse(json);
-    throw new BookmarkApiError(
-      parsed.success ? parsed.data.error : "An unexpected error occurred",
-      response.status,
-      parsed.success ? parsed.data.details : undefined,
-    );
+    throwApiError(json, response.status);
   }
 
   // HTTP success - validate expected shape
