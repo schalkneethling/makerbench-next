@@ -74,7 +74,9 @@ describe("useBookmarks", () => {
   });
 
   it("respects initial params", async () => {
-    const { result } = renderHook(() => useBookmarks({ limit: 1 }));
+    const { result } = renderHook(() =>
+      useBookmarks({ initialParams: { limit: 1 } }),
+    );
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -146,7 +148,9 @@ describe("useBookmarks", () => {
       }),
     );
 
-    const { result } = renderHook(() => useBookmarks({ limit: 1 }));
+    const { result } = renderHook(() =>
+      useBookmarks({ initialParams: { limit: 1 } }),
+    );
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -210,5 +214,36 @@ describe("useBookmarks", () => {
     expect(result.current.pagination).toBeNull();
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBeNull();
+  });
+
+  it("skips initial fetch when fetchOnMount is false", async () => {
+    const fetchSpy = vi.fn();
+    server.use(
+      http.get("/api/bookmarks", () => {
+        fetchSpy();
+        return HttpResponse.json({
+          success: true,
+          data: {
+            bookmarks: mockBookmarks,
+            pagination: { total: 2, limit: 20, offset: 0, hasMore: false },
+          },
+        });
+      }),
+    );
+
+    const { result } = renderHook(() => useBookmarks({ fetchOnMount: false }));
+
+    // Should not be loading and no fetch made
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.bookmarks).toHaveLength(0);
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    // Manual fetch works
+    await act(async () => {
+      await result.current.fetch();
+    });
+
+    expect(result.current.bookmarks).toHaveLength(2);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
   });
 });

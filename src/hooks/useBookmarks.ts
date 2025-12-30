@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 import {
   getBookmarks,
@@ -24,12 +24,23 @@ interface UseBookmarksReturn extends UseBookmarksState {
   reset: () => void;
 }
 
+interface UseBookmarksOptions {
+  /** Fetch bookmarks immediately on mount (default: true) */
+  fetchOnMount?: boolean;
+  /** Initial params for mount fetch */
+  initialParams?: GetBookmarksParams;
+}
+
 /**
- * Hook for fetching paginated bookmarks
+ * Hook for fetching paginated bookmarks.
+ * By default fetches on mount; set fetchOnMount: false for manual control.
  */
 export function useBookmarks(
-  initialParams?: GetBookmarksParams,
+  options: UseBookmarksOptions = {},
 ): UseBookmarksReturn {
+  const { fetchOnMount = true, initialParams } = options;
+  const hasFetched = useRef(false);
+
   const [state, setState] = useState<UseBookmarksState>({
     bookmarks: [],
     pagination: null,
@@ -95,11 +106,13 @@ export function useBookmarks(
     });
   }, []);
 
-  // Initial fetch on mount
+  // Initial fetch on mount (once only)
   useEffect(() => {
-    fetch(initialParams);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (fetchOnMount && !hasFetched.current) {
+      hasFetched.current = true;
+      fetch(initialParams);
+    }
+  }, [fetchOnMount, fetch, initialParams]);
 
   return {
     ...state,
