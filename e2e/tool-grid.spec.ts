@@ -30,10 +30,10 @@ test.describe("ToolGrid", () => {
 
     await page.goto("/");
 
-    // Check loading state is accessible
+    // Check loading state is accessible (aria-live region with aria-busy)
     const grid = page.locator(".ToolGrid");
+    await expect(grid).toHaveAttribute("aria-live", "polite");
     await expect(grid).toHaveAttribute("aria-busy", "true");
-    await expect(grid).toHaveAttribute("aria-label", "Loading tools");
 
     // Should show skeleton cards
     await expect(page.locator(".ToolCardSkeleton").first()).toBeVisible();
