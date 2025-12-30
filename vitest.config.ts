@@ -21,7 +21,10 @@ export default defineConfig({
         extends: true,
         test: {
           name: "components",
-          include: ["src/components/**/*.test.tsx"],
+          include: [
+            "src/components/**/*.test.tsx",
+            "src/hooks/**/*.test.tsx",
+          ],
           environment: "happy-dom",
         },
       },
