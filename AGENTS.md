@@ -262,28 +262,11 @@ type Bookmark = z.infer<typeof bookmarkSchema>;  // Always in sync
 
 ### Pattern
 
-```typescript
-const json = await response.json();
+See `src/api/bookmarks.ts` for the reference implementation. Key elements:
 
-// HTTP error - extract structured error if available
-if (!response.ok) {
-  const parsed = errorResponseSchema.safeParse(json);
-  throw new BookmarkApiError(
-    parsed.success ? parsed.data.error : "An unexpected error occurred",
-    response.status,
-    parsed.success ? parsed.data.details : undefined,
-  );
-}
-
-// HTTP success - validate expected shape
-const result = responseSchema.safeParse(json);
-if (!result.success) {
-  // Server returned 2xx but body doesn't match - this is a bug
-  throw new BookmarkApiError("Invalid response from server", 500);
-}
-
-return result.data.data;
-```
+- `throwApiError(json, status)` - Extracts structured error or falls back to generic
+- HTTP error → call `throwApiError`
+- HTTP success → validate response shape, throw if invalid (indicates a bug)
 
 ### Why This Works
 
