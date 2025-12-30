@@ -16,12 +16,6 @@
   text-align: center;
 }
 
-.ToolGrid-emptyIcon {
-  color: var(--color-text-muted);
-  font-size: var(--text-4xl);
-  margin-block-end: var(--size-16);
-}
-
 .ToolGrid-emptyTitle {
   color: var(--color-text);
   font: var(--typography-heading-md);

@@ -39,7 +39,7 @@ export function ToolGrid({
         aria-label="Loading tools"
       >
         {Array.from({ length: skeletonCount }, (_, i) => (
-          <ToolCardSkeleton key={i} />
+          <ToolCardSkeleton key={`skeleton-${i}`} />
         ))}
       </div>
     );
@@ -50,9 +50,6 @@ export function ToolGrid({
     return (
       <div className={`ToolGrid ${className}`.trim()}>
         <div className="ToolGrid-empty">
-          <div className="ToolGrid-emptyIcon" aria-hidden="true">
-            🔍
-          </div>
           <h2 className="ToolGrid-emptyTitle">{emptyTitle}</h2>
           <p className="ToolGrid-emptyDescription">{emptyDescription}</p>
         </div>
