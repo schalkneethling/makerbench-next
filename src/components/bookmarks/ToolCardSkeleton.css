@@ -38,7 +38,7 @@
     var(--color-surface-sunken) 100%
   );
   background-size: 200% 100%;
-  block-size: 1.5rem;
+  block-size: var(--size-24);
   border-radius: var(--radius-sm);
   inline-size: 75%;
 }
@@ -51,7 +51,7 @@
     var(--color-surface-sunken) 100%
   );
   background-size: 200% 100%;
-  block-size: 0.875rem;
+  block-size: var(--size-14);
   border-radius: var(--radius-sm);
   inline-size: 40%;
 }
@@ -64,7 +64,7 @@
     var(--color-surface-sunken) 100%
   );
   background-size: 200% 100%;
-  block-size: 2.5rem;
+  block-size: var(--size-40);
   border-radius: var(--radius-sm);
   inline-size: 100%;
 }
@@ -85,9 +85,9 @@
     var(--color-surface-sunken) 100%
   );
   background-size: 200% 100%;
-  block-size: 1.5rem;
+  block-size: var(--size-24);
   border-radius: var(--radius-full);
-  inline-size: 4rem;
+  inline-size: var(--size-64);
 }
 
 /* Shimmer animation */
@@ -109,15 +109,4 @@
   animation: shimmer 1.5s infinite linear;
 }
 
-/* Respect reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-  .ToolCardSkeleton-image,
-  .ToolCardSkeleton-title,
-  .ToolCardSkeleton-hostname,
-  .ToolCardSkeleton-description,
-  .ToolCardSkeleton-tag {
-    animation: none;
-    background: var(--color-surface-sunken);
-  }
-}
 
