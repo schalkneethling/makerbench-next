@@ -13,81 +13,10 @@ function getBaseUrl(): string {
   return process.env.API_BASE_URL || "http://localhost:8888";
 }
 
-/**
- * Tag associated with a bookmark
- */
-export interface BookmarkTag {
-  id: string;
-  name: string;
-}
+// ============================================================================
+// Zod Schemas - Single source of truth for both validation and types
+// ============================================================================
 
-/**
- * Bookmark data returned from API
- */
-export interface Bookmark {
-  id: string;
-  url: string;
-  title: string;
-  description: string | null;
-  imageUrl: string | null;
-  createdAt: string;
-  tags: BookmarkTag[];
-}
-
-/**
- * Pagination info returned from API
- */
-export interface PaginationInfo {
-  total: number;
-  limit: number;
-  offset: number;
-  hasMore: boolean;
-}
-
-/**
- * Response from getBookmarks and searchBookmarks
- */
-export interface BookmarksResponse {
-  bookmarks: Bookmark[];
-  pagination: PaginationInfo;
-}
-
-/**
- * Response from submitBookmark
- */
-export interface SubmitBookmarkResponse {
-  bookmarkId: string;
-  message: string;
-}
-
-/**
- * API error response
- */
-export interface ApiError {
-  success: false;
-  error: string;
-  details?: Record<string, string[]>;
-}
-
-/**
- * Parameters for getBookmarks
- */
-export interface GetBookmarksParams {
-  limit?: number;
-  offset?: number;
-}
-
-/**
- * Parameters for searchBookmarks
- */
-export interface SearchBookmarksParams {
-  q?: string;
-  tags?: string[];
-  limit?: number;
-  offset?: number;
-}
-
-// Zod schemas for runtime validation
 const bookmarkTagSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -110,20 +39,24 @@ const bookmarkSchema = z.object({
   tags: z.array(bookmarkTagSchema),
 });
 
+const bookmarksDataSchema = z.object({
+  bookmarks: z.array(bookmarkSchema),
+  pagination: paginationSchema,
+});
+
 const bookmarksResponseSchema = z.object({
   success: z.literal(true),
-  data: z.object({
-    bookmarks: z.array(bookmarkSchema),
-    pagination: paginationSchema,
-  }),
+  data: bookmarksDataSchema,
+});
+
+const submitDataSchema = z.object({
+  bookmarkId: z.string(),
+  message: z.string(),
 });
 
 const submitResponseSchema = z.object({
   success: z.literal(true),
-  data: z.object({
-    bookmarkId: z.string(),
-    message: z.string(),
-  }),
+  data: submitDataSchema,
 });
 
 const errorResponseSchema = z.object({
@@ -131,6 +64,35 @@ const errorResponseSchema = z.object({
   error: z.string(),
   details: z.record(z.array(z.string())).optional(),
 });
+
+const getBookmarksParamsSchema = z.object({
+  limit: z.number().optional(),
+  offset: z.number().optional(),
+});
+
+const searchBookmarksParamsSchema = z.object({
+  q: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  limit: z.number().optional(),
+  offset: z.number().optional(),
+});
+
+// ============================================================================
+// Types - Inferred from Zod schemas
+// ============================================================================
+
+export type BookmarkTag = z.infer<typeof bookmarkTagSchema>;
+export type PaginationInfo = z.infer<typeof paginationSchema>;
+export type Bookmark = z.infer<typeof bookmarkSchema>;
+export type BookmarksResponse = z.infer<typeof bookmarksDataSchema>;
+export type SubmitBookmarkResponse = z.infer<typeof submitDataSchema>;
+export type ApiError = z.infer<typeof errorResponseSchema>;
+export type GetBookmarksParams = z.infer<typeof getBookmarksParamsSchema>;
+export type SearchBookmarksParams = z.infer<typeof searchBookmarksParamsSchema>;
+
+// ============================================================================
+// Error Class
+// ============================================================================
 
 /**
  * Custom error class for API errors
@@ -150,6 +112,10 @@ export class BookmarkApiError extends Error {
     this.details = details;
   }
 }
+
+// ============================================================================
+// API Client Functions
+// ============================================================================
 
 /**
  * Fetches paginated bookmarks from the API
@@ -283,4 +249,3 @@ export async function submitBookmark(
 
   return result.data.data;
 }
-
