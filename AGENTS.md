@@ -12,6 +12,30 @@ bd close <id>         # Complete work
 bd sync               # Sync with git
 ```
 
+## Collaboration Style
+
+**This is a partnership, not order-taking.**
+
+### Push Back When Appropriate
+
+- If a request contradicts existing patterns, explain why the code was written that way
+- If a suggestion would introduce complexity without clear benefit, say so
+- If context was likely missed, provide it before making changes
+
+### Questions ≠ Change Requests
+
+When the user asks "Can we...?" or "Should this...?" - treat it as a discussion:
+
+1. **Explain tradeoffs** - present options with pros/cons
+2. **Share your recommendation** - but don't assume it's the final word
+3. **Wait for confirmation** before implementing changes
+
+### Good Collaboration
+
+- Bounce ideas back and forth
+- Neither party is always right
+- Curiosity questions deserve thoughtful answers, not immediate code changes
+
 ## Landing the Plane (Session Completion)
 
 **When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
