@@ -250,6 +250,55 @@ type Bookmark = z.infer<typeof bookmarkSchema>;  // Always in sync
 | Function parameters (internal) | Plain TypeScript interface (no runtime validation needed) |
 | Internal state shapes | Plain TypeScript interface |
 
+## API Client Error Handling Pattern
+
+**Throw typed errors, let consumers handle them.**
+
+### Principles
+
+1. **No try/catch in API clients** - Throw `BookmarkApiError`, let React hooks/components decide how to handle
+2. **Extract structured errors when possible** - Our API returns `{ error, details }` for known errors
+3. **Fall back to generic for unexpected** - Network issues, malformed responses get generic message
+
+### Pattern
+
+```typescript
+const json = await response.json();
+
+// HTTP error - extract structured error if available
+if (!response.ok) {
+  const parsed = errorResponseSchema.safeParse(json);
+  throw new BookmarkApiError(
+    parsed.success ? parsed.data.error : "An unexpected error occurred",
+    response.status,
+    parsed.success ? parsed.data.details : undefined,
+  );
+}
+
+// HTTP success - validate expected shape
+const result = responseSchema.safeParse(json);
+if (!result.success) {
+  // Server returned 2xx but body doesn't match - this is a bug
+  throw new BookmarkApiError("Invalid response from server", 500);
+}
+
+return result.data.data;
+```
+
+### Why This Works
+
+- **We control the API** - Our endpoints return structured JSON errors for known cases (validation, conflicts)
+- **HTTP status aligns with body** - 4xx/5xx always has `{ success: false }`, 2xx has `{ success: true }`
+- **Structured errors preserve details** - A 422 includes which fields failed, useful for UI display
+- **Generic fallback for truly unexpected** - Network failures, malformed responses
+
+### Comments Are Critical
+
+This pattern can confuse readers. Always include comments explaining:
+- Why we parse error bodies (to extract structured details)
+- Why success validation throws (it indicates a bug)
+- That errors propagate intentionally (consumers handle them)
+
 ## Validation
 
 **CRITICAL: NEVER write custom validation logic - use Zod.**
