@@ -26,8 +26,10 @@ export function ToolCardSkeleton({
       <div className="ToolCardSkeleton-image" />
 
       <div className="ToolCardSkeleton-content">
-        <div className="ToolCardSkeleton-title" />
-        <div className="ToolCardSkeleton-hostname" />
+        <hgroup>
+          <div className="ToolCardSkeleton-title" />
+          <div className="ToolCardSkeleton-hostname" />
+        </hgroup>
         <div className="ToolCardSkeleton-description" />
       </div>
 
