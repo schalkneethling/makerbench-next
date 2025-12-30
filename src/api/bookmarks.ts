@@ -27,7 +27,7 @@ export interface BookmarkTag {
 export interface Bookmark {
   id: string;
   url: string;
-  title: string | null;
+  title: string;
   description: string | null;
   imageUrl: string | null;
   createdAt: string;
@@ -103,7 +103,7 @@ const paginationSchema = z.object({
 const bookmarkSchema = z.object({
   id: z.string(),
   url: z.string(),
-  title: z.string().nullable(),
+  title: z.string(),
   description: z.string().nullable(),
   imageUrl: z.string().nullable(),
   createdAt: z.string(),

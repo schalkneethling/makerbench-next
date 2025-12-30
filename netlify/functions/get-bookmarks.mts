@@ -21,7 +21,7 @@ const MAX_LIMIT = 100;
 interface BookmarkWithTags {
   id: string;
   url: string;
-  title: string | null;
+  title: string;
   description: string | null;
   imageUrl: string | null;
   createdAt: string;
@@ -96,7 +96,7 @@ export default async (req: Request, _context: Context) => {
         bookmarksMap.set(bookmark.id, {
           id: bookmark.id,
           url: bookmark.url,
-          title: bookmark.title,
+          title: bookmark.title ?? bookmark.url,
           description: bookmark.description,
           imageUrl: bookmark.imageUrl,
           createdAt: bookmark.createdAt,
