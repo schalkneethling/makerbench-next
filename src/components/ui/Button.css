@@ -68,7 +68,7 @@
 }
 
 .Button--ghost:not(:disabled):hover {
-  background-color: oklch(from currentcolor l c h / 12%);
+  background-color: color-mix(in oklch, currentcolor 12%, transparent);
 }
 
 /* Loading state */
