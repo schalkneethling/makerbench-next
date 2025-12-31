@@ -68,7 +68,6 @@
   border: none;
   border-radius: var(--radius-full);
   color: var(--color-text-muted);
-  cursor: pointer;
   display: inline-grid;
   padding: var(--size-4);
   place-items: center;

@@ -15,7 +15,6 @@
   border: none;
   border-radius: var(--radius-full);
   color: var(--color-text);
-  cursor: pointer;
   font: var(--typography-caption);
   padding-block: var(--size-4);
   padding-inline: var(--size-12);
@@ -39,7 +38,6 @@
   border: none;
   border-radius: 50%;
   color: var(--color-text-muted);
-  cursor: pointer;
   display: inline-grid;
   padding: var(--size-4);
   place-items: center;

@@ -67,7 +67,6 @@
   background: none;
   border: none;
   color: var(--color-text-muted);
-  cursor: pointer;
   inset-block-start: 50%;
   inset-inline-end: var(--size-16);
   padding: var(--size-4);

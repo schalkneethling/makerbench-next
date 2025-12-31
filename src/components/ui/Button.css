@@ -6,7 +6,6 @@
   align-items: center;
   border: none;
   border-radius: var(--radius-md);
-  cursor: pointer;
   display: inline-flex;
   font: var(--typography-button);
   gap: var(--size-8);
