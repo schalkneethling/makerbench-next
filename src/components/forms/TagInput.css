@@ -51,7 +51,6 @@
 .TagInput-tag {
   align-items: center;
   background-color: var(--color-surface-sunken);
-  border-radius: var(--radius-full);
   display: inline-flex;
   gap: var(--size-4);
   padding-block: var(--size-4);

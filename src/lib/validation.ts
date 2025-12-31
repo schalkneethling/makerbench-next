@@ -64,12 +64,12 @@ export const bookmarkRequestSchema = z.object({
     .string()
     .max(100, "Name must be 100 characters or less")
     .optional(),
-  submitterGithubUrl: z
+  submitterGithubUsername: z
     .string()
-    .url("Please enter a valid URL")
-    .refine(
-      (url) => url.includes("github.com"),
-      "Please enter a valid GitHub URL",
+    .max(39, "GitHub username must be 39 characters or less")
+    .regex(
+      /^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/,
+      "Please enter a valid GitHub username",
     )
     .optional()
     .or(z.literal("")),

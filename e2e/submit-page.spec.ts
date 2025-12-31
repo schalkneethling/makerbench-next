@@ -35,8 +35,8 @@ test.describe("SubmitPage", () => {
     const nameInput = page.getByRole("textbox", { name: /your name/i });
     await expect(nameInput).toBeVisible();
 
-    // Optional GitHub URL field
-    const githubInput = page.getByRole("textbox", { name: /your github url/i });
+    // Optional GitHub username field
+    const githubInput = page.getByRole("textbox", { name: /github username/i });
     await expect(githubInput).toBeVisible();
   });
 

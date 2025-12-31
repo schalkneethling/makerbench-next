@@ -13,7 +13,7 @@ interface FormErrors {
   url?: string;
   tags?: string;
   submitterName?: string;
-  submitterGithubUrl?: string;
+  submitterGithubUsername?: string;
 }
 
 /**
@@ -26,7 +26,7 @@ export function SubmitPage() {
   const [url, setUrl] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [submitterName, setSubmitterName] = useState("");
-  const [submitterGithubUrl, setSubmitterGithubUrl] = useState("");
+  const [submitterGithubUsername, setSubmitterGithubUsername] = useState("");
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   /**
@@ -37,7 +37,7 @@ export function SubmitPage() {
       url: url.trim(),
       tags,
       submitterName: submitterName.trim() || undefined,
-      submitterGithubUrl: submitterGithubUrl.trim() || undefined,
+      submitterGithubUsername: submitterGithubUsername.trim() || undefined,
     };
 
     const result = bookmarkRequestSchema.safeParse(data);
@@ -73,7 +73,7 @@ export function SubmitPage() {
       url: url.trim(),
       tags,
       submitterName: submitterName.trim() || undefined,
-      submitterGithubUrl: submitterGithubUrl.trim() || undefined,
+      submitterGithubUsername: submitterGithubUsername.trim() || undefined,
     };
 
     const result = await submit(data);
@@ -83,7 +83,7 @@ export function SubmitPage() {
       setUrl("");
       setTags([]);
       setSubmitterName("");
-      setSubmitterGithubUrl("");
+      setSubmitterGithubUsername("");
       setFormErrors({});
     }
   }
@@ -168,13 +168,13 @@ export function SubmitPage() {
           />
 
           <TextInput
-            label="Your GitHub URL"
-            type="url"
-            value={submitterGithubUrl}
-            onChange={(e) => setSubmitterGithubUrl(e.target.value)}
-            placeholder="https://github.com/username"
-            error={formErrors.submitterGithubUrl}
-            hint="Link to your GitHub profile"
+            label="GitHub Username"
+            type="text"
+            value={submitterGithubUsername}
+            onChange={(e) => setSubmitterGithubUsername(e.target.value)}
+            placeholder="username"
+            error={formErrors.submitterGithubUsername}
+            hint="Your GitHub username for profile link"
           />
         </fieldset>
 

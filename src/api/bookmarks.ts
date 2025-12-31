@@ -225,12 +225,22 @@ export async function searchBookmarks(
 export async function submitBookmark(
   data: BookmarkRequest,
 ): Promise<SubmitBookmarkResponse> {
+  // Transform username to full GitHub URL for API
+  const payload = {
+    ...data,
+    submitterGithubUrl: data.submitterGithubUsername
+      ? `https://github.com/${data.submitterGithubUsername}`
+      : undefined,
+  };
+  // Remove the username field - API expects the URL
+  delete (payload as Record<string, unknown>).submitterGithubUsername;
+
   const response = await fetch(`${getBaseUrl()}/api/bookmarks`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
 
   const json = await response.json();
