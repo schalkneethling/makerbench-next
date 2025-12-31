@@ -137,6 +137,33 @@ Kill any lingering processes from this workspace before handing off.
 
 **When in doubt, consult the documentation.**
 
+## Database Migrations (Turso)
+
+**CRITICAL: Schema changes must be pushed to Turso before deploying code that depends on them.**
+
+### Development Setup
+
+1. Copy `.env.example` to `.env` and fill in Turso credentials
+2. Push schema to database: `npx drizzle-kit push`
+
+### When Schema Changes
+
+After modifying `src/db/schema.ts`:
+
+1. Generate migration: `npx drizzle-kit generate`
+2. Push to Turso: `npx drizzle-kit push`
+3. Verify locally with `netlify dev` before deploying
+
+### Production Deployment
+
+**Before deploying code with schema changes:**
+
+1. Ensure `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` are set in Netlify environment variables
+2. Run `npx drizzle-kit push` against production database
+3. Then deploy the code
+
+**Order matters:** Database schema must be updated BEFORE code that uses new columns is deployed, or requests will fail with "table has no column" errors.
+
 ## TypeScript Type Declarations
 
 **CRITICAL: NEVER create custom `.d.ts` files without first checking for official types.**
