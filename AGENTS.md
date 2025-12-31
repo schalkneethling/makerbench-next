@@ -390,6 +390,33 @@ Note: `line-clamp` requires `overflow: hidden` to clip content; otherwise only t
 
 If a feature requires vendor prefixes, it's likely not ready for production or there's a standard alternative.
 
+## CSS: Combine Duplicate Selectors
+
+When multiple selectors share identical styles, combine them into a single rule block.
+
+```css
+/* BAD: Duplicate style blocks */
+.SearchInput-iconSvg {
+  block-size: var(--size-20);
+  display: block;
+  inline-size: var(--size-20);
+}
+
+.SearchInput-clearIcon {
+  block-size: var(--size-20);
+  display: block;
+  inline-size: var(--size-20);
+}
+
+/* GOOD: Combined selectors */
+.SearchInput-iconSvg,
+.SearchInput-clearIcon {
+  block-size: var(--size-20);
+  display: block;
+  inline-size: var(--size-20);
+}
+```
+
 ## CSS: Logical Properties
 
 **CRITICAL: Use logical properties instead of physical shorthand properties.**
