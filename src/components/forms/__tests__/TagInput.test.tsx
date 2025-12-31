@@ -32,6 +32,18 @@ describe("TagInput", () => {
     expect(onTagsChange).toHaveBeenCalledWith(["TypeScript"]);
   });
 
+  it("adds tag on blur (Tab to next field)", async () => {
+    const onTagsChange = vi.fn();
+    const user = userEvent.setup();
+    render(<TagInput {...defaultProps} onTagsChange={onTagsChange} />);
+
+    const input = screen.getByRole("textbox", { name: "Tags" });
+    await user.type(input, "React");
+    await user.tab();
+
+    expect(onTagsChange).toHaveBeenCalledWith(["React"]);
+  });
+
   it("does not add empty tags", async () => {
     const onTagsChange = vi.fn();
     const user = userEvent.setup();

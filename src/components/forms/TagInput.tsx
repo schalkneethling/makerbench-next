@@ -93,6 +93,13 @@ export function TagInput({
     }
   }
 
+  /**
+   * Adds pending tag when input loses focus (e.g., Tab to next field).
+   */
+  function handleBlur() {
+    addTag(inputValue);
+  }
+
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const value = event.target.value;
 
@@ -186,6 +193,7 @@ export function TagInput({
           value={inputValue}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
           placeholder={canAddMore ? placeholder : "Maximum tags reached"}
           disabled={!canAddMore}
           aria-invalid={error ? true : undefined}
