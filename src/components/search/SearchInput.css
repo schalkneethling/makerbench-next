@@ -1,0 +1,81 @@
+/**
+ * SearchInput Component Styles
+ */
+
+.SearchInput {
+  display: flex;
+  flex-direction: column;
+}
+
+.SearchInput-wrapper {
+  align-items: center;
+  display: flex;
+  position: relative;
+}
+
+.SearchInput-icon {
+  color: var(--color-text-muted);
+  inset-block-start: 50%;
+  inset-inline-start: var(--size-16);
+  pointer-events: none;
+  position: absolute;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.SearchInput-field {
+  background-color: var(--color-surface-raised);
+  border: var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font: var(--typography-body-base);
+  inline-size: 100%;
+  padding-block: var(--size-12);
+  padding-inline: calc(var(--size-16) + var(--size-20) + var(--size-8));
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.SearchInput-field::placeholder {
+  color: var(--color-text-muted);
+}
+
+.SearchInput-field:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.SearchInput-field:focus-visible {
+  box-shadow: 0 0 0 var(--size-4) var(--color-focus-ring);
+}
+
+/* Remove default search input styling (clear button, etc.) */
+.SearchInput-field::-webkit-search-cancel-button,
+.SearchInput-field::-webkit-search-decoration {
+  appearance: none;
+}
+
+.SearchInput-clear {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  inset-block-start: 50%;
+  inset-inline-end: var(--size-16);
+  padding: var(--size-4);
+  position: absolute;
+  transform: translateY(-50%);
+  transition: color var(--transition-fast);
+  z-index: 1;
+}
+
+.SearchInput-clear:hover {
+  color: var(--color-text);
+}
+
+.SearchInput-clear:focus-visible {
+  border-radius: var(--radius-sm);
+  outline: var(--outline-focus);
+  outline-offset: var(--focus-ring-offset-sm);
+}
