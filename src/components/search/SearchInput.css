@@ -23,7 +23,8 @@
   z-index: 1;
 }
 
-.SearchInput-iconSvg {
+.SearchInput-iconSvg,
+.SearchInput-clearIcon {
   block-size: var(--size-20);
   display: block;
   inline-size: var(--size-20);
@@ -84,10 +85,4 @@
   border-radius: var(--radius-sm);
   outline: var(--outline-focus);
   outline-offset: var(--focus-ring-offset-sm);
-}
-
-.SearchInput-clearIcon {
-  block-size: var(--size-20);
-  display: block;
-  inline-size: var(--size-20);
 }
