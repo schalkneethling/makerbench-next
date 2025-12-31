@@ -64,7 +64,7 @@ describe("useSubmitBookmark", () => {
   it("submits a bookmark successfully", async () => {
     const { result } = renderHook(() => useSubmitBookmark());
 
-    let submitResult: Awaited<ReturnType<typeof result.current.submit>>;
+    let submitResult!: Awaited<ReturnType<typeof result.current.submit>>;
 
     await act(async () => {
       submitResult = await result.current.submit({
@@ -77,7 +77,7 @@ describe("useSubmitBookmark", () => {
     expect(result.current.error).toBeNull();
     expect(result.current.response?.bookmarkId).toBe("new-bookmark-id");
     expect(result.current.response?.message).toContain("successfully");
-    expect(submitResult!.bookmarkId).toBe("new-bookmark-id");
+    expect(submitResult?.bookmarkId).toBe("new-bookmark-id");
   });
 
   it("sets isSubmitting during request", async () => {
@@ -101,7 +101,7 @@ describe("useSubmitBookmark", () => {
   it("handles validation errors", async () => {
     const { result } = renderHook(() => useSubmitBookmark());
 
-    let submitResult: Awaited<ReturnType<typeof result.current.submit>>;
+    let submitResult!: Awaited<ReturnType<typeof result.current.submit>>;
 
     await act(async () => {
       submitResult = await result.current.submit({
