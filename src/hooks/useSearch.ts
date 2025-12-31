@@ -38,7 +38,7 @@ export function useSearch(debounceMs = DEBOUNCE_MS): UseSearchReturn {
   });
 
   const [searchParams, setSearchParams] = useState<SearchBookmarksParams | null>(null);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const executeSearch = useCallback(async (params: SearchBookmarksParams) => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
