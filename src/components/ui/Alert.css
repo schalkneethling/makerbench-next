@@ -12,13 +12,12 @@
 }
 
 .Alert-icon {
-  align-items: center;
   block-size: var(--size-20);
   border-radius: var(--radius-full);
-  display: flex;
+  display: grid;
   flex-shrink: 0;
   inline-size: var(--size-20);
-  justify-content: center;
+  place-items: center;
 }
 
 .Alert-iconSvg {

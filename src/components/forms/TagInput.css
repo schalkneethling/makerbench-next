@@ -64,15 +64,14 @@
 }
 
 .TagInput-tagRemove {
-  align-items: center;
   background: none;
   border: none;
   border-radius: var(--radius-full);
   color: var(--color-text-muted);
   cursor: pointer;
-  display: inline-flex;
-  justify-content: center;
+  display: inline-grid;
   padding: var(--size-4);
+  place-items: center;
   transition: color var(--transition-fast);
 }
 

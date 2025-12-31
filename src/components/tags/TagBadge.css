@@ -35,16 +35,14 @@
 }
 
 .TagBadge-remove {
-  align-items: center;
   background: none;
   border: none;
   border-radius: 50%;
   color: var(--color-text-muted);
   cursor: pointer;
-  display: inline-flex;
-  justify-content: center;
-  padding-block: var(--size-4);
-  padding-inline: var(--size-4);
+  display: inline-grid;
+  padding: var(--size-4);
+  place-items: center;
   transition: color var(--transition-fast);
 }
 
