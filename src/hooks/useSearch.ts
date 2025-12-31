@@ -123,7 +123,9 @@ export function useSearch(debounceMs = DEBOUNCE_MS): UseSearchReturn {
     });
   }, []);
 
-  // Cleanup debounce on unmount
+  // Clear any pending debounced search when component unmounts
+  // Note: Active timeouts are already cleared in search() and reset(),
+  // this is a safety cleanup for edge cases (e.g., unmount during debounce delay)
   useEffect(() => {
     return () => {
       if (debounceRef.current) {
