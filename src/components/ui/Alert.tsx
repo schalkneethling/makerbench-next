@@ -1,19 +1,15 @@
 import { useId, useState, type ReactNode } from "react";
 
+import { Button } from "./Button";
 import "./Alert.css";
 
 export type AlertVariant = "success" | "error" | "warning" | "info";
 
 export interface AlertProps {
-  /** Visual style variant */
   variant: AlertVariant;
-  /** Alert content */
   children: ReactNode;
-  /** Whether alert can be dismissed */
   dismissible?: boolean;
-  /** Callback when dismissed */
   onDismiss?: () => void;
-  /** Optional custom className */
   className?: string;
 }
 
@@ -61,8 +57,8 @@ export function Alert({
       </span>
       <div className="Alert-content">{children}</div>
       {dismissible && (
-        <button
-          type="button"
+        <Button
+          variant="ghost"
           className="Alert-dismiss"
           onClick={handleDismiss}
           aria-labelledby={dismissLabelId}
@@ -71,7 +67,7 @@ export function Alert({
             Dismiss alert
           </span>
           <span aria-hidden="true">×</span>
-        </button>
+        </Button>
       )}
     </div>
   );

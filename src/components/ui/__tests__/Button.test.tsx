@@ -24,6 +24,13 @@ describe("Button", () => {
     expect(button).not.toHaveClass("Button--primary");
   });
 
+  it("applies ghost variant when specified", () => {
+    render(<Button variant="ghost">Ghost</Button>);
+    const button = screen.getByRole("button");
+    expect(button).toHaveClass("Button--ghost");
+    expect(button).not.toHaveClass("Button--primary");
+  });
+
   it("is disabled when loading", () => {
     render(<Button isLoading>Loading</Button>);
     expect(screen.getByRole("button")).toBeDisabled();
