@@ -17,11 +17,13 @@
   border-radius: var(--radius-full);
   display: flex;
   flex-shrink: 0;
-  font-size: var(--text-xs);
-  font-weight: var(--font-weight-bold);
   inline-size: var(--size-20);
   justify-content: center;
-  line-height: var(--line-height-none);
+}
+
+.Alert-iconSvg {
+  block-size: var(--size-12);
+  inline-size: var(--size-12);
 }
 
 .Alert-content {
@@ -34,15 +36,18 @@
 .Alert-dismiss {
   block-size: var(--size-24);
   flex-shrink: 0;
-  font-size: var(--text-lg);
   inline-size: var(--size-24);
-  line-height: var(--line-height-none);
   margin-block-start: calc(-1 * var(--size-4));
   opacity: 0.7;
 }
 
 .Alert-dismiss:hover {
   opacity: 1;
+}
+
+.Alert-dismissIcon {
+  block-size: var(--size-16);
+  inline-size: var(--size-16);
 }
 
 /* Success variant */

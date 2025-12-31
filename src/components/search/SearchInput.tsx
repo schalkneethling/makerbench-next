@@ -1,4 +1,5 @@
 import { useId, useState, useEffect, type ChangeEvent } from "react";
+import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import "./SearchInput.css";
 
 export interface SearchInputProps {
@@ -53,18 +54,7 @@ export function SearchInput({
       </label>
       <div className="SearchInput-wrapper">
         <span className="SearchInput-icon" aria-hidden="true">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M9 3a6 6 0 1 0 0 12 6 6 0 0 0 0-12ZM1 9a8 8 0 1 1 14.32 4.906l3.387 3.387a1 1 0 0 1-1.414 1.414l-3.387-3.387A8 8 0 0 1 1 9Z"
-              fill="currentColor"
-            />
-          </svg>
+          <MagnifyingGlassIcon className="SearchInput-iconSvg" />
         </span>
         <input
           id={id}
@@ -84,19 +74,7 @@ export function SearchInput({
             <span id={`${id}-clear-label`} className="visually-hidden">
               Clear search
             </span>
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              <path
-                d="M10 9.293l3.646-3.647a.5.5 0 0 1 .708.708L10.707 10l3.647 3.646a.5.5 0 0 1-.708.708L10 10.707l-3.646 3.647a.5.5 0 0 1-.708-.708L9.293 10 5.646 6.354a.5.5 0 1 1 .708-.708L10 9.293Z"
-                fill="currentColor"
-              />
-            </svg>
+            <XMarkIcon className="SearchInput-clearIcon" aria-hidden="true" />
           </button>
         )}
       </div>

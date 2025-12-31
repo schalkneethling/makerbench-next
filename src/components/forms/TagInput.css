@@ -71,11 +71,14 @@
   color: var(--color-text-muted);
   cursor: pointer;
   display: inline-flex;
-  font-size: var(--text-base);
   justify-content: center;
-  line-height: var(--line-height-none);
   padding: var(--size-4);
   transition: color var(--transition-fast);
+}
+
+.TagInput-tagRemoveIcon {
+  block-size: var(--size-16);
+  inline-size: var(--size-16);
 }
 
 .TagInput-tagRemove:hover {

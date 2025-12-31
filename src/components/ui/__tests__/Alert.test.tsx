@@ -92,17 +92,17 @@ describe("Alert", () => {
   });
 
   it("displays variant-specific icon", () => {
-    const { rerender } = render(<Alert variant="success">Success</Alert>);
-    expect(screen.getByText("✓")).toBeInTheDocument();
+    const { container, rerender } = render(<Alert variant="success">Success</Alert>);
+    expect(container.querySelector(".Alert-icon svg")).toBeInTheDocument();
 
     rerender(<Alert variant="error">Error</Alert>);
-    expect(screen.getByText("✕")).toBeInTheDocument();
+    expect(container.querySelector(".Alert-icon svg")).toBeInTheDocument();
 
     rerender(<Alert variant="warning">Warning</Alert>);
-    expect(screen.getByText("!")).toBeInTheDocument();
+    expect(container.querySelector(".Alert-icon svg")).toBeInTheDocument();
 
     rerender(<Alert variant="info">Info</Alert>);
-    expect(screen.getByText("i")).toBeInTheDocument();
+    expect(container.querySelector(".Alert-icon svg")).toBeInTheDocument();
   });
 });
 

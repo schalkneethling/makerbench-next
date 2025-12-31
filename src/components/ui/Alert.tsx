@@ -1,4 +1,10 @@
-import { useId, useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode, type ComponentType, type SVGProps } from "react";
+import {
+  CheckIcon,
+  XMarkIcon,
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/20/solid";
 
 import { Button } from "./Button";
 import "./Alert.css";
@@ -13,11 +19,13 @@ export interface AlertProps {
   className?: string;
 }
 
-const ICONS: Record<AlertVariant, string> = {
-  success: "✓",
-  error: "✕",
-  warning: "!",
-  info: "i",
+type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
+
+const ICONS: Record<AlertVariant, IconComponent> = {
+  success: CheckIcon,
+  error: XMarkIcon,
+  warning: ExclamationTriangleIcon,
+  info: InformationCircleIcon,
 };
 
 /**
@@ -45,6 +53,7 @@ export function Alert({
 
   // Use polite for info/success, assertive for errors/warnings
   const politeness = variant === "error" || variant === "warning" ? "assertive" : "polite";
+  const Icon = ICONS[variant];
 
   return (
     <div
@@ -53,7 +62,7 @@ export function Alert({
       className={`Alert Alert--${variant} ${className}`.trim()}
     >
       <span className="Alert-icon" aria-hidden="true">
-        {ICONS[variant]}
+        <Icon className="Alert-iconSvg" />
       </span>
       <div className="Alert-content">{children}</div>
       {dismissible && (
@@ -66,7 +75,7 @@ export function Alert({
           <span id={dismissLabelId} className="visually-hidden">
             Dismiss alert
           </span>
-          <span aria-hidden="true">×</span>
+          <XMarkIcon className="Alert-dismissIcon" aria-hidden="true" />
         </Button>
       )}
     </div>
