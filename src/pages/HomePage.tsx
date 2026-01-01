@@ -96,11 +96,24 @@ export function HomePage() {
 
       if (value.trim() === "" && selectedTags.length === 0) {
         resetSearch();
-      } else {
-        search({ q: value.trim() || undefined, tags: selectedTags.length > 0 ? selectedTags : undefined });
+        return;
       }
+
+      // Convert tag IDs to names for search API
+      const tagNames: string[] = [];
+      for (const id of selectedTags) {
+        const tag = availableTags.find((t) => t.id === id);
+        if (tag) {
+          tagNames.push(tag.label);
+        }
+      }
+
+      search({
+        q: value.trim() || undefined,
+        tags: tagNames.length > 0 ? tagNames : undefined,
+      });
     },
-    [selectedTags, search, resetSearch]
+    [selectedTags, availableTags, search, resetSearch]
   );
 
   /**

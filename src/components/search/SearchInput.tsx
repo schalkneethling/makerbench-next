@@ -17,7 +17,8 @@ export interface SearchInputProps {
 
 /**
  * Search input with integrated search icon and clear button.
- * Note: Debouncing should be handled by the parent (e.g., useSearch hook).
+ * Uses local state for responsive typing; syncs with parent via callback.
+ * Debouncing should be handled by the parent (e.g., useSearch hook).
  */
 export function SearchInput({
   label,
