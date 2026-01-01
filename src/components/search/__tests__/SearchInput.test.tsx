@@ -1,10 +1,37 @@
+import { useState } from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SearchInput } from "../SearchInput";
 
-describe("SearchInput", () => {
+/**
+ * Wrapper that manages state for controlled SearchInput testing.
+ */
+function ControlledSearchInput({
+  initialValue = "",
+  onSearchChange,
+}: {
+  initialValue?: string;
+  onSearchChange?: (value: string) => void;
+}) {
+  const [value, setValue] = useState(initialValue);
 
+  function handleChange(newValue: string) {
+    setValue(newValue);
+    onSearchChange?.(newValue);
+  }
+
+  return (
+    <SearchInput
+      label="Search"
+      value={value}
+      onSearchChange={handleChange}
+      placeholder="Search..."
+    />
+  );
+}
+
+describe("SearchInput", () => {
   it("renders with label and search icon", () => {
     const handleSearchChange = vi.fn();
     render(
@@ -19,48 +46,17 @@ describe("SearchInput", () => {
     expect(input).toBeInTheDocument();
   });
 
-  it("calls onSearchChange immediately on input change", async () => {
+  it("calls onSearchChange on input change", async () => {
     const handleSearchChange = vi.fn();
     const user = userEvent.setup();
 
-    render(
-      <SearchInput
-        label="Search"
-        value=""
-        onSearchChange={handleSearchChange}
-      />,
-    );
+    render(<ControlledSearchInput onSearchChange={handleSearchChange} />);
 
     const input = screen.getByRole("searchbox");
     await user.type(input, "test");
 
-    // Should be called for each character typed
-    expect(handleSearchChange).toHaveBeenCalled();
+    expect(handleSearchChange).toHaveBeenCalledTimes(4);
     expect(handleSearchChange).toHaveBeenLastCalledWith("test");
-  });
-
-  it("calls onSearchChange for each character typed", async () => {
-    const handleSearchChange = vi.fn();
-    const user = userEvent.setup();
-
-    render(
-      <SearchInput
-        label="Search"
-        value=""
-        onSearchChange={handleSearchChange}
-      />,
-    );
-
-    const input = screen.getByRole("searchbox");
-
-    // Type multiple characters
-    await user.type(input, "abc");
-
-    // Should be called for each character
-    expect(handleSearchChange).toHaveBeenCalledTimes(3);
-    expect(handleSearchChange).toHaveBeenNthCalledWith(1, "a");
-    expect(handleSearchChange).toHaveBeenNthCalledWith(2, "ab");
-    expect(handleSearchChange).toHaveBeenNthCalledWith(3, "abc");
   });
 
   it("shows clear button when value is present", () => {
@@ -73,7 +69,9 @@ describe("SearchInput", () => {
       />,
     );
 
-    expect(screen.queryByRole("button", { name: /clear search/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /clear search/i }),
+    ).not.toBeInTheDocument();
 
     rerender(
       <SearchInput
@@ -83,20 +81,16 @@ describe("SearchInput", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: /clear search/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /clear search/i }),
+    ).toBeInTheDocument();
   });
 
-  it("clears value immediately when clear button is clicked", async () => {
+  it("calls onSearchChange with empty string when clear clicked", async () => {
     const handleSearchChange = vi.fn();
     const user = userEvent.setup();
 
-    render(
-      <SearchInput
-        label="Search"
-        value="test"
-        onSearchChange={handleSearchChange}
-      />,
-    );
+    render(<ControlledSearchInput initialValue="test" onSearchChange={handleSearchChange} />);
 
     const clearButton = screen.getByRole("button", { name: /clear search/i });
     await user.click(clearButton);
@@ -104,7 +98,7 @@ describe("SearchInput", () => {
     expect(handleSearchChange).toHaveBeenCalledWith("");
   });
 
-  it("syncs local value when prop value changes externally", () => {
+  it("displays value prop in input", () => {
     const handleSearchChange = vi.fn();
     const { rerender } = render(
       <SearchInput

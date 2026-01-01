@@ -1,4 +1,4 @@
-import { useId, useState, useEffect, type ChangeEvent } from "react";
+import { useId, type ChangeEvent } from "react";
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import "./SearchInput.css";
 
@@ -17,7 +17,7 @@ export interface SearchInputProps {
 
 /**
  * Search input with integrated search icon and clear button.
- * Uses local state for responsive typing; syncs with parent via callback.
+ * Fully controlled - parent owns the state.
  * Debouncing should be handled by the parent (e.g., useSearch hook).
  */
 export function SearchInput({
@@ -28,25 +28,16 @@ export function SearchInput({
   className = "",
 }: SearchInputProps) {
   const id = useId();
-  const [localValue, setLocalValue] = useState(value);
-
-  // Sync local value when prop changes externally
-  useEffect(() => {
-    setLocalValue(value);
-  }, [value]);
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
-    const newValue = event.target.value;
-    setLocalValue(newValue);
-    onSearchChange(newValue);
+    onSearchChange(event.target.value);
   }
 
   function handleClear() {
-    setLocalValue("");
     onSearchChange("");
   }
 
-  const hasValue = localValue.length > 0;
+  const hasValue = value.length > 0;
 
   return (
     <search className={`SearchInput ${className}`.trim()}>
@@ -61,7 +52,7 @@ export function SearchInput({
           id={id}
           type="search"
           className="SearchInput-field"
-          value={localValue}
+          value={value}
           onChange={handleChange}
           placeholder={placeholder}
         />
