@@ -12,3 +12,9 @@ export type { LogoProps, LogoSize } from "./Logo";
 
 export { TextInput } from "./TextInput";
 export type { TextInputProps } from "./TextInput";
+
+export { ResultCount } from "./ResultCount";
+export type { ResultCountProps } from "./ResultCount";
+
+export { LoadMoreButton } from "./LoadMoreButton";
+export type { LoadMoreButtonProps } from "./LoadMoreButton";

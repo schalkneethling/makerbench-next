@@ -1,0 +1,22 @@
+.TagCloud {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-12);
+}
+
+.TagCloud-list {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-8);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.TagCloud-clear {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
