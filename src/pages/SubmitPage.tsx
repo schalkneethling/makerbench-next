@@ -132,6 +132,7 @@ export function SubmitPage() {
           <legend className="visually-hidden">Tool Details</legend>
 
           <TextInput
+            id="tool-url"
             label="Tool URL"
             type="url"
             value={url}
@@ -143,6 +144,7 @@ export function SubmitPage() {
           />
 
           <TagInput
+            id="tool-tags"
             label="Tags"
             tags={tags}
             onTagsChange={setTags}
@@ -158,6 +160,7 @@ export function SubmitPage() {
           <legend className="SubmitPage-legend">Your Details (Optional)</legend>
 
           <TextInput
+            id="submitter-name"
             label="Your Name"
             type="text"
             value={submitterName}
@@ -168,6 +171,7 @@ export function SubmitPage() {
           />
 
           <TextInput
+            id="submitter-github-username"
             label="GitHub Username"
             type="text"
             value={submitterGithubUsername}

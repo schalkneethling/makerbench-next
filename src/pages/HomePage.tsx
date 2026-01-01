@@ -198,6 +198,7 @@ export function HomePage() {
 
       <div className="HomePage-search">
         <SearchInput
+          id="tool-search"
           label="Search tools"
           value={searchQuery}
           onSearchChange={handleSearchChange}

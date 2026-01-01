@@ -13,6 +13,8 @@ export interface SearchInputProps {
   placeholder?: string;
   /** Additional className */
   className?: string;
+  /** Optional semantic ID base (defaults to auto-generated) */
+  id?: string;
 }
 
 /**
@@ -26,8 +28,10 @@ export function SearchInput({
   onSearchChange,
   placeholder = "Search...",
   className = "",
+  id: providedId,
 }: SearchInputProps) {
-  const id = useId();
+  const autoId = useId();
+  const id = providedId || autoId;
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     onSearchChange(event.target.value);

@@ -22,6 +22,8 @@ export interface TagInputProps {
   hint?: string;
   /** Additional className */
   className?: string;
+  /** Optional semantic ID base (defaults to auto-generated) */
+  id?: string;
 }
 
 /**
@@ -37,9 +39,11 @@ export function TagInput({
   required,
   hint,
   className = "",
+  id: providedId,
 }: TagInputProps) {
   const [inputValue, setInputValue] = useState("");
-  const id = useId();
+  const autoId = useId();
+  const id = providedId || autoId;
   const errorId = `${id}-error`;
   const hintId = `${id}-hint`;
   const tagsId = `${id}-tags`;
