@@ -88,14 +88,24 @@ export function HomePage() {
   );
 
   /**
-   * Handles search input changes
+   * Handles search input changes.
+   * Requires minimum 3 characters to trigger search (unless tags selected).
    */
   const handleSearchChange = useCallback(
     (value: string) => {
       setSearchQuery(value);
 
-      if (value.trim() === "" && selectedTags.length === 0) {
+      const trimmed = value.trim();
+      const hasTags = selectedTags.length > 0;
+
+      // Reset if empty and no tags
+      if (trimmed === "" && !hasTags) {
         resetSearch();
+        return;
+      }
+
+      // Require 3+ chars for text search (skip if only filtering by tags)
+      if (trimmed.length > 0 && trimmed.length < 3 && !hasTags) {
         return;
       }
 
@@ -109,7 +119,7 @@ export function HomePage() {
       }
 
       search({
-        q: value.trim() || undefined,
+        q: trimmed.length >= 3 ? trimmed : undefined,
         tags: tagNames.length > 0 ? tagNames : undefined,
       });
     },
