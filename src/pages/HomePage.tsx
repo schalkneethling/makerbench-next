@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { SearchInput } from "../components/search";
 import { TagCloud, type Tag } from "../components/tags";
@@ -46,8 +47,17 @@ function toToolCardProps(bookmarks: Bookmark[]) {
  * Home page - displays tool grid with search and filtering.
  */
 export function HomePage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(
+    () => searchParams.get("q") ?? ""
+  );
+  const [selectedTagNames, setSelectedTagNames] = useState<string[]>(() => {
+    const tagsParam = searchParams.get("tags");
+    return tagsParam ? tagsParam.split(",").filter(Boolean) : [];
+  });
+
+  // Track if initial URL-based search has been triggered
+  const initialSearchTriggered = useRef(false);
 
   // Fetch all bookmarks on mount
   const {
@@ -70,7 +80,8 @@ export function HomePage() {
   } = useSearch();
 
   // Determine if we're in search/filter mode
-  const isFiltering = searchQuery.trim() !== "" || selectedTags.length > 0;
+  const isFiltering =
+    searchQuery.trim() !== "" || selectedTagNames.length > 0;
 
   // Current data depends on mode
   const currentBookmarks = isFiltering ? searchResults : bookmarks;
@@ -81,11 +92,69 @@ export function HomePage() {
   // Extract unique tags from all loaded bookmarks
   const availableTags = useMemo(() => extractTags(bookmarks), [bookmarks]);
 
+  // Convert selected tag names to IDs for TagCloud
+  const selectedTags = useMemo(() => {
+    return selectedTagNames
+      .map((name) => availableTags.find((t) => t.label === name)?.id)
+      .filter((id): id is string => id !== undefined);
+  }, [selectedTagNames, availableTags]);
+
   // Convert to ToolCard format
   const tools = useMemo(
     () => toToolCardProps(currentBookmarks),
     [currentBookmarks]
   );
+
+  /**
+   * Updates URL search params. Uses replace to avoid polluting history.
+   */
+  const updateUrlParams = useCallback(
+    (query: string, tagNames: string[]) => {
+      const params = new URLSearchParams();
+
+      if (query.trim()) {
+        params.set("q", query.trim());
+      }
+
+      if (tagNames.length > 0) {
+        params.set("tags", tagNames.join(","));
+      }
+
+      setSearchParams(params, { replace: true });
+    },
+    [setSearchParams]
+  );
+
+  /**
+   * Trigger search from URL params on initial load (after bookmarks load).
+   * Waits for availableTags so tag-only URL filters work correctly.
+   */
+  useEffect(() => {
+    if (initialSearchTriggered.current) {
+      return;
+    }
+
+    const hasUrlFilters =
+      searchQuery.trim() !== "" || selectedTagNames.length > 0;
+
+    if (!hasUrlFilters) {
+      initialSearchTriggered.current = true;
+      return;
+    }
+
+    // For tag-only filters, wait until tags are available
+    if (selectedTagNames.length > 0 && availableTags.length === 0) {
+      return;
+    }
+
+    initialSearchTriggered.current = true;
+
+    const trimmed = searchQuery.trim();
+    search({
+      q: trimmed.length >= 3 ? trimmed : undefined,
+      tags: selectedTagNames.length > 0 ? selectedTagNames : undefined,
+    });
+  }, [searchQuery, selectedTagNames, availableTags, search]);
 
   /**
    * Handles search input changes.
@@ -96,34 +165,29 @@ export function HomePage() {
       setSearchQuery(value);
 
       const trimmed = value.trim();
-      const hasTags = selectedTags.length > 0;
+      const hasTags = selectedTagNames.length > 0;
 
       // Reset if empty and no tags
       if (trimmed === "" && !hasTags) {
         resetSearch();
+        updateUrlParams("", []);
         return;
       }
+
+      // Update URL immediately for shareability
+      updateUrlParams(value, selectedTagNames);
 
       // Require 3+ chars for text search (skip if only filtering by tags)
       if (trimmed.length > 0 && trimmed.length < 3 && !hasTags) {
         return;
       }
 
-      // Convert tag IDs to names for search API
-      const tagNames: string[] = [];
-      for (const id of selectedTags) {
-        const tag = availableTags.find((t) => t.id === id);
-        if (tag) {
-          tagNames.push(tag.label);
-        }
-      }
-
       search({
         q: trimmed.length >= 3 ? trimmed : undefined,
-        tags: tagNames.length > 0 ? tagNames : undefined,
+        tags: hasTags ? selectedTagNames : undefined,
       });
     },
-    [selectedTags, availableTags, search, resetSearch]
+    [selectedTagNames, search, resetSearch, updateUrlParams]
   );
 
   /**
@@ -131,47 +195,45 @@ export function HomePage() {
    */
   const handleTagToggle = useCallback(
     (tagId: string) => {
-      setSelectedTags((prev) => {
-        const newTags = prev.includes(tagId)
-          ? prev.filter((id) => id !== tagId)
-          : [...prev, tagId];
+      // Find tag name from ID
+      const tag = availableTags.find((t) => t.id === tagId);
+      if (!tag) {
+        return;
+      }
 
-        // Convert tag IDs to names for search API
-        const tagNames: string[] = [];
-        for (const id of newTags) {
-          const tag = availableTags.find((t) => t.id === id);
-          if (tag) {
-            tagNames.push(tag.label);
-          }
-        }
+      const tagName = tag.label;
+      const newTagNames = selectedTagNames.includes(tagName)
+        ? selectedTagNames.filter((name) => name !== tagName)
+        : [...selectedTagNames, tagName];
 
-        if (newTags.length === 0 && searchQuery.trim() === "") {
-          resetSearch();
-        } else {
-          search({
-            q: searchQuery.trim() || undefined,
-            tags: tagNames.length > 0 ? tagNames : undefined,
-          });
-        }
+      setSelectedTagNames(newTagNames);
+      updateUrlParams(searchQuery, newTagNames);
 
-        return newTags;
-      });
+      if (newTagNames.length === 0 && searchQuery.trim() === "") {
+        resetSearch();
+      } else {
+        search({
+          q: searchQuery.trim() || undefined,
+          tags: newTagNames.length > 0 ? newTagNames : undefined,
+        });
+      }
     },
-    [availableTags, searchQuery, search, resetSearch]
+    [availableTags, selectedTagNames, searchQuery, search, resetSearch, updateUrlParams]
   );
 
   /**
    * Clears all selected tags
    */
   const handleClearTags = useCallback(() => {
-    setSelectedTags([]);
+    setSelectedTagNames([]);
+    updateUrlParams(searchQuery, []);
 
     if (searchQuery.trim() === "") {
       resetSearch();
     } else {
       search({ q: searchQuery.trim() });
     }
-  }, [searchQuery, search, resetSearch]);
+  }, [searchQuery, search, resetSearch, updateUrlParams]);
 
   /**
    * Handles load more button click
