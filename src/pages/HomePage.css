@@ -1,0 +1,47 @@
+/**
+ * HomePage Styles
+ */
+
+.HomePage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-32);
+  padding-block: var(--size-32);
+  padding-inline: var(--size-16);
+}
+
+.HomePage-hero {
+  text-align: center;
+}
+
+.HomePage-title {
+  color: var(--color-text);
+  font: var(--typography-heading-3xl);
+  margin: 0;
+}
+
+.HomePage-subtitle {
+  color: var(--color-text-muted);
+  font: var(--typography-body-lg);
+  margin-block-start: var(--size-8);
+}
+
+.HomePage-search {
+  margin-inline: auto;
+  max-inline-size: 32rem;
+}
+
+.HomePage-tags {
+  justify-content: center;
+}
+
+.HomePage-results {
+  text-align: center;
+}
+
+.HomePage-loadMore {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--size-16);
+}
+
