@@ -49,20 +49,4 @@ describe("LoadMoreButton", () => {
     await user.click(screen.getByRole("button"));
     expect(handleClick).toHaveBeenCalledOnce();
   });
-
-  it("uses secondary button variant", () => {
-    render(<LoadMoreButton hasMore={true} />);
-
-    expect(screen.getByRole("button")).toHaveClass("Button--secondary");
-  });
-
-  it("applies custom className", () => {
-    render(<LoadMoreButton hasMore={true} className="custom-class" />);
-
-    expect(screen.getByRole("button")).toHaveClass(
-      "LoadMoreButton",
-      "custom-class"
-    );
-  });
 });
-

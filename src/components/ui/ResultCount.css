@@ -3,7 +3,7 @@
   font-size: var(--text-sm);
 }
 
-.ResultCount strong {
+.ResultCount-value {
   color: var(--color-text);
   font-weight: var(--font-weight-semibold);
 }

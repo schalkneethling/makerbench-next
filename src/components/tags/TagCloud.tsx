@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 import { TagBadge } from "./TagBadge";
 import { Button } from "../ui/Button";
 
@@ -35,6 +37,7 @@ export function TagCloud({
   label = "Filter by tag",
   className = "",
 }: TagCloudProps) {
+  const headingId = useId();
   const hasSelection = selectedIds.length > 0;
 
   if (tags.length === 0) {
@@ -42,11 +45,10 @@ export function TagCloud({
   }
 
   return (
-    <div
-      className={`TagCloud ${className}`.trim()}
-      role="group"
-      aria-label={label}
-    >
+    <section className={`TagCloud ${className}`.trim()} aria-labelledby={headingId}>
+      <h2 id={headingId} className="visually-hidden">
+        {label}
+      </h2>
       <ul className="TagCloud-list" role="list">
         {tags.map((tag) => (
           <li key={tag.id}>
@@ -68,7 +70,7 @@ export function TagCloud({
           Clear all
         </Button>
       )}
-    </div>
+    </section>
   );
 }
 

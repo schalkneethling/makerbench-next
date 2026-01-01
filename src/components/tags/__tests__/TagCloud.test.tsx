@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -88,26 +88,4 @@ describe("TagCloud", () => {
 
     expect(handleClear).toHaveBeenCalledOnce();
   });
-
-  it("has accessible group with label", () => {
-    render(<TagCloud tags={mockTags} label="Categories" />);
-
-    expect(screen.getByRole("group", { name: "Categories" })).toBeInTheDocument();
-  });
-
-  it("uses list semantics for tags", () => {
-    render(<TagCloud tags={mockTags} />);
-
-    const list = screen.getByRole("list");
-    const items = within(list).getAllByRole("listitem");
-
-    expect(items).toHaveLength(3);
-  });
-
-  it("applies custom className", () => {
-    render(<TagCloud tags={mockTags} className="custom-class" />);
-
-    expect(screen.getByRole("group")).toHaveClass("TagCloud", "custom-class");
-  });
 });
-

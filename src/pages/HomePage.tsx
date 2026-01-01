@@ -113,10 +113,14 @@ export function HomePage() {
           ? prev.filter((id) => id !== tagId)
           : [...prev, tagId];
 
-        // Find tag names from IDs
-        const tagNames = newTags
-          .map((id) => availableTags.find((t) => t.id === id)?.label)
-          .filter((name): name is string => name !== undefined);
+        // Convert tag IDs to names for search API
+        const tagNames: string[] = [];
+        for (const id of newTags) {
+          const tag = availableTags.find((t) => t.id === id);
+          if (tag) {
+            tagNames.push(tag.label);
+          }
+        }
 
         if (newTags.length === 0 && searchQuery.trim() === "") {
           resetSearch();
@@ -196,7 +200,7 @@ export function HomePage() {
       )}
 
       <div className="HomePage-results">
-        <ResultCount visible={tools.length} total={total} />
+        <ResultCount count={tools.length} total={total} />
       </div>
 
       <ToolGrid
