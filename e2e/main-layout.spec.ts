@@ -7,12 +7,13 @@ test.describe("MainLayout", () => {
 
   test("has correct accessible structure", async ({ page }) => {
     // Verify full layout structure with skip link, header, main, footer
+    // Note: Tests high-level landmarks only, not page content (which varies)
     await expect(page.locator(".MainLayout")).toMatchAriaSnapshot(`
       - link "Skip to main content"
       - banner:
         - link "Maker Bench"
         - navigation "Primary":
-          - button "Submit Tool"
+          - link "Submit Tool"
       - main
       - contentinfo:
         - paragraph: /© \\d{4} MakerBench/

@@ -672,12 +672,13 @@ If you find yourself testing that native elements do what they're supposed to do
 ```typescript
 // GOOD: Single snapshot captures entire accessible structure
 test("has correct accessible structure", async ({ page }) => {
-  await expect(page.locator("header")).toMatchAriaSnapshot(`
+  // Use specific class selector if page has multiple <header> elements
+  await expect(page.locator(".Header")).toMatchAriaSnapshot(`
     - banner:
       - link "Maker Bench":
         - /url: /
       - navigation "Primary":
-        - button "Submit Tool"
+        - link "Submit Tool"
   `);
 });
 
@@ -700,6 +701,28 @@ Benefits:
 - Single assertion = less maintenance
 - Diffs show exactly what changed
 - Aligned with how screen readers perceive the page
+
+### CRITICAL: Keep ARIA Snapshots in Sync
+
+**When modifying component structure, ALWAYS update corresponding ARIA snapshot tests.**
+
+ARIA snapshots reflect the actual DOM structure. Changes to components (adding wrappers, changing elements, restructuring) MUST be followed by test updates.
+
+**Workflow:**
+
+1. Modify component structure
+2. Run e2e tests: `npx playwright test --project=chromium`
+3. If ARIA snapshot fails, check the error context file for actual structure
+4. Update test to match actual (correct) structure
+5. Verify tests pass before committing
+
+**Common mismatches:**
+
+- Wrapper `<div>`s appear as `generic` in ARIA tree
+- `LinkButton` (styled link) → `link`, not `button`
+- Styled `<span>`s inside links → `generic` children
+
+**Never ignore failing ARIA tests** - they indicate either a bug in the component or an outdated test expectation.
 
 ## React: You Might Not Need useEffect
 

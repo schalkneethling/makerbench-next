@@ -6,7 +6,8 @@ test.describe("Header", () => {
   });
 
   test("has correct accessible structure", async ({ page }) => {
-    await expect(page.locator("header")).toMatchAriaSnapshot(`
+    // Use specific class selector - page has multiple <header> elements
+    await expect(page.locator(".Header")).toMatchAriaSnapshot(`
       - banner:
         - link "Maker Bench":
           - /url: /
