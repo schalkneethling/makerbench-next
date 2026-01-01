@@ -1,5 +1,5 @@
 import type { Context, Config } from "@netlify/functions";
-import { eq, desc, like, inArray, and, count } from "drizzle-orm";
+import { eq, desc, like, inArray, and, or, count } from "drizzle-orm";
 
 import {
   getDb,
@@ -73,13 +73,31 @@ export default async (req: Request, _context: Context) => {
     // Build conditions
     const conditions = [eq(bookmarksTable.status, "approved")];
 
-    // Add title search if query provided
+    // Search by title OR tag name if query provided
     if (query) {
-      conditions.push(like(bookmarksTable.title, `%${query}%`));
+      // Find bookmarks with tags matching the query
+      const tagMatchRows = await db
+        .selectDistinct({ bookmarkId: bookmarkTagsTable.bookmarkId })
+        .from(bookmarkTagsTable)
+        .innerJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
+        .where(like(tagsTable.name, `%${query}%`));
+
+      const tagMatchIds = tagMatchRows.map((r) => r.bookmarkId);
+
+      // Match title OR tag
+      if (tagMatchIds.length > 0) {
+        conditions.push(
+          or(
+            like(bookmarksTable.title, `%${query}%`),
+            inArray(bookmarksTable.id, tagMatchIds)
+          )!
+        );
+      } else {
+        conditions.push(like(bookmarksTable.title, `%${query}%`));
+      }
     }
 
-    // If tag filters provided, find matching bookmark IDs
-    let tagFilteredIds: string[] | null = null;
+    // If tag filters provided, find matching bookmark IDs (exact match)
     if (tagFilters.length > 0) {
       const tagRows = await db
         .selectDistinct({ bookmarkId: bookmarkTagsTable.bookmarkId })
@@ -87,7 +105,7 @@ export default async (req: Request, _context: Context) => {
         .innerJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
         .where(inArray(tagsTable.name, tagFilters));
 
-      tagFilteredIds = tagRows.map((r) => r.bookmarkId);
+      const tagFilteredIds = tagRows.map((r) => r.bookmarkId);
 
       if (tagFilteredIds.length === 0) {
         // No bookmarks match the tag filter

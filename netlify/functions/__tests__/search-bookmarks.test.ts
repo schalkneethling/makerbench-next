@@ -121,6 +121,8 @@ describe("search-bookmarks", () => {
 
   describe("search functionality", () => {
     it("returns empty results when no bookmarks match", async () => {
+      // Tag search query (no matches)
+      mockDb.where.mockResolvedValueOnce([]);
       // Count query
       mockDb.where.mockResolvedValueOnce([{ total: 0 }]);
       // Bookmarks query
@@ -138,6 +140,8 @@ describe("search-bookmarks", () => {
     });
 
     it("searches by query string in title", async () => {
+      // Tag search query (no tag matches)
+      mockDb.where.mockResolvedValueOnce([]);
       // Count query
       mockDb.where.mockResolvedValueOnce([{ total: 1 }]);
       // Bookmarks query
@@ -217,7 +221,9 @@ describe("search-bookmarks", () => {
     });
 
     it("combines query and tag filters", async () => {
-      // Tag lookup
+      // Tag search query (for "hooks" in tag names - no matches)
+      mockDb.where.mockResolvedValueOnce([]);
+      // Tag filter lookup (for exact "react" tag)
       mockDb.where.mockResolvedValueOnce([{ bookmarkId: "b1" }]);
       // Count query
       mockDb.where.mockResolvedValueOnce([{ total: 1 }]);

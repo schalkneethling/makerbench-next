@@ -5,7 +5,6 @@
 .TagBadge {
   align-items: center;
   background-color: var(--color-surface-sunken);
-  border-radius: var(--radius-full);
   display: inline-flex;
   gap: var(--size-4);
 }
@@ -13,7 +12,6 @@
 .TagBadge-label {
   background: none;
   border: none;
-  border-radius: var(--radius-full);
   color: var(--color-text);
   font: var(--typography-caption);
   padding-block: var(--size-4);
