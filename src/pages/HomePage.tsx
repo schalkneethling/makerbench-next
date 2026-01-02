@@ -33,13 +33,13 @@ function extractTags(bookmarks: Bookmark[]): Tag[] {
  * Transforms bookmarks to ToolCard props format.
  */
 function toToolCardProps(bookmarks: Bookmark[]) {
-  return bookmarks.map((b) => ({
-    id: b.id,
-    title: b.title,
-    description: b.description ?? undefined,
-    imageUrl: b.imageUrl ?? undefined,
-    url: b.url,
-    tags: b.tags.map((t) => ({ id: t.id, name: t.name })),
+  return bookmarks.map((bookmark) => ({
+    id: bookmark.id,
+    title: bookmark.title,
+    description: bookmark.description ?? undefined,
+    imageUrl: bookmark.imageUrl ?? undefined,
+    url: bookmark.url,
+    tags: bookmark.tags.map((tag) => ({ id: tag.id, name: tag.name })),
   }));
 }
 
@@ -95,7 +95,7 @@ export function HomePage() {
   // Convert selected tag names to IDs for TagCloud
   const selectedTags = useMemo(() => {
     return selectedTagNames
-      .map((name) => availableTags.find((t) => t.label === name)?.id)
+      .map((name) => availableTags.find((tag) => tag.label === name)?.id)
       .filter((id): id is string => id !== undefined);
   }, [selectedTagNames, availableTags]);
 
@@ -196,7 +196,7 @@ export function HomePage() {
   const handleTagToggle = useCallback(
     (tagId: string) => {
       // Find tag name from ID
-      const tag = availableTags.find((t) => t.id === tagId);
+      const tag = availableTags.find((availableTag) => availableTag.id === tagId);
       if (!tag) {
         return;
       }
