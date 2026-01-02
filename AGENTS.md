@@ -819,3 +819,38 @@ function SubmitForm() {
 - Don't use `forwardRef` - refs are now regular props
 - Don't use `useContext` for simple reads - `use(Context)` works in conditionals
 - Don't manually manage form state when Actions fit the use case
+
+## Variable Naming: No Single-Letter Names
+
+**Avoid single-letter variable names.** They hurt readability and make code harder to search.
+
+### Always Use Descriptive Names
+
+```typescript
+// BAD: Single-letter variables
+bookmarks.map((b) => ({
+  id: b.id,
+  tags: b.tags.map((t) => t.name),
+}));
+
+// GOOD: Descriptive names
+bookmarks.map((bookmark) => ({
+  id: bookmark.id,
+  tags: bookmark.tags.map((tag) => tag.name),
+}));
+```
+
+### Exception: Sort Comparators
+
+`a` and `b` are acceptable in sort callbacks—they're conventional and the scope is tiny:
+
+```typescript
+// OK: Conventional sort comparator
+tags.sort((a, b) => a.label.localeCompare(b.label));
+```
+
+### Why This Matters
+
+- **Searchability** - "bookmark" is searchable; "b" matches everything
+- **Readability** - `tag.name` instantly communicates intent; `t.name` requires mental mapping
+- **Maintenance** - Future readers (including you) will thank you
