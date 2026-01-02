@@ -38,7 +38,7 @@ When the user asks "Can we...?" or "Should this...?" - treat it as a discussion:
 
 ## Landing the Plane (Session Completion)
 
-**When ending a work session or if the user asks you to wrap the session up**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+**When ending a work session or if the user asks you to wrap up the session please**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
 
 **MANDATORY WORKFLOW:**
 

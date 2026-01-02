@@ -33,6 +33,7 @@ apps/component-library/
 ### Step 1: Identify the Target
 
 Clarify with the user:
+
 1. **Target component**: Which component to analyse (e.g., `elements/image`)
 2. **Properties of interest**: Specific properties to filter by (optional)
 3. **Analysis goal**: Usage audit, removal check, or refactoring impact
@@ -42,16 +43,19 @@ Clarify with the user:
 Find all components that include the target via Twig.
 
 **Search pattern:**
+
 ```bash
 grep -rn "{% include \"@<tier>/<component>" src/components/
 ```
 
 **Example for `elements/image`:**
+
 ```bash
 grep -rn '{% include "@elements/image' src/components/
 ```
 
 For each match:
+
 1. Note the file path (consuming component)
 2. Extract the `with {}` block to identify which properties are passed
 3. Record whether target properties are present
@@ -59,6 +63,7 @@ For each match:
 **Extracting the `with` block:**
 
 Twig includes may span multiple lines:
+
 ```twig
 {% include "@elements/image/image.twig" with {
     src: item.image.src,
@@ -76,16 +81,19 @@ See [references/search-patterns.md](references/search-patterns.md) for detailed 
 Find all components whose mocks reference the target component.
 
 **Search pattern:**
+
 ```bash
 grep -rn '\$ref: <tier>/<component>#' src/components/
 ```
 
 **Example for `elements/image`:**
+
 ```bash
 grep -rn '\$ref: elements/image#' src/components/
 ```
 
 For each match:
+
 1. Note the file path and variant name referenced
 2. Look up the referenced variant in the target's `mocks.yaml`
 3. Check if the variant includes the properties of interest
@@ -99,15 +107,18 @@ If a mock uses `$ref: elements/image#with-caption`, check `elements/image/mocks.
 Group findings into categories based on the analysis goal:
 
 **For property-specific analysis:**
+
 - **Uses WITH property X**: Components that pass/use the property
 - **Uses WITHOUT property X**: Components that use the target but don't use property X
 
 **For removal analysis:**
+
 - **Direct Twig includes**: Would break immediately
 - **Mock references only**: May need mock updates but won't break rendering
 - **No dependencies**: Safe to remove
 
 **For refactoring analysis:**
+
 - **Affected by change**: Components using the property/feature being changed
 - **Unaffected**: Components using the target but not the changed aspect
 
@@ -116,16 +127,19 @@ Group findings into categories based on the analysis goal:
 Ensure comprehensive coverage before reporting:
 
 1. **Count total files:**
+
    ```bash
    find src/components -name "*.twig" | wc -l
    find src/components -name "mocks.yaml" | wc -l
    ```
 
 2. **Verify search found expected files:**
+
    - Spot-check known usages
    - Confirm count matches expectations
 
 3. **Check for alternative patterns:**
+
    - Embedded includes: `{% include "@elements/image/image.twig" %}`
    - Variable includes: `{% include image_template %}`
    - Embed blocks: `{% embed "@elements/image/image.twig" %}`

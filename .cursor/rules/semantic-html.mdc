@@ -60,17 +60,17 @@ Visual styling and semantic meaning are related but not coupled. CSS classes bri
 
 Use landmark elements to convey page structure:
 
-| Element | Use When | Notes |
-|---------|----------|-------|
-| `header` | Page or section header | Can appear multiple times in different contexts |
-| `footer` | Page or section footer | Contact info, copyright, related links |
-| `nav` | Navigation sections | Must be labelled; avoid "navigation" in the label (screen readers announce this) |
-| `main` | Primary content | Only one per page |
-| `aside` | Tangentially related content | Sidebars, pull quotes, advertising |
-| `search` | Search functionality | Contains the search form, not the results |
-| `form` | User input | Only becomes a landmark when labelled via `aria-labelledby` or `aria-label` |
-| `article` | Self-contained content | Would make sense syndicated or standalone |
-| `section` | Thematic grouping | Only becomes a landmark when labelled |
+| Element   | Use When                     | Notes                                                                            |
+| --------- | ---------------------------- | -------------------------------------------------------------------------------- |
+| `header`  | Page or section header       | Can appear multiple times in different contexts                                  |
+| `footer`  | Page or section footer       | Contact info, copyright, related links                                           |
+| `nav`     | Navigation sections          | Must be labelled; avoid "navigation" in the label (screen readers announce this) |
+| `main`    | Primary content              | Only one per page                                                                |
+| `aside`   | Tangentially related content | Sidebars, pull quotes, advertising                                               |
+| `search`  | Search functionality         | Contains the search form, not the results                                        |
+| `form`    | User input                   | Only becomes a landmark when labelled via `aria-labelledby` or `aria-label`      |
+| `article` | Self-contained content       | Would make sense syndicated or standalone                                        |
+| `section` | Thematic grouping            | Only becomes a landmark when labelled                                            |
 
 ### The Section Element
 
@@ -153,12 +153,12 @@ Lists are most useful when **knowing the number of items helps the user**:
 
 ### List Types
 
-| Type | Use When | Example |
-|------|----------|---------|
-| `ul` | Unordered collection where count matters | Nav items, search results |
-| `ol` | Sequential steps or ranked items | Recipes, instructions, top-10 lists |
-| `dl` | Term-description pairs | Glossaries, metadata, key-value pairs |
-| `menu` | Toolbar commands | Action buttons, not navigation |
+| Type   | Use When                                 | Example                               |
+| ------ | ---------------------------------------- | ------------------------------------- |
+| `ul`   | Unordered collection where count matters | Nav items, search results             |
+| `ol`   | Sequential steps or ranked items         | Recipes, instructions, top-10 lists   |
+| `dl`   | Term-description pairs                   | Glossaries, metadata, key-value pairs |
+| `menu` | Toolbar commands                         | Action buttons, not navigation        |
 
 **Ordered list attributes:** Use `reversed` for countdown-style lists (e.g., a top 10 listed from 10 to 1). Use `start` to begin numbering from a specific value. Both are native HTML—no JavaScript required.
 
@@ -180,12 +180,12 @@ Note: A single `dt` can have multiple `dd` elements for multiple related descrip
 
 **Progressive enhancement lens:** If a URL provides a meaningful fallback when JavaScript fails, a link is valid even for action-like interactions.
 
-| Interaction | Default Choice | Consider Link When |
-|-------------|----------------|-------------------|
-| Show more content | `button` | URL params could load the content server-side |
-| Toggle view (grid/list) | `button` | URL could preserve view preference |
-| Copy to clipboard | `button` | Copied content is a shareable URL |
-| Tab selection | `button` | URL could load specific tab content |
+| Interaction             | Default Choice | Consider Link When                            |
+| ----------------------- | -------------- | --------------------------------------------- |
+| Show more content       | `button`       | URL params could load the content server-side |
+| Toggle view (grid/list) | `button`       | URL could preserve view preference            |
+| Copy to clipboard       | `button`       | Copied content is a shareable URL             |
+| Tab selection           | `button`       | URL could load specific tab content           |
 
 **Key question:** What happens when JavaScript fails? If a URL provides graceful degradation, a link may be the better choice.
 
@@ -248,7 +248,7 @@ Current best practice (due to browser support gaps with `aria-errormessage`):
   id="email"
   aria-invalid="true"
   aria-describedby="email-error"
->
+/>
 <p id="email-error" class="error">
   Enter a valid email address, like name@example.com
 </p>

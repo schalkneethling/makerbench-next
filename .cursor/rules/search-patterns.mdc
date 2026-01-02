@@ -36,6 +36,7 @@ Twig supports several include syntaxes:
 ```
 
 **Search for all variations:**
+
 ```bash
 grep -rn '@elements/image/image.twig' src/components/
 ```
@@ -51,6 +52,7 @@ Components may use `{% embed %}` instead of `{% include %}`:
 ```
 
 **Search pattern:**
+
 ```bash
 grep -rn '{% embed "@elements/image' src/components/
 ```
@@ -69,6 +71,7 @@ The `with` block often spans multiple lines:
 ```
 
 **Strategy 1: Search for property within file context**
+
 ```bash
 # Find files with includes, then search those for the property
 grep -l '{% include "@elements/image' src/components/**/*.twig | \
@@ -76,6 +79,7 @@ grep -l '{% include "@elements/image' src/components/**/*.twig | \
 ```
 
 **Strategy 2: Use awk for multi-line matching**
+
 ```bash
 awk '/{% include "@elements\/image/,/\%}/' src/components/**/*.twig
 ```
@@ -229,6 +233,7 @@ Some components use variables for template paths:
 ```
 
 **Detection:**
+
 ```bash
 grep -rn 'image.twig' src/components/ | grep -v '{% include'
 ```
@@ -250,6 +255,7 @@ Components may import macros from other components:
 ```
 
 **Search pattern:**
+
 ```bash
 grep -rn '{% import "@elements/image' src/components/
 grep -rn '{% from "@elements/image' src/components/

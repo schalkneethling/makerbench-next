@@ -8,6 +8,7 @@ Strategies for maintaining proper heading hierarchy in component-based architect
 ## The Challenge
 
 Component-based development creates a tension:
+
 - Components should be reusable across contexts
 - Heading levels depend on surrounding document structure
 - Content authors may not understand heading hierarchy
@@ -70,7 +71,7 @@ function Section({ title, children }) {
 function CardList({ cards }) {
   return (
     <ul className="card-list">
-      {cards.map(card => (
+      {cards.map((card) => (
         <li key={card.id}>
           <Card title={card.title} headingLevel={3} />
         </li>
@@ -97,26 +98,17 @@ function CardList({ cards }) {
 Create a heading component that handles both semantic and visual concerns.
 
 ```jsx
-function Heading({ 
-  level, 
-  visualLevel = level, 
-  children,
-  className = ''
-}) {
+function Heading({ level, visualLevel = level, children, className = "" }) {
   const Tag = `h${level}`;
   const visualClass = `u-heading-${visualLevel}`;
-  
-  return (
-    <Tag className={`${visualClass} ${className}`}>
-      {children}
-    </Tag>
-  );
+
+  return <Tag className={`${visualClass} ${className}`}>{children}</Tag>;
 }
 
 // Usage: semantic h3, visual appearance of h2
 <Heading level={3} visualLevel={2}>
   Section Title
-</Heading>
+</Heading>;
 ```
 
 ### When to Use
@@ -150,7 +142,7 @@ function Card({ title, headingLevel = 3, headingClass, children }) {
 // Specialised product card - knows its context
 function ProductCard({ product, headingLevel = 3 }) {
   return (
-    <Card 
+    <Card
       title={product.name}
       headingLevel={headingLevel}
       headingClass="product-card__title"
@@ -167,7 +159,7 @@ function FeaturedProducts({ products }) {
     <section aria-labelledby="featured-heading">
       <h2 id="featured-heading">Featured Products</h2>
       <ul className="product-grid">
-        {products.map(product => (
+        {products.map((product) => (
           <li key={product.id}>
             <ProductCard product={product} headingLevel={3} />
           </li>
@@ -206,11 +198,21 @@ When text should look like a heading but not affect document outline:
 
 ```css
 /* Size-based utilities separate from semantic level */
-.u-heading-xs { font-size: var(--font-size-xs); }
-.u-heading-s  { font-size: var(--font-size-s); }
-.u-heading-m  { font-size: var(--font-size-m); }
-.u-heading-l  { font-size: var(--font-size-l); }
-.u-heading-xl { font-size: var(--font-size-xl); }
+.u-heading-xs {
+  font-size: var(--font-size-xs);
+}
+.u-heading-s {
+  font-size: var(--font-size-s);
+}
+.u-heading-m {
+  font-size: var(--font-size-m);
+}
+.u-heading-l {
+  font-size: var(--font-size-l);
+}
+.u-heading-xl {
+  font-size: var(--font-size-xl);
+}
 
 /* All share heading-like properties */
 .u-heading-xs,
@@ -243,7 +245,7 @@ When building a component with a heading:
 function Card({ title }) {
   return (
     <article>
-      <h3>{title}</h3>  {/* What if this is used at h2 level? */}
+      <h3>{title}</h3> {/* What if this is used at h2 level? */}
     </article>
   );
 }
@@ -264,7 +266,7 @@ function Card({ title }) {
 ```jsx
 // Dangerous: undefined heading level
 function Card({ title, headingLevel }) {
-  const Heading = `h${headingLevel}`;  // h undefined if not passed
+  const Heading = `h${headingLevel}`; // h undefined if not passed
   return <Heading>{title}</Heading>;
 }
 
