@@ -78,8 +78,8 @@ export function PrivacyPage() {
         </p>
         <p>
           Your data is stored on secure servers provided by Turso (database)
-          and Amazon Web Services (screenshots and images). These services
-          implement industry-standard security measures.
+          and Cloudinary (screenshots and images). These services implement
+          industry-standard security measures.
         </p>
       </section>
 
@@ -95,13 +95,8 @@ export function PrivacyPage() {
             for storing tool information
           </li>
           <li>
-            <span className="PrivacyPage-emphasis">Amazon Web Services (AWS):</span>
-            {" "}
-            Storage for screenshots and images
-          </li>
-          <li>
             <span className="PrivacyPage-emphasis">Cloudinary:</span> Image
-            processing and delivery service
+            storage, processing, and delivery service
           </li>
           <li>
             <span className="PrivacyPage-emphasis">Browserless:</span> Screenshot
