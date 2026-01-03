@@ -5,31 +5,31 @@
   padding-inline: var(--size-24);
 }
 
-.PrivacyPage-heading {
+.PrivacyPage h1 {
   font-size: var(--text-4xl);
   font-weight: var(--font-weight-bold);
   margin-block-end: var(--size-8);
   line-height: var(--line-height-snug);
 }
 
-.PrivacyPage-lastUpdated {
+.PrivacyPage-meta {
   color: var(--color-text-muted);
   font-size: var(--text-sm);
   margin-block-end: var(--size-32);
 }
 
-.PrivacyPage-section {
+.PrivacyPage section {
   margin-block-end: var(--size-32);
 }
 
-.PrivacyPage-section h2 {
+.PrivacyPage h2 {
   font-size: var(--text-2xl);
   font-weight: var(--font-weight-semibold);
   margin-block-end: var(--size-12);
   line-height: var(--line-height-snug);
 }
 
-.PrivacyPage-section h3 {
+.PrivacyPage h3 {
   font-size: var(--text-lg);
   font-weight: var(--font-weight-semibold);
   margin-block-start: var(--size-16);
@@ -37,30 +37,34 @@
   line-height: var(--line-height-snug);
 }
 
-.PrivacyPage-section p {
+.PrivacyPage p {
   line-height: var(--line-height-normal);
   margin-block-end: var(--size-12);
 }
 
-.PrivacyPage-section ul {
+.PrivacyPage ul {
   list-style-position: inside;
   margin-block-end: var(--size-12);
   padding-inline-start: var(--size-16);
 }
 
-.PrivacyPage-section li {
+.PrivacyPage li {
   line-height: var(--line-height-normal);
   margin-block-end: var(--size-8);
 }
 
-.PrivacyPage-section a {
+.PrivacyPage-emphasis {
+  font-weight: var(--font-weight-semibold);
+}
+
+.PrivacyPage a {
   color: var(--color-primary);
   text-decoration: underline;
   text-underline-offset: 0.15em;
   transition: color var(--transition-fast);
 }
 
-.PrivacyPage-section a:hover {
+.PrivacyPage a:hover {
   color: var(--color-primary-hover);
 }
 
