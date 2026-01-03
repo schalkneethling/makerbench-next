@@ -53,10 +53,10 @@ test.describe("AboutPage", () => {
 
   test("GitHub links open in new tab", async ({ page }) => {
     await page.goto("/about");
-    
+
     const githubLinks = page.getByRole("link", { name: /GitHub|our project repository/ });
     const count = await githubLinks.count();
-    
+
     for (let i = 0; i < count; i++) {
       const link = githubLinks.nth(i);
       await expect(link).toHaveAttribute("target", "_blank");
