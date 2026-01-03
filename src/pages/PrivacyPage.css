@@ -1,6 +1,6 @@
 .PrivacyPage {
-  max-inline-size: 48rem;
   margin-inline: auto;
+  max-inline-size: 48rem;
   padding-block: var(--size-40);
   padding-inline: var(--size-24);
 }
@@ -8,8 +8,8 @@
 .PrivacyPage h1 {
   font-size: var(--text-4xl);
   font-weight: var(--font-weight-bold);
-  margin-block-end: var(--size-8);
   line-height: var(--line-height-snug);
+  margin-block-end: var(--size-8);
 }
 
 .PrivacyPage-meta {
@@ -25,16 +25,15 @@
 .PrivacyPage h2 {
   font-size: var(--text-2xl);
   font-weight: var(--font-weight-semibold);
-  margin-block-end: var(--size-12);
   line-height: var(--line-height-snug);
+  margin-block-end: var(--size-12);
 }
 
 .PrivacyPage h3 {
   font-size: var(--text-lg);
   font-weight: var(--font-weight-semibold);
-  margin-block-start: var(--size-16);
-  margin-block-end: var(--size-8);
   line-height: var(--line-height-snug);
+  margin-block: var(--size-16) var(--size-8);
 }
 
 .PrivacyPage p {
