@@ -1,7 +1,13 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { MainLayout } from "./components/layout";
-import { HomePage, SubmitPage, PrivacyPage, NotFoundPage } from "./pages";
+import {
+  HomePage,
+  SubmitPage,
+  AboutPage,
+  PrivacyPage,
+  NotFoundPage,
+} from "./pages";
 
 /**
  * MakerBench App Root Component
@@ -13,6 +19,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/submit" element={<SubmitPage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
