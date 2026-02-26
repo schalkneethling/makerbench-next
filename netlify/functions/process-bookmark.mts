@@ -50,8 +50,17 @@ export default async (req: Request, _context: Context) => {
     url,
     tags: rawTags,
     submitterName,
+    submitterGithubUsername,
     submitterGithubUrl,
   } = validation.data;
+
+  // Accept either a normalized GitHub URL or username and store URL in DB.
+  const normalizedSubmitterGithubUrl =
+    submitterGithubUrl && submitterGithubUrl.trim().length > 0
+      ? submitterGithubUrl
+      : submitterGithubUsername && submitterGithubUsername.trim().length > 0
+        ? `https://github.com/${submitterGithubUsername}`
+        : undefined;
 
   // Normalize URL (additional check for HTTP/HTTPS)
   const normalizedUrl = parseAndNormalizeUrl(url);
@@ -114,7 +123,7 @@ export default async (req: Request, _context: Context) => {
         imageUrl,
         imageSource,
         submitterName,
-        submitterGithubUrl,
+        submitterGithubUrl: normalizedSubmitterGithubUrl,
       })
       .returning();
 

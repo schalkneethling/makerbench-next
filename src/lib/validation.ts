@@ -73,6 +73,12 @@ export const bookmarkRequestSchema = z.object({
     )
     .optional()
     .or(z.literal("")),
+  // Accept full URL for API clients that normalize username before submission.
+  submitterGithubUrl: z
+    .string()
+    .url("Please enter a valid GitHub URL")
+    .optional()
+    .or(z.literal("")),
 });
 
 // Tool metadata validation schema
