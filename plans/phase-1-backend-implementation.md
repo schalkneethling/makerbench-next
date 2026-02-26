@@ -27,9 +27,9 @@ flowchart TD
 
 ## Issue Tracking
 
-All tasks tracked in `bd`. Run `bd ready` to see unblocked work.
+All follow-up work is tracked in GitHub Issues.
 
-| bd ID                 | Task                                                       | Priority |
+| Legacy ID             | Task                                                       | Priority |
 | --------------------- | ---------------------------------------------------------- | -------- |
 | `makerbench-next-kx1` | Install deps: cheerio, cloudinary, @netlify/functions, msw | P1       |
 | `makerbench-next-lsy` | Update schema: imageUrl, imageSource, submitter columns    | P1       |
