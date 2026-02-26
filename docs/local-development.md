@@ -4,16 +4,20 @@ Last updated: February 26, 2026
 
 ## Prerequisites
 
-- Node.js 20+
-- npm 10+
-- Netlify CLI (recommended): `npm i -g netlify-cli`
+- Node.js 24.x
+- pnpm (latest)
+- Netlify CLI (recommended): `pnpm add -g netlify-cli`
 - Turso database + auth token
 
 ## 1. Install dependencies
 
 ```bash
-npm install
+pnpm install
 ```
+
+Package manager note:
+
+- This repository intentionally uses unpinned `pnpm` (no `pnpm@x.y.z` pin).
 
 ## 2. Configure environment variables
 
@@ -61,7 +65,7 @@ Use Netlify Dev so both frontend and functions run together:
 netlify dev
 ```
 
-Why not `npm run dev` only?
+Why not `pnpm dev` only?
 
 - The app calls `/api/...` endpoints.
 - Those endpoints are Netlify Functions, so plain Vite dev server is not enough for end-to-end local behavior.
@@ -79,11 +83,11 @@ Checklist:
 ## 6. Quality checks
 
 ```bash
-npm run lint
-npm run lint:css
-npm run typecheck
-npm test
-npm run build
+pnpm lint
+pnpm lint:css
+pnpm typecheck
+pnpm test
+pnpm build
 ```
 
 ## Troubleshooting

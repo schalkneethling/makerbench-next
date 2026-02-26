@@ -12,6 +12,12 @@ MakerBench is deployed as:
 
 Build config is defined in `netlify.toml`.
 
+Runtime and package manager baseline:
+
+- Node.js 24
+- pnpm
+- Bun is intentionally out of scope for production deployment in this project.
+
 ## Prerequisites
 
 - Netlify site connected to this repository
@@ -70,11 +76,11 @@ npx drizzle-kit push
 ## 4. Run pre-deploy quality gates
 
 ```bash
-npm run lint
-npm run lint:css
-npm run typecheck
-npm test
-npm run build
+pnpm lint
+pnpm lint:css
+pnpm typecheck
+pnpm test
+pnpm build
 ```
 
 ## 5. Deploy
@@ -82,7 +88,7 @@ npm run build
 Typical flow is Git-based deployment via Netlify:
 
 1. Push branch/merge to production branch
-2. Netlify runs `npm run build`
+2. Netlify runs `pnpm build`
 3. Netlify publishes `dist` and deploys functions from `netlify/functions`
 
 ## 6. Post-deploy verification

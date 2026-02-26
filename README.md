@@ -2,6 +2,15 @@
 
 MakerBench is a curated bookmarking platform for developer and maker tools.
 
+## Requirements
+
+- Node.js 24.x
+- pnpm (unversioned by policy)
+
+Runtime/package manager decision:
+
+- Netlify Functions run on Node.js, so Bun is intentionally not part of this deployment workflow.
+
 ## Current Status (February 26, 2026)
 
 Core MVP functionality is implemented:
@@ -29,12 +38,12 @@ Core MVP functionality is implemented:
 ## Development
 
 ```bash
-npm run dev
-npm run test
-npm run lint
-npm run lint:css
-npm run typecheck
-npm run build
+pnpm dev
+pnpm test
+pnpm lint
+pnpm lint:css
+pnpm typecheck
+pnpm build
 ```
 
 For full local setup (including Netlify Functions + env configuration), use:
@@ -51,6 +60,8 @@ Copy `.env.example` to `.env` and fill values:
 - `CLOUDINARY_API_SECRET`
 - `BROWSERLESS_API_KEY`
 - `SENTRY_DSN` (optional)
+
+Package manager note: this repository intentionally uses unpinned `pnpm` (no specific pnpm version is enforced).
 
 ## API Endpoints
 

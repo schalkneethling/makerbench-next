@@ -2,6 +2,10 @@
   "name": "makerbench-next",
   "private": true,
   "version": "0.0.0",
+  "packageManager": "pnpm",
+  "engines": {
+    "node": ">=24 <25"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,7 +20,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.functions.json --noEmit",
-    "quality": "npm run format && npm run lint && npm run lint:css && npm run typecheck && npm run test && npm run build",
+    "quality": "pnpm format && pnpm lint && pnpm lint:css && pnpm typecheck && pnpm test && pnpm build",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"

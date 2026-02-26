@@ -78,7 +78,7 @@ This prevents process accumulation across test runs. Vitest workers often zombie
 
 ### Running Tests
 
-- **Always use `npm test`** (includes `--run` flag) - exits after completion
+- **Always use `pnpm test`** (includes `--run` flag) - exits after completion
 - **Never start vitest in watch mode** unless explicitly requested
 - **After each test run**, verify cleanup: `ps aux | grep vitest | grep -v grep | wc -l` should be 0
 
@@ -167,7 +167,7 @@ After modifying `src/db/schema.ts`:
 ### Before Creating Type Declarations
 
 1. **Check if package ships types** - Look for `types` or `typings` in `package.json`
-2. **Check for `@types/*` package** - Run `npm info @types/<package-name>`
+2. **Check for `@types/*` package** - Run `pnpm info @types/<package-name>`
 3. **Check transitive dependencies** - Types may be in a dependency (e.g., `@netlify/types` ships with `@netlify/functions`)
 4. **Search package exports** - Look for exported type interfaces to use with `declare global`
 
