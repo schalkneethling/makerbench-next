@@ -261,10 +261,10 @@ export function HomePage() {
       <div className="HomePage-search">
         <SearchInput
           id="tool-search"
-          label="Search tools"
+          label="Search by title or tag"
           value={searchQuery}
           onSearchChange={handleSearchChange}
-          placeholder="Search by name or description..."
+          placeholder="Search by title or tag"
         />
       </div>
 

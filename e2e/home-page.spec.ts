@@ -11,7 +11,7 @@ test.describe("HomePage", () => {
         - heading "Discover Tools" [level=1]
         - paragraph: Browse curated tools and resources for makers.
         - search:
-          - searchbox "Search tools"
+          - searchbox "Search by title or tag"
         - paragraph: /Showing \\d+ of \\d+ tools/
     `);
   });

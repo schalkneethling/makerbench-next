@@ -19,7 +19,7 @@ test.describe("SearchInput", () => {
     // - Searchbox with proper labeling (type="search" gives role searchbox)
     // - Clear button only when value present
     await expect(page.locator(".SearchInput").first()).toMatchAriaSnapshot(`
-      - searchbox "Search tools"
+      - searchbox "Search by title or tag"
     `);
   });
 
@@ -42,4 +42,3 @@ test.describe("SearchInput", () => {
   });
 
 });
-
