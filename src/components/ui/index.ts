@@ -10,6 +10,9 @@ export type { LinkButtonProps } from "./LinkButton";
 export { Logo } from "./Logo";
 export type { LogoProps, LogoSize } from "./Logo";
 
+export { Input } from "./Input";
+export type { InputProps } from "./Input";
+
 export { TextInput } from "./TextInput";
 export type { TextInputProps } from "./TextInput";
 

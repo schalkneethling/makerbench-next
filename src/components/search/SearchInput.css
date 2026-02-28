@@ -31,30 +31,8 @@
 }
 
 .SearchInput-field {
-  background-color: var(--color-surface-raised);
-  border: var(--border-default);
-  border-radius: var(--radius-md);
-  color: var(--color-text);
-  font: var(--typography-body-base);
   inline-size: 100%;
-  padding-block: var(--size-12);
   padding-inline: calc(var(--size-16) + var(--size-20) + var(--size-8));
-  transition:
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
-}
-
-.SearchInput-field::placeholder {
-  color: var(--color-text-muted);
-}
-
-.SearchInput-field:focus {
-  border-color: var(--color-primary);
-  outline: none;
-}
-
-.SearchInput-field:focus-visible {
-  box-shadow: 0 0 0 var(--size-4) var(--color-focus-ring);
 }
 
 /* Remove default search input styling (clear button, etc.) */

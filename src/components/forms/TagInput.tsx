@@ -1,5 +1,6 @@
 import { useState, useId, type KeyboardEvent, type ChangeEvent } from "react";
 import { XMarkIcon } from "@heroicons/react/20/solid";
+import { Input } from "../ui";
 
 import "./TagInput.css";
 
@@ -190,7 +191,7 @@ export function TagInput({
           </ul>
         )}
 
-        <input
+        <Input
           id={id}
           type="text"
           className="TagInput-field"
@@ -218,4 +219,3 @@ export function TagInput({
     </div>
   );
 }
-

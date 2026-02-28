@@ -24,35 +24,7 @@
 }
 
 .TextInput-field {
-  background-color: var(--color-surface-raised);
-  border: var(--border-default);
-  border-radius: var(--radius-md);
-  color: var(--color-text);
-  font: var(--typography-body-base);
-  padding-block: var(--size-12);
-  padding-inline: var(--size-16);
-  transition:
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
-}
-
-.TextInput-field::placeholder {
-  color: var(--color-text-muted);
-}
-
-.TextInput-field:disabled {
-  background-color: var(--color-surface-sunken);
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.TextInput-field:focus {
-  border-color: var(--color-primary);
-  outline: none;
-}
-
-.TextInput-field:focus-visible {
-  box-shadow: 0 0 0 var(--size-4) var(--color-focus-ring);
+  inline-size: 100%;
 }
 
 .TextInput-error {
