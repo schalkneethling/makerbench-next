@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { ToolCard } from "../ToolCard";
 
 /**
@@ -30,5 +31,21 @@ describe("ToolCard", () => {
     const img = container.querySelector("img");
     expect(img).toHaveAttribute("src", "https://cdn.example.com/image.jpg");
   });
-});
 
+  it("calls onTagClick with tag id when a tag badge is clicked", async () => {
+    const user = userEvent.setup();
+    const handleTagClick = vi.fn();
+
+    render(
+      <ToolCard
+        {...defaultProps}
+        tags={[{ id: "t-react", name: "react" }]}
+        onTagClick={handleTagClick}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "react" }));
+
+    expect(handleTagClick).toHaveBeenCalledWith("t-react");
+  });
+});

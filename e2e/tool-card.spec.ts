@@ -35,7 +35,6 @@ test.describe("ToolCard", () => {
   // TODO: Unskip when ToolCard is rendered on a page
   test.skip("tag click navigates to filter", async ({ page }) => {
     await page.getByRole("button", { name: "Tag1" }).first().click();
-    await expect(page).toHaveURL(/\?tag=Tag1/);
+    await expect(page).toHaveURL(/\?tags=Tag1/);
   });
 });
-

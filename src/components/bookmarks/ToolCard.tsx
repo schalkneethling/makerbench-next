@@ -14,12 +14,38 @@ export interface ToolCardProps {
   imageUrl?: string;
   /** Tags associated with the tool */
   tags?: Array<{ id: string; name: string }>;
+  /** Tag click handler for in-app filtering */
+  onTagClick?: (tagId: string) => void;
   /** Additional className */
   className?: string;
 }
 
 /** Fallback image path */
 const FALLBACK_IMAGE = "/makerbench-fallback.png";
+
+/**
+ * Builds a URL that applies a tag filter while preserving current search query.
+ */
+function buildTagFilterUrl(tagName: string): string {
+  const params = new URLSearchParams(window.location.search);
+  const currentTagNames = params
+    .get("tags")
+    ?.split(",")
+    .map((name) => name.trim())
+    .filter(Boolean) ?? [];
+
+  if (!currentTagNames.includes(tagName)) {
+    currentTagNames.push(tagName);
+  }
+
+  params.delete("tag"); // Legacy param kept for backward compatibility cleanup
+  params.set("tags", currentTagNames.join(","));
+
+  const hasQuery = (params.get("q") ?? "").trim() !== "";
+  params.set("mode", hasQuery ? "search-filter" : "filter");
+
+  return `/?${params.toString()}`;
+}
 
 /**
  * Card component displaying a tool/bookmark with image, title, description, and tags.
@@ -30,6 +56,7 @@ export function ToolCard({
   description,
   imageUrl,
   tags = [],
+  onTagClick,
   className = "",
 }: ToolCardProps) {
   const titleId = useId();
@@ -65,8 +92,11 @@ export function ToolCard({
               key={tag.id}
               label={tag.name}
               onClick={() => {
-                // Navigate to tag filter - will be implemented with router
-                window.location.href = `/?tag=${encodeURIComponent(tag.name)}`;
+                if (onTagClick) {
+                  onTagClick(tag.id);
+                  return;
+                }
+                window.location.assign(buildTagFilterUrl(tag.name));
               }}
             />
           ))}
@@ -75,4 +105,3 @@ export function ToolCard({
     </article>
   );
 }
-

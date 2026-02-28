@@ -320,6 +320,7 @@ export function HomePage() {
 
       <ToolGrid
         tools={tools}
+        onTagClick={handleTagToggle}
         isLoading={isLoading && tools.length === 0}
         emptyTitle={isFiltering ? "No matching tools" : "No tools yet"}
         emptyDescription={
