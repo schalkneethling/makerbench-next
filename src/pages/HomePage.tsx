@@ -43,6 +43,30 @@ function toToolCardProps(bookmarks: Bookmark[]) {
   }));
 }
 
+type FilterMode = "search" | "filter" | "search-filter";
+
+/**
+ * Determines URL mode parameter based on active query/tag filters.
+ */
+function getFilterMode(query: string, tagNames: string[]): FilterMode | undefined {
+  const hasQuery = query.trim() !== "";
+  const hasTags = tagNames.length > 0;
+
+  if (hasQuery && hasTags) {
+    return "search-filter";
+  }
+
+  if (hasQuery) {
+    return "search";
+  }
+
+  if (hasTags) {
+    return "filter";
+  }
+
+  return undefined;
+}
+
 /**
  * Home page - displays tool grid with search and filtering.
  */
@@ -111,6 +135,7 @@ export function HomePage() {
   const updateUrlParams = useCallback(
     (query: string, tagNames: string[]) => {
       const params = new URLSearchParams();
+      const mode = getFilterMode(query, tagNames);
 
       if (query.trim()) {
         params.set("q", query.trim());
@@ -118,6 +143,10 @@ export function HomePage() {
 
       if (tagNames.length > 0) {
         params.set("tags", tagNames.join(","));
+      }
+
+      if (mode) {
+        params.set("mode", mode);
       }
 
       setSearchParams(params, { replace: true });

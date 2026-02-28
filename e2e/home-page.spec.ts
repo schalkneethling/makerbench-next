@@ -33,4 +33,19 @@ test.describe("HomePage", () => {
 
     await expect(searchInput).toHaveValue("");
   });
+
+  test("syncs search state to URL and restores it on reload", async ({ page }) => {
+    const searchInput = page.getByRole("searchbox", { name: "Search by title or tag" });
+
+    await searchInput.fill("react");
+
+    await expect(page).toHaveURL(/[?&]q=react(?:&|$)/);
+    await expect(page).toHaveURL(/[?&]mode=search(?:&|$)/);
+
+    await page.reload();
+
+    await expect(searchInput).toHaveValue("react");
+    await expect(page).toHaveURL(/[?&]q=react(?:&|$)/);
+    await expect(page).toHaveURL(/[?&]mode=search(?:&|$)/);
+  });
 });
