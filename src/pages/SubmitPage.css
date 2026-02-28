@@ -1,0 +1,67 @@
+/**
+ * SubmitPage Styles
+ */
+
+.SubmitPage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-32);
+  margin-inline: auto;
+  max-inline-size: 40rem;
+  padding-block: var(--size-32);
+  padding-inline: var(--size-16);
+}
+
+.SubmitPage-header {
+  text-align: center;
+}
+
+.SubmitPage-title {
+  color: var(--color-text);
+  font: var(--typography-heading-2xl);
+  margin: 0;
+}
+
+.SubmitPage-description {
+  color: var(--color-text-muted);
+  font: var(--typography-body-base);
+  margin-block-start: var(--size-8);
+}
+
+.SubmitPage-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-32);
+}
+
+.SubmitPage-fieldset {
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-24);
+  margin: 0;
+  padding: 0;
+}
+
+.SubmitPage-fieldset:disabled {
+  opacity: 0.6;
+}
+
+.SubmitPage-legend {
+  color: var(--color-text);
+  font: var(--typography-label);
+  margin-block-end: var(--size-16);
+  padding: 0;
+}
+
+.SubmitPage-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.SubmitPage-errorDetails {
+  font: var(--typography-body-small);
+  margin-block-start: var(--size-8);
+  padding-inline-start: var(--size-20);
+}
+

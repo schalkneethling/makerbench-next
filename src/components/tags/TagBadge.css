@@ -1,0 +1,78 @@
+/**
+ * TagBadge Component Styles
+ */
+
+.TagBadge {
+  align-items: center;
+  background-color: var(--color-surface-sunken);
+  display: inline-flex;
+  gap: var(--size-4);
+}
+
+.TagBadge-label {
+  background: none;
+  border: none;
+  color: var(--color-text);
+  font: var(--typography-caption);
+  padding-block: var(--size-4);
+  padding-inline: var(--size-12);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.TagBadge-label:hover {
+  background-color: var(--color-primary);
+  color: var(--color-text-inverted);
+}
+
+.TagBadge-label:focus-visible {
+  outline: var(--outline-focus);
+  outline-offset: var(--focus-ring-offset-sm);
+}
+
+.TagBadge-remove {
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: var(--color-text-muted);
+  display: inline-grid;
+  padding: var(--size-4);
+  place-items: center;
+  transition: color var(--transition-fast);
+}
+
+.TagBadge-removeIcon {
+  block-size: var(--size-16);
+  inline-size: var(--size-16);
+}
+
+.TagBadge-remove:hover {
+  color: var(--color-error);
+}
+
+.TagBadge-remove:focus-visible {
+  outline: var(--outline-focus);
+  outline-offset: var(--focus-ring-offset-sm);
+}
+
+/* Selected state */
+.TagBadge--selected {
+  background-color: var(--color-primary);
+}
+
+.TagBadge--selected .TagBadge-label {
+  color: var(--color-text-inverted);
+}
+
+.TagBadge--selected .TagBadge-label:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.TagBadge--selected .TagBadge-remove {
+  color: var(--color-text-inverted);
+}
+
+.TagBadge--selected .TagBadge-remove:hover {
+  color: var(--color-surface);
+}

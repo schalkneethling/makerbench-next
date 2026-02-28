@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { text, sqliteTable, index } from "drizzle-orm/sqlite-core";
+import { text, sqliteTable, index, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 /**
  * Bookmarks table - stores URL bookmarks with metadata and approval status
@@ -14,7 +14,13 @@ export const bookmarksTable = sqliteTable(
     status: text("status", { enum: ["pending", "approved", "rejected"] })
       .default("pending")
       .notNull(),
-    metadata: text("metadata"), // JSON string for screenshot info, etc.
+    imageUrl: text("image_url"),
+    imageSource: text("image_source", {
+      enum: ["og", "screenshot", "fallback"],
+    }),
+    submitterName: text("submitter_name"),
+    submitterGithubUrl: text("submitter_github_url"),
+    metadata: text("metadata"), // JSON string for additional info
     createdAt: text("created_at")
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
@@ -66,7 +72,7 @@ export const bookmarkTagsTable = sqliteTable(
   (table) => [
     index("bookmark_id_idx").on(table.bookmarkId),
     index("tag_id_idx").on(table.tagId),
-    index("unique_bookmark_tag").on(table.bookmarkId, table.tagId),
+    uniqueIndex("unique_bookmark_tag").on(table.bookmarkId, table.tagId),
   ],
 );
 

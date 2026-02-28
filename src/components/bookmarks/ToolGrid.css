@@ -1,0 +1,31 @@
+/**
+ * ToolGrid Component Styles
+ * Responsive grid for ToolCard and ToolCardSkeleton components.
+ */
+
+.ToolGrid {
+  display: grid;
+  gap: var(--size-24);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+
+/* Empty state */
+.ToolGrid-empty {
+  grid-column: 1 / -1;
+  padding-block: var(--size-48);
+  text-align: center;
+}
+
+.ToolGrid-emptyTitle {
+  color: var(--color-text);
+  font: var(--typography-heading-md);
+  margin: 0 0 var(--size-8);
+}
+
+.ToolGrid-emptyDescription {
+  color: var(--color-text-muted);
+  font: var(--typography-body-base);
+  margin: 0;
+}
+
+

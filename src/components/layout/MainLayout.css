@@ -1,0 +1,19 @@
+/**
+ * MainLayout Component Styles
+ */
+
+.MainLayout {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100dvh;
+}
+
+.MainLayout-main {
+  flex-grow: 1;
+  inline-size: 100%;
+  margin-inline: auto;
+  max-inline-size: 75rem;
+  padding: var(--size-24);
+}
+
+

@@ -1,0 +1,50 @@
+/**
+ * Footer Component Styles
+ */
+
+.Footer {
+  background-color: var(--color-surface-sunken);
+  border-block-start: var(--border-default);
+  margin-block-start: auto;
+  padding-block: var(--size-24);
+  padding-inline: var(--size-16);
+}
+
+.Footer-inner {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-16);
+  justify-content: space-between;
+  margin-inline: auto;
+  max-inline-size: 75rem;
+}
+
+.Footer-copyright {
+  color: var(--color-text-muted);
+  font: var(--typography-body-sm);
+  margin: 0;
+}
+
+.Footer-links {
+  display: flex;
+  gap: var(--size-24);
+}
+
+.Footer-links a {
+  color: var(--color-text-muted);
+  font: var(--typography-body-sm);
+  text-decoration: none;
+}
+
+.Footer-links a:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+@media (width < 48rem) {
+  .Footer-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+}

@@ -1,0 +1,17 @@
+/**
+ * Border & Outline Presets
+ * Compound tokens for common border/outline patterns.
+ */
+
+:root {
+  /* ========================================
+   * Focus Outlines
+   * ======================================== */
+  --outline-focus: var(--focus-ring-width) solid var(--color-focus-ring);
+
+  /* ========================================
+   * Borders
+   * ======================================== */
+  --border-default: var(--size-1) solid var(--color-border);
+  --border-strong: var(--size-1) solid var(--color-border-strong);
+}

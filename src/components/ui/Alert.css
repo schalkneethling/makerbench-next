@@ -1,0 +1,111 @@
+/**
+ * Alert Component Styles
+ */
+
+.Alert {
+  align-items: flex-start;
+  border-radius: var(--radius-md);
+  display: flex;
+  gap: var(--size-12);
+  padding-block: var(--size-12);
+  padding-inline: var(--size-16);
+}
+
+.Alert-icon {
+  block-size: var(--size-20);
+  border-radius: var(--radius-full);
+  display: grid;
+  flex-shrink: 0;
+  inline-size: var(--size-20);
+  place-items: center;
+}
+
+.Alert-iconSvg {
+  block-size: var(--size-12);
+  inline-size: var(--size-12);
+}
+
+.Alert-content {
+  flex: 1;
+  font-size: var(--text-sm);
+  line-height: var(--line-height-normal);
+  min-inline-size: 0;
+}
+
+.Alert-dismiss {
+  block-size: var(--size-24);
+  flex-shrink: 0;
+  inline-size: var(--size-24);
+  margin-block-start: calc(-1 * var(--size-4));
+  opacity: 0.7;
+}
+
+.Alert-dismiss:hover {
+  opacity: 1;
+}
+
+.Alert-dismissIcon {
+  block-size: var(--size-16);
+  inline-size: var(--size-16);
+}
+
+/* Success variant */
+.Alert--success {
+  background-color: oklch(from var(--color-success) l c h / 12%);
+  border-inline-start: var(--size-4) solid var(--color-success);
+}
+
+.Alert--success .Alert-icon {
+  background-color: var(--color-success);
+  color: var(--color-text-inverted);
+}
+
+.Alert--success .Alert-dismiss {
+  color: var(--color-success);
+}
+
+/* Error variant */
+.Alert--error {
+  background-color: oklch(from var(--color-error) l c h / 12%);
+  border-inline-start: var(--size-4) solid var(--color-error);
+}
+
+.Alert--error .Alert-icon {
+  background-color: var(--color-error);
+  color: var(--color-text-inverted);
+}
+
+.Alert--error .Alert-dismiss {
+  color: var(--color-error);
+}
+
+/* Warning variant */
+.Alert--warning {
+  background-color: oklch(from var(--color-warning) l c h / 12%);
+  border-inline-start: var(--size-4) solid var(--color-warning);
+}
+
+.Alert--warning .Alert-icon {
+  background-color: var(--color-warning);
+  color: var(--color-text-inverted);
+}
+
+.Alert--warning .Alert-dismiss {
+  color: var(--color-warning);
+}
+
+/* Info variant */
+.Alert--info {
+  background-color: oklch(from var(--color-info) l c h / 12%);
+  border-inline-start: var(--size-4) solid var(--color-info);
+}
+
+.Alert--info .Alert-icon {
+  background-color: var(--color-info);
+  color: var(--color-text-inverted);
+}
+
+.Alert--info .Alert-dismiss {
+  color: var(--color-info);
+}
+

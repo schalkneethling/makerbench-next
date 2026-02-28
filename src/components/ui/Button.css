@@ -1,0 +1,92 @@
+/**
+ * Button Component Styles
+ */
+
+.Button {
+  align-items: center;
+  border: none;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  font: var(--typography-button);
+  gap: var(--size-8);
+  justify-content: center;
+  padding-block: var(--size-12);
+  padding-inline: var(--size-24);
+  text-decoration: none;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.Button:focus-visible {
+  outline: var(--outline-focus);
+  outline-offset: var(--focus-ring-offset-sm);
+}
+
+.Button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.Button:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+/* Primary variant */
+.Button--primary {
+  background-color: var(--color-primary);
+  color: var(--color-text-inverted);
+}
+
+.Button--primary:not(:disabled):hover {
+  background-color: var(--color-primary-hover);
+}
+
+.Button--primary:not(:disabled):active {
+  background-color: var(--color-primary-active);
+}
+
+/* Secondary variant */
+.Button--secondary {
+  background-color: transparent;
+  border: var(--border-strong);
+  color: var(--color-text);
+}
+
+.Button--secondary:not(:disabled):hover {
+  background-color: var(--color-surface-sunken);
+}
+
+/* Ghost variant */
+.Button--ghost {
+  background-color: transparent;
+  color: currentcolor;
+  padding-block: var(--size-4);
+  padding-inline: var(--size-4);
+}
+
+.Button--ghost:not(:disabled):hover {
+  background-color: color-mix(in oklch, currentcolor 12%, transparent);
+}
+
+/* Loading state */
+.Button--loading {
+  pointer-events: none;
+}
+
+.Button-spinner {
+  animation: spin 800ms linear infinite;
+  block-size: 1em;
+  border: var(--size-1) solid currentcolor;
+  border-block-start-color: transparent;
+  border-radius: 50%;
+  flex-shrink: 0;
+  inline-size: 1em;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

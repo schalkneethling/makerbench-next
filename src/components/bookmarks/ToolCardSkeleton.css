@@ -1,0 +1,92 @@
+/**
+ * ToolCardSkeleton Component Styles
+ * Animated loading placeholder matching ToolCard dimensions.
+ */
+
+.ToolCardSkeleton {
+  --shimmer-gradient: linear-gradient(
+    90deg,
+    var(--color-surface-sunken) 0%,
+    var(--color-border) 50%,
+    var(--color-surface-sunken) 100%
+  );
+
+  background-color: var(--color-surface-raised);
+  border: var(--border-default);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ToolCardSkeleton-image {
+  aspect-ratio: 16 / 9;
+  background: var(--shimmer-gradient);
+  background-size: 200% 100%;
+}
+
+.ToolCardSkeleton-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-8);
+  padding: var(--size-16);
+}
+
+.ToolCardSkeleton-title {
+  background: var(--shimmer-gradient);
+  background-size: 200% 100%;
+  block-size: var(--size-24);
+  border-radius: var(--radius-sm);
+  inline-size: 75%;
+}
+
+.ToolCardSkeleton-hostname {
+  background: var(--shimmer-gradient);
+  background-size: 200% 100%;
+  block-size: var(--size-14);
+  border-radius: var(--radius-sm);
+  inline-size: 40%;
+}
+
+.ToolCardSkeleton-description {
+  background: var(--shimmer-gradient);
+  background-size: 200% 100%;
+  block-size: var(--size-40);
+  border-radius: var(--radius-sm);
+  inline-size: 100%;
+}
+
+.ToolCardSkeleton-tags {
+  border-block-start: var(--border-default);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-8);
+  padding: var(--size-12);
+}
+
+.ToolCardSkeleton-tag {
+  background: var(--shimmer-gradient);
+  background-size: 200% 100%;
+  block-size: var(--size-24);
+  border-radius: var(--radius-full);
+  inline-size: var(--size-64);
+}
+
+/* Shimmer animation */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.ToolCardSkeleton-image,
+.ToolCardSkeleton-title,
+.ToolCardSkeleton-hostname,
+.ToolCardSkeleton-description,
+.ToolCardSkeleton-tag {
+  animation: shimmer 1.5s infinite linear;
+}

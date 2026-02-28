@@ -1,22 +1,84 @@
-# Makerbench
+# MakerBench
 
-The project will provide a URL input field as well as a plain text input field to the user.
-This allows the user to submit a URL and use the text input field to provide a comma separated list of tags to associate with the URL.
+MakerBench is a curated bookmarking platform for developer and maker tools.
 
-The landing page will also list all current URLs in the index.
-There is also a search input field allowing the user to filter the URLs in the index.
-Searches are scoped to each entries title and associated tags.
+## Requirements
 
-When a new URL is submitted:
+- Node.js 24.x
+- pnpm (unversioned by policy)
 
-1. The information is sent to a dedicated Netlify function called process-bookmark.mts
-2. The first step is to request the URL which will return the HTML of the page.
-3. Using cheerio, get the meta information about the page. Specifically the title, meta description and the open graph image path if it exists.
-4. If an open graph image path was present we can go ahead and create a new record in Turso using the title, description, open graph image path, and the provided tags.
-5. Each entry should also have a created at and updated at date. In addition it should have an approval field that dictates whether an entry is visible using the frontend. Newly submitted URLs are always marked as needing approval to avoid spam and undesirable content.
-6. If the HTML of the page did not contain a open graph or similar image path we need to get a screenshot of the page. To do this we will use Browserless.
-7. Once Browserless returned the screenshot for the page, we will write the data to a file stored in an S3 bucket on Amazon Web Services.
-8. We will then use the same data as before but this time use the path to the image on S3 instead of a open graph URL.
-9. If the screenshot failed, use a provided fallback default image that will already be part of the projects in the public directory.
+Runtime/package manager decision:
 
-Drizzle Schema documentation: https://orm.drizzle.team/docs/column-types/sqlite
+- Netlify Functions run on Node.js, so Bun is intentionally not part of this deployment workflow.
+
+## Current Status (February 26, 2026)
+
+Core MVP functionality is implemented:
+
+- Submit a tool URL with tags
+- Extract metadata (title/description/OG image)
+- Capture screenshot fallback with Browserless when OG image is missing
+- Store fallback screenshots in Cloudinary
+- Persist bookmarks and tags in Turso (Drizzle ORM)
+- Browse approved bookmarks
+- Search approved bookmarks by title and tags
+- Filter by tags with URL-synced state
+- Responsive React UI with routing (`/`, `/submit`, `/about`, `/privacy`)
+
+## Tech Stack
+
+- React 19 + TypeScript + Vite
+- Netlify Functions
+- Turso (libSQL) + Drizzle ORM
+- Zod validation
+- Browserless (screenshots)
+- Cloudinary (image storage)
+- Vitest + Testing Library + Playwright
+
+## Development
+
+```bash
+pnpm dev
+pnpm test
+pnpm lint
+pnpm lint:css
+pnpm typecheck
+pnpm build
+```
+
+For full local setup (including Netlify Functions + env configuration), use:
+- [docs/local-development.md](./docs/local-development.md)
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and fill values:
+
+- `TURSO_DATABASE_URL`
+- `TURSO_AUTH_TOKEN`
+- `CLOUDINARY_CLOUD_NAME`
+- `CLOUDINARY_API_KEY`
+- `CLOUDINARY_API_SECRET`
+- `BROWSERLESS_API_KEY`
+- `SENTRY_DSN` (optional)
+
+Package manager note: this repository intentionally uses unpinned `pnpm` (no specific pnpm version is enforced).
+
+## API Endpoints
+
+- `POST /api/bookmarks` - submit bookmark (stored as `pending`)
+- `GET /api/bookmarks` - list approved bookmarks (paginated)
+- `GET /api/bookmarks/search` - search/filter approved bookmarks
+
+## Issue Tracking
+
+This project now uses GitHub Issues (not beads/bd).
+
+Open backlog is tracked at:
+[https://github.com/schalkneethling/makerbench-next/issues](https://github.com/schalkneethling/makerbench-next/issues)
+
+## Documentation
+
+- Architecture: [docs/architecture.md](./docs/architecture.md)
+- Local setup: [docs/local-development.md](./docs/local-development.md)
+- Production deployment: [docs/production-deployment.md](./docs/production-deployment.md)
+- Database setup: [DATABASE_SETUP.md](./DATABASE_SETUP.md)

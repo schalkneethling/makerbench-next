@@ -6,12 +6,12 @@
  * Thrown when metadata JSON parsing fails
  */
 export class MetadataParseError extends Error {
-  constructor(
-    message: string,
-    public cause?: unknown,
-  ) {
+  cause?: unknown;
+
+  constructor(message: string, cause?: unknown) {
     super(message);
     this.name = "MetadataParseError";
+    this.cause = cause;
   }
 }
 
@@ -19,12 +19,12 @@ export class MetadataParseError extends Error {
  * Thrown when metadata JSON stringification fails
  */
 export class MetadataStringifyError extends Error {
-  constructor(
-    message: string,
-    public cause?: unknown,
-  ) {
+  cause?: unknown;
+
+  constructor(message: string, cause?: unknown) {
     super(message);
     this.name = "MetadataStringifyError";
+    this.cause = cause;
   }
 }
 

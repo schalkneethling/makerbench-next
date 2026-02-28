@@ -1,0 +1,41 @@
+/**
+ * MakerBench Logo
+ * CSS-based logo component matching the brand design.
+ */
+
+.Logo {
+  display: inline-flex;
+  font: var(--typography-logo-base);
+  text-decoration: none;
+}
+
+.Logo:hover {
+  text-decoration: none;
+}
+
+.Logo:focus-visible {
+  border-radius: var(--radius-sm);
+  outline: var(--outline-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.Logo-maker {
+  color: var(--color-logo-maker);
+}
+
+.Logo-bench {
+  color: var(--color-logo-bench);
+}
+
+/* Size variants */
+.Logo--sm {
+  font: var(--typography-logo-sm);
+}
+
+.Logo--lg {
+  font: var(--typography-logo-lg);
+}
+
+.Logo--xl {
+  font: var(--typography-logo-xl);
+}

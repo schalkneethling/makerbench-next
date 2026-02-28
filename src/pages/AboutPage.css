@@ -1,0 +1,41 @@
+.AboutPage {
+  margin-inline: auto;
+  max-inline-size: 48rem;
+  padding-block: var(--size-40);
+  padding-inline: var(--size-24);
+}
+
+.AboutPage h1 {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
+  margin-block-end: var(--size-32);
+}
+
+.AboutPage section {
+  margin-block-end: var(--size-32);
+}
+
+.AboutPage h2 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  margin-block-end: var(--size-12);
+}
+
+.AboutPage p {
+  line-height: var(--line-height-normal);
+  margin-block-end: var(--size-12);
+}
+
+.AboutPage ul {
+  list-style-position: inside;
+  margin-block-end: var(--size-12);
+  padding-inline-start: var(--size-16);
+}
+
+.AboutPage li {
+  line-height: var(--line-height-normal);
+  margin-block-end: var(--size-8);
+}
+

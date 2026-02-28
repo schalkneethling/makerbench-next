@@ -1,8 +1,11 @@
 # example netlify.toml
 [build]
-  command = "npm run build"
+  command = "pnpm build"
   functions = "netlify/functions"
   publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "24"
 
   ## Uncomment to use this redirect for Single Page Applications like create-react-app.
   ## Not needed for static site generators.
