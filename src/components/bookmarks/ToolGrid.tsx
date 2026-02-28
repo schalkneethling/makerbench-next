@@ -5,6 +5,7 @@ import "./ToolGrid.css";
 
 export interface ToolGridProps {
   tools?: Array<ToolCardProps & { id: string }>;
+  onTagClick?: (tagId: string) => void;
   isLoading?: boolean;
   skeletonCount?: number;
   emptyTitle?: string;
@@ -18,6 +19,7 @@ export interface ToolGridProps {
  */
 export function ToolGrid({
   tools = [],
+  onTagClick,
   isLoading = false,
   skeletonCount = 6,
   emptyTitle = "No tools found",
@@ -40,7 +42,9 @@ export function ToolGrid({
       );
     }
 
-    return tools.map((tool) => <ToolCard key={tool.id} {...tool} />);
+    return tools.map((tool) => (
+      <ToolCard key={tool.id} {...tool} onTagClick={onTagClick} />
+    ));
   };
 
   return (

@@ -14,6 +14,8 @@ export interface ToolCardProps {
   imageUrl?: string;
   /** Tags associated with the tool */
   tags?: Array<{ id: string; name: string }>;
+  /** Tag click handler for in-app filtering */
+  onTagClick?: (tagId: string) => void;
   /** Additional className */
   className?: string;
 }
@@ -54,6 +56,7 @@ export function ToolCard({
   description,
   imageUrl,
   tags = [],
+  onTagClick,
   className = "",
 }: ToolCardProps) {
   const titleId = useId();
@@ -89,6 +92,10 @@ export function ToolCard({
               key={tag.id}
               label={tag.name}
               onClick={() => {
+                if (onTagClick) {
+                  onTagClick(tag.id);
+                  return;
+                }
                 window.location.assign(buildTagFilterUrl(tag.name));
               }}
             />
