@@ -4,24 +4,37 @@ import { Input } from "../Input";
 
 describe("Input", () => {
   it("renders with base Input class", () => {
-    render(<Input aria-label="Base input" />);
+    render(
+      <>
+        <label htmlFor="base-input">Base input</label>
+        <Input id="base-input" />
+      </>,
+    );
     expect(screen.getByLabelText("Base input")).toHaveClass("Input");
   });
 
   it("merges custom className with base class", () => {
-    render(<Input aria-label="Named input" className="CustomInput" />);
+    render(
+      <>
+        <label htmlFor="named-input">Named input</label>
+        <Input id="named-input" className="CustomInput" />
+      </>,
+    );
     expect(screen.getByLabelText("Named input")).toHaveClass("Input");
     expect(screen.getByLabelText("Named input")).toHaveClass("CustomInput");
   });
 
   it("passes through common input attributes", () => {
     render(
-      <Input
-        aria-label="Email"
-        type="email"
-        placeholder="name@example.com"
-        disabled
-      />,
+      <>
+        <label htmlFor="email-input">Email</label>
+        <Input
+          id="email-input"
+          type="email"
+          placeholder="name@example.com"
+          disabled
+        />
+      </>,
     );
 
     const input = screen.getByLabelText("Email");
