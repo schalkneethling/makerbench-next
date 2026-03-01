@@ -38,7 +38,7 @@
 
 .TagInput-container:focus-within {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 var(--size-4) var(--color-focus-ring);
+  box-shadow: var(--focus-ring-shadow);
 }
 
 .TagInput-tags {
@@ -80,11 +80,6 @@
 
 .TagInput-tagRemove:hover {
   color: var(--color-error);
-}
-
-.TagInput-tagRemove:focus-visible {
-  outline: var(--outline-focus);
-  outline-offset: var(--focus-ring-offset-sm);
 }
 
 .TagInput-field {
@@ -131,5 +126,5 @@
 }
 
 .TagInput--error .TagInput-container:focus-within {
-  box-shadow: 0 0 0 var(--size-4) oklch(55% 0.2 25deg / 30%);
+  box-shadow: var(--focus-ring-shadow-error);
 }

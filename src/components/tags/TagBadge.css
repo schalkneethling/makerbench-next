@@ -26,11 +26,6 @@
   color: var(--color-text-inverted);
 }
 
-.TagBadge-label:focus-visible {
-  outline: var(--outline-focus);
-  outline-offset: var(--focus-ring-offset-sm);
-}
-
 .TagBadge-remove {
   background: none;
   border: none;
@@ -49,11 +44,6 @@
 
 .TagBadge-remove:hover {
   color: var(--color-error);
-}
-
-.TagBadge-remove:focus-visible {
-  outline: var(--outline-focus);
-  outline-offset: var(--focus-ring-offset-sm);
 }
 
 /* Selected state */
