@@ -1,4 +1,5 @@
 import { useId, type InputHTMLAttributes } from "react";
+import { Input } from "./Input";
 
 export interface TextInputProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "id"> {
@@ -57,7 +58,7 @@ export function TextInput({
         </p>
       )}
 
-      <input
+      <Input
         ref={ref}
         id={id}
         className="TextInput-field"

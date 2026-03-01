@@ -1,5 +1,6 @@
 import { useId, type ChangeEvent } from "react";
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/20/solid";
+import { Input } from "../ui";
 import "./SearchInput.css";
 
 export interface SearchInputProps {
@@ -52,7 +53,7 @@ export function SearchInput({
         <span className="SearchInput-icon" aria-hidden="true">
           <MagnifyingGlassIcon className="SearchInput-iconSvg" />
         </span>
-        <input
+        <Input
           id={id}
           type="search"
           className="SearchInput-field"

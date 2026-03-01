@@ -104,8 +104,13 @@
 }
 
 .TagInput-field:disabled {
+  background: transparent;
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+.TagInput-field:focus-visible {
+  box-shadow: none;
 }
 
 .TagInput-count {
@@ -128,4 +133,3 @@
 .TagInput--error .TagInput-container:focus-within {
   box-shadow: 0 0 0 var(--size-4) oklch(55% 0.2 25deg / 30%);
 }
-

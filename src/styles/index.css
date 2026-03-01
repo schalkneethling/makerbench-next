@@ -16,6 +16,7 @@
 @import url("./borders-outlines.css") layer(base);
 @import url("./logo.css") layer(base);
 @import url("../components/ui/Button.css") layer(components);
+@import url("../components/ui/Input.css") layer(components);
 @import url("../components/ui/TextInput.css") layer(components);
 @import url("../components/ui/ResultCount.css") layer(components);
 @import url("../components/ui/LoadMoreButton.css") layer(components);
