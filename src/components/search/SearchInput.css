@@ -60,6 +60,4 @@
 
 .SearchInput-clear:focus-visible {
   border-radius: var(--radius-sm);
-  outline: var(--outline-focus);
-  outline-offset: var(--focus-ring-offset-sm);
 }

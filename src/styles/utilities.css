@@ -41,7 +41,7 @@
 
 .skip-link:focus {
   outline: var(--outline-focus);
-  outline-offset: var(--focus-ring-offset-sm);
+  outline-offset: var(--outline-focus-offset-sm);
   transform: translateY(0);
 }
 
@@ -51,7 +51,7 @@
  * ======================================== */
 :focus-visible {
   outline: var(--outline-focus);
-  outline-offset: var(--focus-ring-offset-sm);
+  outline-offset: var(--outline-focus-offset-sm);
 }
 
 /* Remove default focus for mouse users where supported */
