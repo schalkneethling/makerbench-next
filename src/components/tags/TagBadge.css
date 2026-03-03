@@ -37,11 +37,6 @@
   transition: color var(--transition-fast);
 }
 
-.TagBadge-removeIcon {
-  block-size: var(--size-16);
-  inline-size: var(--size-16);
-}
-
 .TagBadge-remove:hover {
   color: var(--color-error);
 }

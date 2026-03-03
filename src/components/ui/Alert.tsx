@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/20/solid";
 
 import { Button } from "./Button";
+import { Icon } from "./Icon";
 import "./Alert.css";
 
 export type AlertVariant = "success" | "error" | "warning" | "info";
@@ -53,7 +54,7 @@ export function Alert({
 
   // Use polite for info/success, assertive for errors/warnings
   const politeness = variant === "error" || variant === "warning" ? "assertive" : "polite";
-  const Icon = ICONS[variant];
+  const variantIcon = ICONS[variant];
 
   return (
     <div
@@ -62,7 +63,7 @@ export function Alert({
       className={`Alert Alert--${variant} ${className}`.trim()}
     >
       <span className="Alert-icon" aria-hidden="true">
-        <Icon className="Alert-iconSvg" />
+        <Icon icon={variantIcon} size="xs" className="Alert-iconSvg" />
       </span>
       <div className="Alert-content">{children}</div>
       {dismissible && (
@@ -75,10 +76,9 @@ export function Alert({
           <span id={dismissLabelId} className="visually-hidden">
             Dismiss alert
           </span>
-          <XMarkIcon className="Alert-dismissIcon" aria-hidden="true" />
+          <Icon icon={XMarkIcon} size="sm" className="Alert-dismissIcon" aria-hidden="true" />
         </Button>
       )}
     </div>
   );
 }
-

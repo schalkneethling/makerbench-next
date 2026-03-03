@@ -23,13 +23,6 @@
   z-index: 1;
 }
 
-.SearchInput-iconSvg,
-.SearchInput-clearIcon {
-  block-size: var(--size-20);
-  display: block;
-  inline-size: var(--size-20);
-}
-
 .SearchInput-field {
   inline-size: 100%;
   padding-inline: calc(var(--size-16) + var(--size-20) + var(--size-8));
