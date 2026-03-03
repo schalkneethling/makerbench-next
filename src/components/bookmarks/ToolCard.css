@@ -20,7 +20,7 @@
 
 .ToolCard:focus-within {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 var(--size-4) var(--color-focus-ring);
+  box-shadow: var(--focus-ring-shadow);
 }
 
 .ToolCard-link {
@@ -89,4 +89,3 @@
   gap: var(--size-8);
   padding: var(--size-12);
 }
-

@@ -39,5 +39,5 @@
 }
 
 .TextInput--error .TextInput-field:focus-visible {
-  box-shadow: 0 0 0 var(--size-4) oklch(55% 0.2 25deg / 30%);
+  box-shadow: var(--focus-ring-shadow-error);
 }

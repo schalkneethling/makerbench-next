@@ -31,5 +31,5 @@
 }
 
 .Input:focus-visible {
-  box-shadow: 0 0 0 var(--size-4) var(--color-focus-ring);
+  box-shadow: var(--focus-ring-shadow);
 }

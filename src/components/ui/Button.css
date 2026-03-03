@@ -19,11 +19,6 @@
     transform var(--transition-fast);
 }
 
-.Button:focus-visible {
-  outline: var(--outline-focus);
-  outline-offset: var(--focus-ring-offset-sm);
-}
-
 .Button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
