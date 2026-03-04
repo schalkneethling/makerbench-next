@@ -1,5 +1,5 @@
 import type { Context, Config } from "@netlify/functions";
-import { eq, desc, like, inArray, and, or } from "drizzle-orm";
+import { eq, desc, like, inArray, and, or, sql } from "drizzle-orm";
 
 import {
   getDb,
@@ -30,6 +30,26 @@ interface BookmarkWithTags {
   submitterGithubUrl: string | null;
   createdAt: string;
   tags: { id: string; name: string }[];
+}
+
+interface RawTagEntry {
+  id: string | null;
+  name: string | null;
+}
+
+/**
+ * Parses aggregated tag JSON and removes null placeholder entries.
+ */
+function parseTags(tagsJson: string): Array<{ id: string; name: string }> {
+  try {
+    const parsed = JSON.parse(tagsJson) as Array<RawTagEntry | null>;
+    return parsed.filter(
+      (tag): tag is { id: string; name: string } =>
+        tag !== null && tag.id !== null && tag.name !== null,
+    );
+  } catch {
+    return [];
+  }
 }
 
 export default async (req: Request, _context: Context) => {
@@ -103,7 +123,7 @@ export default async (req: Request, _context: Context) => {
     const whereClause = and(...conditions);
 
     const paginatedBookmarks = await db
-      .selectDistinct({
+      .select({
         id: bookmarksTable.id,
         url: bookmarksTable.url,
         title: bookmarksTable.title,
@@ -112,6 +132,15 @@ export default async (req: Request, _context: Context) => {
         submitterName: bookmarksTable.submitterName,
         submitterGithubUrl: bookmarksTable.submitterGithubUrl,
         createdAt: bookmarksTable.createdAt,
+        tagsJson: sql<string>`coalesce(
+          json_group_array(
+            case
+              when ${tagsTable.id} is not null
+                then json_object('id', ${tagsTable.id}, 'name', ${tagsTable.name})
+            end
+          ),
+          '[]'
+        )`,
       })
       .from(bookmarksTable)
       .leftJoin(
@@ -120,33 +149,22 @@ export default async (req: Request, _context: Context) => {
       )
       .leftJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
       .where(whereClause)
+      .groupBy(
+        bookmarksTable.id,
+        bookmarksTable.url,
+        bookmarksTable.title,
+        bookmarksTable.description,
+        bookmarksTable.imageUrl,
+        bookmarksTable.submitterName,
+        bookmarksTable.submitterGithubUrl,
+        bookmarksTable.createdAt,
+      )
       .orderBy(desc(bookmarksTable.createdAt))
       .limit(limit + 1)
       .offset(offset);
 
     const hasMore = paginatedBookmarks.length > limit;
     const pageBookmarks = paginatedBookmarks.slice(0, limit);
-    const pageBookmarkIds = pageBookmarks.map((bookmark) => bookmark.id);
-
-    const tagRows =
-      pageBookmarkIds.length > 0
-        ? await db
-            .select({
-              bookmarkId: bookmarkTagsTable.bookmarkId,
-              tagId: tagsTable.id,
-              tagName: tagsTable.name,
-            })
-            .from(bookmarkTagsTable)
-            .innerJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
-            .where(inArray(bookmarkTagsTable.bookmarkId, pageBookmarkIds))
-        : [];
-
-    const tagMap = new Map<string, { id: string; name: string }[]>();
-    for (const row of tagRows) {
-      const existing = tagMap.get(row.bookmarkId) ?? [];
-      existing.push({ id: row.tagId, name: row.tagName });
-      tagMap.set(row.bookmarkId, existing);
-    }
 
     const bookmarks: BookmarkWithTags[] = pageBookmarks.map((bookmark) => ({
       id: bookmark.id,
@@ -157,7 +175,7 @@ export default async (req: Request, _context: Context) => {
       submitterName: bookmark.submitterName,
       submitterGithubUrl: bookmark.submitterGithubUrl,
       createdAt: bookmark.createdAt,
-      tags: tagMap.get(bookmark.id) ?? [],
+      tags: parseTags(bookmark.tagsJson),
     }));
 
     const dbDuration = Date.now() - dbStart;

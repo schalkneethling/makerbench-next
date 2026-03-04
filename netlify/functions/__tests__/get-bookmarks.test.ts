@@ -52,6 +52,7 @@ function createMockDb() {
     select: vi.fn().mockReturnThis(),
     from: vi.fn().mockReturnThis(),
     where: vi.fn().mockReturnThis(),
+    groupBy: vi.fn().mockReturnThis(),
     limit: vi.fn().mockReturnThis(),
     offset: vi.fn().mockReturnThis(),
     orderBy: vi.fn().mockReturnThis(),
@@ -149,6 +150,7 @@ describe("get-bookmarks", () => {
           submitterName: null,
           submitterGithubUrl: null,
           createdAt: "2024-01-01",
+          tagsJson: '[{"id":"t1","name":"javascript"}]',
         },
         {
           id: "b2",
@@ -159,13 +161,9 @@ describe("get-bookmarks", () => {
           submitterName: null,
           submitterGithubUrl: null,
           createdAt: "2024-01-01",
+          tagsJson: "[]",
         },
       ]);
-      mockDb.where
-        .mockImplementationOnce(() => mockDb)
-        .mockResolvedValueOnce([
-          { bookmarkId: "b1", tagId: "t1", tagName: "javascript" },
-        ]);
 
       const req = new Request("https://test.com/api/bookmarks?limit=1");
 
