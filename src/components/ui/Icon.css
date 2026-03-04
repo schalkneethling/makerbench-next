@@ -1,0 +1,25 @@
+/**
+ * Shared icon primitive styles.
+ */
+
+.Icon {
+  block-size: var(--icon-size);
+  display: block;
+  inline-size: var(--icon-size);
+}
+
+.Icon--xs {
+  --icon-size: var(--size-12);
+}
+
+.Icon--sm {
+  --icon-size: var(--size-16);
+}
+
+.Icon--md {
+  --icon-size: var(--size-20);
+}
+
+.Icon--lg {
+  --icon-size: var(--size-24);
+}

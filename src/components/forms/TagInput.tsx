@@ -1,6 +1,6 @@
 import { useState, useId, type KeyboardEvent, type ChangeEvent } from "react";
 import { XMarkIcon } from "@heroicons/react/20/solid";
-import { Input } from "../ui";
+import { Icon, Input } from "../ui";
 
 import "./TagInput.css";
 
@@ -183,7 +183,7 @@ export function TagInput({
                     <span id={removeLabelId} className="visually-hidden">
                       Remove {tag}
                     </span>
-                    <XMarkIcon className="TagInput-tagRemoveIcon" aria-hidden="true" />
+                    <Icon icon={XMarkIcon} size="sm" className="TagInput-tagRemoveIcon" aria-hidden="true" />
                   </button>
                 </li>
               );

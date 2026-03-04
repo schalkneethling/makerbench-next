@@ -1,5 +1,6 @@
 import { useId, type ButtonHTMLAttributes } from "react";
 import { XMarkIcon } from "@heroicons/react/20/solid";
+import { Icon } from "../ui";
 
 export interface TagBadgeProps
   extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
@@ -48,7 +49,7 @@ export function TagBadge({
           <span id={removeLabelId} className="visually-hidden">
             Remove {label}
           </span>
-          <XMarkIcon className="TagBadge-removeIcon" aria-hidden="true" />
+          <Icon icon={XMarkIcon} size="sm" className="TagBadge-removeIcon" aria-hidden="true" />
         </button>
       )}
     </span>
