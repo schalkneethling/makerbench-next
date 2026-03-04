@@ -10,8 +10,12 @@ import {
   validationError,
   conflict,
   serverError,
+  serviceUnavailable,
   methodNotAllowed,
   parseAndNormalizeUrl,
+  assertRequiredEnv,
+  isMissingEnvironmentError,
+  getServiceUnavailableMessage,
   initSentry,
   captureError,
   flushSentry,
@@ -28,6 +32,20 @@ export default async (req: Request, _context: Context) => {
 
   if (req.method !== "POST") {
     return methodNotAllowed(["POST"]);
+  }
+
+  try {
+    assertRequiredEnv(["TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN"]);
+  } catch (error) {
+    if (isMissingEnvironmentError(error)) {
+      captureError(error, {
+        function: "process-bookmark",
+        missingKeys: error.missingKeys,
+      });
+      await flushSentry();
+      return serviceUnavailable(getServiceUnavailableMessage());
+    }
+    throw error;
   }
 
   let body: unknown;

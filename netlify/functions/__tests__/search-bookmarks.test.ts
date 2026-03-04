@@ -117,6 +117,25 @@ describe("search-bookmarks", () => {
 
       expect(res.status).toBe(400);
     });
+
+    it("returns generic 503 when required env vars are missing", async () => {
+      const originalGet = Netlify.env.get;
+      Netlify.env.get = vi.fn((envKey: string) =>
+        envKey === "TURSO_AUTH_TOKEN" ? undefined : originalGet(envKey),
+      );
+
+      try {
+        const req = new Request("https://test.com/api/bookmarks/search?q=test");
+        const res = await searchBookmarks(req, mockContext);
+
+        expect(res.status).toBe(503);
+        const body = (await res.json()) as ErrorResponse;
+        expect(body.error).toBe("Service temporarily unavailable");
+        expect(body.error).not.toContain("TURSO");
+      } finally {
+        Netlify.env.get = originalGet;
+      }
+    });
   });
 
   describe("search functionality", () => {
