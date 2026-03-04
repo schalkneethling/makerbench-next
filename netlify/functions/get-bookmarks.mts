@@ -9,11 +9,9 @@ import {
   ok,
   badRequest,
   serverError,
-  serviceUnavailable,
   methodNotAllowed,
   assertRequiredEnv,
-  isMissingEnvironmentError,
-  getServiceUnavailableMessage,
+  handleMissingEnvironmentError,
   initSentry,
   captureError,
   flushSentry,
@@ -42,15 +40,7 @@ export default async (req: Request, _context: Context) => {
   try {
     assertRequiredEnv(["TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN"]);
   } catch (error) {
-    if (isMissingEnvironmentError(error)) {
-      captureError(error, {
-        function: "get-bookmarks",
-        missingKeys: error.missingKeys,
-      });
-      await flushSentry();
-      return serviceUnavailable(getServiceUnavailableMessage());
-    }
-    throw error;
+    return handleMissingEnvironmentError(error, "get-bookmarks");
   }
 
   const url = new URL(req.url);

@@ -4,6 +4,8 @@
  * These helpers intentionally keep details (which keys are missing) internal
  * so API responses can stay generic.
  */
+import { captureError, flushSentry } from "./sentry";
+import { serviceUnavailable } from "./responses";
 
 const SERVICE_UNAVAILABLE_MESSAGE = "Service temporarily unavailable";
 
@@ -52,4 +54,23 @@ export function isMissingEnvironmentError(
  */
 export function getServiceUnavailableMessage(): string {
   return SERVICE_UNAVAILABLE_MESSAGE;
+}
+
+/**
+ * Maps missing env errors to a safe client response, rethrowing other errors.
+ */
+export async function handleMissingEnvironmentError(
+  error: unknown,
+  functionName: string,
+): Promise<Response> {
+  if (!isMissingEnvironmentError(error)) {
+    throw error;
+  }
+
+  captureError(error, {
+    function: functionName,
+    missingKeys: error.missingKeys,
+  });
+  await flushSentry();
+  return serviceUnavailable(getServiceUnavailableMessage());
 }

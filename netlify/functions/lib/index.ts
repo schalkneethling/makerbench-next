@@ -8,8 +8,7 @@ export { normalizeUrl, parseAndNormalizeUrl } from "./url";
 export { initSentry, captureError, flushSentry } from "./sentry";
 export {
   assertRequiredEnv,
-  isMissingEnvironmentError,
-  getServiceUnavailableMessage,
+  handleMissingEnvironmentError,
 } from "./env";
 export {
   bookmarksTable,
