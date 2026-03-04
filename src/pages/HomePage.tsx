@@ -38,6 +38,8 @@ function toToolCardProps(bookmarks: Bookmark[]) {
     title: bookmark.title,
     description: bookmark.description ?? undefined,
     imageUrl: bookmark.imageUrl ?? undefined,
+    submitterName: bookmark.submitterName ?? undefined,
+    submitterGithubUrl: bookmark.submitterGithubUrl ?? undefined,
     url: bookmark.url,
     tags: bookmark.tags.map((tag) => ({ id: tag.id, name: tag.name })),
   }));

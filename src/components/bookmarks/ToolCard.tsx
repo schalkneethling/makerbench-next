@@ -12,12 +12,35 @@ export interface ToolCardProps {
   description?: string;
   /** Screenshot or OG image URL */
   imageUrl?: string;
+  /** Optional submitter name */
+  submitterName?: string;
+  /** Optional submitter GitHub profile URL */
+  submitterGithubUrl?: string;
   /** Tags associated with the tool */
   tags?: Array<{ id: string; name: string }>;
   /** Tag click handler for in-app filtering */
   onTagClick?: (tagId: string) => void;
   /** Additional className */
   className?: string;
+}
+
+/**
+ * Extracts display text from a GitHub profile URL.
+ */
+function toGithubDisplayValue(submitterGithubUrl: string): string {
+  try {
+    const githubUrl = new URL(submitterGithubUrl);
+    const pathSegments = githubUrl.pathname.split("/").filter(Boolean);
+    const username = pathSegments[0];
+
+    if (username) {
+      return `@${username}`;
+    }
+  } catch {
+    // Fall back to the original value if URL parsing fails.
+  }
+
+  return submitterGithubUrl;
 }
 
 /** Fallback image path */
@@ -55,6 +78,8 @@ export function ToolCard({
   title,
   description,
   imageUrl,
+  submitterName,
+  submitterGithubUrl,
   tags = [],
   onTagClick,
   className = "",
@@ -62,6 +87,14 @@ export function ToolCard({
   const titleId = useId();
   // Extract hostname for display
   const hostname = new URL(url).hostname.replace(/^www\./, "");
+  const githubDisplayValue = submitterGithubUrl
+    ? toGithubDisplayValue(submitterGithubUrl)
+    : null;
+  const submitterAttribution = submitterName
+    ? githubDisplayValue
+      ? `${submitterName} · ${githubDisplayValue}`
+      : submitterName
+    : githubDisplayValue;
 
   return (
     <article className={`ToolCard ${className}`.trim()}>
@@ -84,6 +117,12 @@ export function ToolCard({
           )}
         </div>
       </a>
+
+      {submitterAttribution && (
+        <p className="ToolCard-submitter ui-caption">
+          Submitted by {submitterAttribution}
+        </p>
+      )}
 
       {tags.length > 0 && (
         <div className="ToolCard-tags">

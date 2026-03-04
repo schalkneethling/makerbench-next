@@ -26,6 +26,8 @@ interface BookmarkWithTags {
   title: string;
   description: string | null;
   imageUrl: string | null;
+  submitterName: string | null;
+  submitterGithubUrl: string | null;
   createdAt: string;
   tags: { id: string; name: string }[];
 }
@@ -107,6 +109,8 @@ export default async (req: Request, _context: Context) => {
           title: bookmark.title ?? bookmark.url,
           description: bookmark.description,
           imageUrl: bookmark.imageUrl,
+          submitterName: bookmark.submitterName,
+          submitterGithubUrl: bookmark.submitterGithubUrl,
           createdAt: bookmark.createdAt,
           tags: [],
         });
