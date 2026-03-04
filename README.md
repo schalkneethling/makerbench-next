@@ -61,7 +61,7 @@ Copy `.env.example` to `.env` and fill values:
 - `BROWSERLESS_API_KEY`
 - `SENTRY_DSN` (optional)
 
-Package manager note: this repository intentionally uses unpinned `pnpm` (no specific pnpm version is enforced).
+Package manager note: this repository pins pnpm via `packageManager` in `package.json` so Netlify Corepack resolves the exact pnpm version during builds.
 
 ## API Endpoints
 

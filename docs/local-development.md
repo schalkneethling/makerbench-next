@@ -17,7 +17,7 @@ pnpm install
 
 Package manager note:
 
-- This repository intentionally uses unpinned `pnpm` (no `pnpm@x.y.z` pin).
+- This repository pins `pnpm` via `packageManager` in `package.json` to ensure Netlify Corepack resolves the same pnpm version used locally.
 
 ## 2. Configure environment variables
 
