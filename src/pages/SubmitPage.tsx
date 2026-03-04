@@ -151,8 +151,8 @@ export function SubmitPage() {
             maxTags={10}
             required
             error={formErrors.tags}
-            hint="Add 1-10 tags to categorize this tool"
-            placeholder="Type tag and press Enter"
+            hint="Add 1-10 tags. Use commas or press Enter between tags."
+            placeholder="e.g. react, accessibility, css"
           />
         </fieldset>
 
