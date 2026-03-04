@@ -6,10 +6,10 @@ import "./AboutPage.css";
 export function AboutPage() {
   return (
     <article className="AboutPage">
-      <h1>About MakerBench</h1>
+      <h1 className="heading-4xl">About MakerBench</h1>
 
       <section>
-        <h2>Our Mission</h2>
+        <h2 className="heading-2xl">Our Mission</h2>
         <p>
           MakerBench is a curated directory of tools and resources for makers,
           developers, and creators. We help you discover the right tools to
@@ -19,7 +19,7 @@ export function AboutPage() {
       </section>
 
       <section>
-        <h2>What We Do</h2>
+        <h2 className="heading-2xl">What We Do</h2>
         <p>
           We collect and organize tools across categories like development,
           design, productivity, marketing, and more. Each tool in our directory
@@ -34,7 +34,7 @@ export function AboutPage() {
       </section>
 
       <section>
-        <h2>Community-Driven</h2>
+        <h2 className="heading-2xl">Community-Driven</h2>
         <p>
           MakerBench is built by makers, for makers. Anyone can submit a tool
           to the directory. We review each submission to ensure quality and
@@ -47,7 +47,7 @@ export function AboutPage() {
       </section>
 
       <section>
-        <h2>Open Source</h2>
+        <h2 className="heading-2xl">Open Source</h2>
         <p>
           MakerBench is open source and built in the open. We believe in
           transparency and welcome contributions from the community. You can
@@ -64,7 +64,7 @@ export function AboutPage() {
       </section>
 
       <section>
-        <h2>Contact</h2>
+        <h2 className="heading-2xl">Contact</h2>
         <p>
           Questions or feedback? Reach out on GitHub at{" "}
           <a
@@ -80,4 +80,3 @@ export function AboutPage() {
     </article>
   );
 }
-

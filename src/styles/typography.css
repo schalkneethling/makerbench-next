@@ -62,3 +62,87 @@
   --typography-code-sm: var(--font-weight-regular) var(--text-xs) /
     var(--line-height-normal) var(--font-family-mono);
 }
+
+@layer base {
+  :is(h1, h2, h3, h4, h5, h6) {
+    color: var(--color-text);
+  }
+
+  h1,
+  .heading-4xl {
+    font: var(--typography-heading-4xl);
+  }
+
+  h2,
+  .heading-3xl {
+    font: var(--typography-heading-3xl);
+  }
+
+  h3,
+  .heading-2xl {
+    font: var(--typography-heading-2xl);
+  }
+
+  h4,
+  .heading-xl {
+    font: var(--typography-heading-xl);
+  }
+
+  h5,
+  .heading-lg {
+    font: var(--typography-heading-lg);
+  }
+
+  h6,
+  .heading-base {
+    font: var(--typography-heading-base);
+  }
+
+  .body-lg {
+    font: var(--typography-body-lg);
+  }
+
+  .body-base {
+    font: var(--typography-body-base);
+  }
+
+  .body-sm {
+    font: var(--typography-body-sm);
+  }
+
+  .ui-label {
+    font: var(--typography-label);
+  }
+
+  .ui-button {
+    font: var(--typography-button);
+  }
+
+  .ui-caption {
+    font: var(--typography-caption);
+  }
+
+  .logo-xl {
+    font: var(--typography-logo-xl);
+  }
+
+  .logo-lg {
+    font: var(--typography-logo-lg);
+  }
+
+  .logo-base {
+    font: var(--typography-logo-base);
+  }
+
+  .logo-sm {
+    font: var(--typography-logo-sm);
+  }
+
+  .code-base {
+    font: var(--typography-code-base);
+  }
+
+  .code-sm {
+    font: var(--typography-code-sm);
+  }
+}

@@ -99,8 +99,8 @@ export function SubmitPage() {
   return (
     <div className="SubmitPage">
       <header className="SubmitPage-header">
-        <h1 className="SubmitPage-title">Submit a Tool</h1>
-        <p className="SubmitPage-description">
+        <h1 className="SubmitPage-title heading-2xl">Submit a Tool</h1>
+        <p className="SubmitPage-description body-base">
           Share a useful tool or resource with the community.
         </p>
       </header>
@@ -116,7 +116,7 @@ export function SubmitPage() {
         <Alert variant="error" dismissible onDismiss={handleReset}>
           <strong>Submission failed.</strong> {error.message}
           {error.details && (
-            <ul className="SubmitPage-errorDetails">
+            <ul className="SubmitPage-errorDetails body-sm">
               {Object.entries(error.details).map(([field, messages]) => (
                 <li key={field}>
                   {field}: {Array.isArray(messages) ? messages.join(", ") : messages}
@@ -157,7 +157,7 @@ export function SubmitPage() {
         </fieldset>
 
         <fieldset className="SubmitPage-fieldset" disabled={isSubmitting}>
-          <legend className="SubmitPage-legend">Your Details (Optional)</legend>
+          <legend className="SubmitPage-legend ui-label">Your Details (Optional)</legend>
 
           <TextInput
             id="submitter-name"

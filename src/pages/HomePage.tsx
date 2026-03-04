@@ -281,8 +281,8 @@ export function HomePage() {
   return (
     <div className="HomePage">
       <header className="HomePage-hero">
-        <h1 className="HomePage-title">Discover Tools</h1>
-        <p className="HomePage-subtitle">
+        <h1 className="HomePage-title heading-3xl">Discover Tools</h1>
+        <p className="HomePage-subtitle body-lg">
           Browse curated tools and resources for makers.
         </p>
       </header>
