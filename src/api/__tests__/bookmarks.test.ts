@@ -20,6 +20,8 @@ const mockBookmarks = [
     title: "Tool One",
     description: "A great tool",
     imageUrl: "https://example.com/image1.png",
+    submitterName: "Jane Developer",
+    submitterGithubUrl: "https://github.com/janedoe",
     createdAt: "2024-01-15T10:00:00Z",
     tags: [
       { id: "t1", name: "javascript" },
@@ -32,6 +34,8 @@ const mockBookmarks = [
     title: "Tool Two",
     description: null,
     imageUrl: null,
+    submitterName: null,
+    submitterGithubUrl: null,
     createdAt: "2024-01-14T10:00:00Z",
     tags: [{ id: "t1", name: "javascript" }],
   },

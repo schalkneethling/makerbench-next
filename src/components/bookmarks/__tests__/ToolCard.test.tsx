@@ -48,4 +48,19 @@ describe("ToolCard", () => {
 
     expect(handleTagClick).toHaveBeenCalledWith("t-react");
   });
+
+  it("renders submitter name when provided", () => {
+    render(<ToolCard {...defaultProps} submitterName="Jane Developer" />);
+    expect(screen.getByText("Submitted by Jane Developer")).toBeInTheDocument();
+  });
+
+  it("renders submitter GitHub username extracted from URL", () => {
+    render(
+      <ToolCard
+        {...defaultProps}
+        submitterGithubUrl="https://github.com/octocat"
+      />
+    );
+    expect(screen.getByText("Submitted by @octocat")).toBeInTheDocument();
+  });
 });

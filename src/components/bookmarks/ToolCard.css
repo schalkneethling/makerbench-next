@@ -79,6 +79,13 @@
   overflow: hidden;
 }
 
+.ToolCard-submitter {
+  color: var(--color-text-muted);
+  margin: 0;
+  padding-block: 0 var(--size-8);
+  padding-inline: var(--size-16);
+}
+
 .ToolCard-tags {
   border-block-start: var(--border-default);
   display: flex;

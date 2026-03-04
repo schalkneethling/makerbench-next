@@ -36,6 +36,8 @@ const bookmarkSchema = z.object({
   // nullable (not optional) - API explicitly returns null from DB, not undefined
   description: z.string().nullable(),
   imageUrl: z.string().nullable(),
+  submitterName: z.string().nullable(),
+  submitterGithubUrl: z.string().nullable(),
   createdAt: z.string(),
   tags: z.array(bookmarkTagSchema),
 });
