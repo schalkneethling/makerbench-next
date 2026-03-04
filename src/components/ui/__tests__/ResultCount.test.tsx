@@ -12,4 +12,13 @@ describe("ResultCount", () => {
     expect(screen.getByText(/showing/i)).toBeInTheDocument();
     expect(screen.getByText(/tools/i)).toBeInTheDocument();
   });
+
+  it("displays loaded count when total is unavailable", () => {
+    render(<ResultCount count={3} total={null} />);
+
+    expect(screen.getByText("3")).toBeInTheDocument();
+    expect(screen.queryByText("42")).not.toBeInTheDocument();
+    expect(screen.getByText(/showing/i)).toBeInTheDocument();
+    expect(screen.getByText(/tools/i)).toBeInTheDocument();
+  });
 });

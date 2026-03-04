@@ -63,7 +63,7 @@ function createSearchHandler() {
       data: {
         bookmarks: paginatedResults,
         pagination: {
-          total: filtered.length,
+          total: null,
           limit,
           offset,
           hasMore: offset + paginatedResults.length < filtered.length,
@@ -131,7 +131,7 @@ describe("useSearch", () => {
           success: true,
           data: {
             bookmarks: [],
-            pagination: { total: 0, limit: 20, offset: 0, hasMore: false },
+            pagination: { total: null, limit: 20, offset: 0, hasMore: false },
           },
         });
       }),
@@ -157,6 +157,31 @@ describe("useSearch", () => {
 
     // Should only have made one request (the last one)
     expect(searchSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("can execute search immediately without debounce", async () => {
+    const searchSpy = vi.fn();
+    server.use(
+      http.get("/api/bookmarks/search", () => {
+        searchSpy();
+        return HttpResponse.json({
+          success: true,
+          data: {
+            bookmarks: [],
+            pagination: { total: null, limit: 20, offset: 0, hasMore: false },
+          },
+        });
+      }),
+    );
+
+    const { result } = renderHook(() => useSearch(500));
+
+    await act(async () => {
+      await result.current.search({ tags: ["react"] }, { immediate: true });
+    });
+
+    expect(searchSpy).toHaveBeenCalledTimes(1);
+    expect(result.current.isLoading).toBe(false);
   });
 
   it("handles search errors", async () => {
@@ -194,7 +219,7 @@ describe("useSearch", () => {
             success: true,
             data: {
               bookmarks: [mockBookmarks[0]],
-              pagination: { total: 2, limit: 1, offset: 0, hasMore: true },
+              pagination: { total: null, limit: 1, offset: 0, hasMore: true },
             },
           });
         }
@@ -203,7 +228,7 @@ describe("useSearch", () => {
           success: true,
           data: {
             bookmarks: [mockBookmarks[1]],
-            pagination: { total: 2, limit: 1, offset: 1, hasMore: false },
+            pagination: { total: null, limit: 1, offset: 1, hasMore: false },
           },
         });
       }),

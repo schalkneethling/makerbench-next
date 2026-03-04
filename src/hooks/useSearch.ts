@@ -17,7 +17,10 @@ interface UseSearchState {
 
 interface UseSearchReturn extends UseSearchState {
   /** Execute search with params */
-  search: (params: SearchBookmarksParams) => Promise<void>;
+  search: (
+    params: SearchBookmarksParams,
+    options?: { immediate?: boolean },
+  ) => Promise<void>;
   /** Load more search results */
   loadMore: () => Promise<void>;
   /** Reset to initial state */
@@ -61,7 +64,10 @@ export function useSearch(debounceMs = DEBOUNCE_MS): UseSearchReturn {
   }, []);
 
   const search = useCallback(
-    async (params: SearchBookmarksParams) => {
+    async (
+      params: SearchBookmarksParams,
+      options: { immediate?: boolean } = {},
+    ) => {
       // Store params for loadMore
       setSearchParams(params);
 
@@ -72,6 +78,11 @@ export function useSearch(debounceMs = DEBOUNCE_MS): UseSearchReturn {
 
       // Set loading immediately for UI feedback
       setState((prev) => ({ ...prev, isLoading: true }));
+
+      if (options.immediate) {
+        await executeSearch(params);
+        return;
+      }
 
       // Debounce the actual search
       debounceRef.current = setTimeout(() => {
@@ -141,4 +152,3 @@ export function useSearch(debounceMs = DEBOUNCE_MS): UseSearchReturn {
     reset,
   };
 }
-
