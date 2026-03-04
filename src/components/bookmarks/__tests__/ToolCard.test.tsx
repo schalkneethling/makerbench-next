@@ -62,5 +62,34 @@ describe("ToolCard", () => {
       />
     );
     expect(screen.getByText("Submitted by @octocat")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "@octocat" }),
+    ).toHaveAttribute("href", "https://github.com/octocat");
+  });
+
+  it("links submitter name to GitHub profile when URL is valid", () => {
+    render(
+      <ToolCard
+        {...defaultProps}
+        submitterName="Octo Cat"
+        submitterGithubUrl="https://github.com/octocat"
+      />
+    );
+
+    expect(screen.getByRole("link", { name: "Octo Cat" })).toHaveAttribute(
+      "href",
+      "https://github.com/octocat",
+    );
+  });
+
+  it("does not render a profile link for invalid GitHub URLs", () => {
+    render(
+      <ToolCard
+        {...defaultProps}
+        submitterGithubUrl="https://bit.ly/octocat"
+      />
+    );
+
+    expect(screen.queryByText("Submitted by")).not.toBeInTheDocument();
   });
 });

@@ -86,6 +86,10 @@
   padding-inline: var(--size-16);
 }
 
+.ToolCard-submitterLink {
+  color: var(--color-primary);
+}
+
 .ToolCard-tags {
   border-block-start: var(--border-default);
   display: flex;
