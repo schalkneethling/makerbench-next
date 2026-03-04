@@ -27,8 +27,8 @@
 }
 
 .HomePage-search {
+  inline-size: min(100%, 56rem);
   margin-inline: auto;
-  max-inline-size: 32rem;
 }
 
 .HomePage-tags {
@@ -44,4 +44,3 @@
   justify-content: center;
   padding-block: var(--size-16);
 }
-
