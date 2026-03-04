@@ -8,11 +8,11 @@ export function PrivacyPage() {
 
   return (
     <article className="PrivacyPage">
-      <h1>Privacy Policy</h1>
-      <p className="PrivacyPage-meta">Last updated: {lastUpdated}</p>
+      <h1 className="heading-4xl">Privacy Policy</h1>
+      <p className="PrivacyPage-meta body-sm">Last updated: {lastUpdated}</p>
 
       <section>
-        <h2>Introduction</h2>
+        <h2 className="heading-2xl">Introduction</h2>
         <p>
           MakerBench ("we", "us", "our" or "Company") operates the MakerBench
           website (the "Service"). This page informs you of our policies
@@ -23,13 +23,13 @@ export function PrivacyPage() {
       </section>
 
       <section>
-        <h2>Information Collection and Use</h2>
+        <h2 className="heading-2xl">Information Collection and Use</h2>
         <p>
           We collect several different types of information for various
           purposes to provide and improve our Service to you.
         </p>
 
-        <h3>Types of Data Collected</h3>
+        <h3 className="heading-base">Types of Data Collected</h3>
         <ul>
           <li>
             <span className="PrivacyPage-emphasis">Personal Data:</span> When you
@@ -52,7 +52,7 @@ export function PrivacyPage() {
       </section>
 
       <section>
-        <h2>Use of Data</h2>
+        <h2 className="heading-2xl">Use of Data</h2>
         <p>MakerBench uses the collected data for various purposes:</p>
         <ul>
           <li>To provide, maintain, and improve the Service</li>
@@ -68,7 +68,7 @@ export function PrivacyPage() {
       </section>
 
       <section>
-        <h2>Data Storage and Security</h2>
+        <h2 className="heading-2xl">Data Storage and Security</h2>
         <p>
           The security of your data is important to us, but remember that no
           method of transmission over the Internet or method of electronic
@@ -84,7 +84,7 @@ export function PrivacyPage() {
       </section>
 
       <section>
-        <h2>Third-Party Services</h2>
+        <h2 className="heading-2xl">Third-Party Services</h2>
         <p>
           We use third-party services to operate MakerBench. These services may
           collect information used to identify you:
@@ -114,7 +114,7 @@ export function PrivacyPage() {
       </section>
 
       <section>
-        <h2>GDPR Compliance</h2>
+        <h2 className="heading-2xl">GDPR Compliance</h2>
         <p>
           If you are located in the European Union, you have rights under the
           General Data Protection Regulation (GDPR). These include the right to
@@ -124,7 +124,7 @@ export function PrivacyPage() {
       </section>
 
       <section>
-        <h2>Changes to This Privacy Policy</h2>
+        <h2 className="heading-2xl">Changes to This Privacy Policy</h2>
         <p>
           We may update our Privacy Policy from time to time. We will notify you
           of any changes by posting the new Privacy Policy on this page and
@@ -134,7 +134,7 @@ export function PrivacyPage() {
       </section>
 
       <section>
-        <h2>Contact Us</h2>
+        <h2 className="heading-2xl">Contact Us</h2>
         <p>
           If you have any questions about this Privacy Policy, please contact us
           on GitHub at{" "}
@@ -151,4 +151,3 @@ export function PrivacyPage() {
     </article>
   );
 }
-

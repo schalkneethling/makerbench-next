@@ -6,15 +6,11 @@
 }
 
 .PrivacyPage h1 {
-  font-size: var(--text-4xl);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-snug);
   margin-block-end: var(--size-8);
 }
 
 .PrivacyPage-meta {
   color: var(--color-text-muted);
-  font-size: var(--text-sm);
   margin-block-end: var(--size-32);
 }
 
@@ -23,16 +19,10 @@
 }
 
 .PrivacyPage h2 {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-snug);
   margin-block-end: var(--size-12);
 }
 
 .PrivacyPage h3 {
-  font-size: var(--text-lg);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-snug);
   margin-block: var(--size-16) var(--size-8);
 }
 
@@ -55,15 +45,3 @@
 .PrivacyPage-emphasis {
   font-weight: var(--font-weight-semibold);
 }
-
-.PrivacyPage a {
-  color: var(--color-primary);
-  text-decoration: underline;
-  text-underline-offset: 0.15em;
-  transition: color var(--transition-fast);
-}
-
-.PrivacyPage a:hover {
-  color: var(--color-primary-hover);
-}
-

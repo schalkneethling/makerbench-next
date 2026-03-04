@@ -76,11 +76,11 @@ export function ToolCard({
         </div>
 
         <div className="ToolCard-content">
-          <h3 id={titleId} className="ToolCard-title">{title}</h3>
-          <p className="ToolCard-hostname">{hostname}</p>
+          <h3 id={titleId} className="ToolCard-title heading-base">{title}</h3>
+          <p className="ToolCard-hostname ui-caption">{hostname}</p>
 
           {description && (
-            <p className="ToolCard-description">{description}</p>
+            <p className="ToolCard-description body-sm">{description}</p>
           )}
         </div>
       </a>

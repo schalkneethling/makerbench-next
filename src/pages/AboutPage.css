@@ -6,9 +6,6 @@
 }
 
 .AboutPage h1 {
-  font-size: var(--text-4xl);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-snug);
   margin-block-end: var(--size-32);
 }
 
@@ -17,9 +14,6 @@
 }
 
 .AboutPage h2 {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-snug);
   margin-block-end: var(--size-12);
 }
 
@@ -38,4 +32,3 @@
   line-height: var(--line-height-normal);
   margin-block-end: var(--size-8);
 }
-

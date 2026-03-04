@@ -16,13 +16,11 @@
 
 .HomePage-title {
   color: var(--color-text);
-  font: var(--typography-heading-3xl);
   margin: 0;
 }
 
 .HomePage-subtitle {
   color: var(--color-text-muted);
-  font: var(--typography-body-lg);
   margin-block-start: var(--size-8);
 }
 

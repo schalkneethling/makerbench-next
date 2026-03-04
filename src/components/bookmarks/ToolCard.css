@@ -61,7 +61,6 @@
 }
 
 .ToolCard-title {
-  font: var(--typography-heading-sm);
   line-clamp: 2;
   line-height: var(--line-height-snug);
   margin: 0;
@@ -70,13 +69,11 @@
 
 .ToolCard-hostname {
   color: var(--color-text-muted);
-  font: var(--typography-caption);
   margin: 0;
 }
 
 .ToolCard-description {
   color: var(--color-text-muted);
-  font: var(--typography-body-sm);
   line-clamp: 3;
   margin: 0;
   overflow: hidden;

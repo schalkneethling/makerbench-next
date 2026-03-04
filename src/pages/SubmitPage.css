@@ -18,13 +18,11 @@
 
 .SubmitPage-title {
   color: var(--color-text);
-  font: var(--typography-heading-2xl);
   margin: 0;
 }
 
 .SubmitPage-description {
   color: var(--color-text-muted);
-  font: var(--typography-body-base);
   margin-block-start: var(--size-8);
 }
 
@@ -49,7 +47,6 @@
 
 .SubmitPage-legend {
   color: var(--color-text);
-  font: var(--typography-label);
   margin-block-end: var(--size-16);
   padding: 0;
 }
@@ -60,8 +57,6 @@
 }
 
 .SubmitPage-errorDetails {
-  font: var(--typography-body-small);
   margin-block-start: var(--size-8);
   padding-inline-start: var(--size-20);
 }
-

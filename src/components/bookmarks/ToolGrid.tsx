@@ -36,8 +36,8 @@ export function ToolGrid({
     if (tools.length === 0) {
       return (
         <div className="ToolGrid-empty">
-          <h2 className="ToolGrid-emptyTitle">{emptyTitle}</h2>
-          <p className="ToolGrid-emptyDescription">{emptyDescription}</p>
+          <h2 className="ToolGrid-emptyTitle heading-lg">{emptyTitle}</h2>
+          <p className="ToolGrid-emptyDescription body-base">{emptyDescription}</p>
         </div>
       );
     }

@@ -18,14 +18,12 @@
 
 .ToolGrid-emptyTitle {
   color: var(--color-text);
-  font: var(--typography-heading-md);
-  margin: 0 0 var(--size-8);
+  margin-block: 0 var(--size-8);
+  margin-inline: 0;
 }
 
 .ToolGrid-emptyDescription {
   color: var(--color-text-muted);
-  font: var(--typography-body-base);
   margin: 0;
 }
-
 
