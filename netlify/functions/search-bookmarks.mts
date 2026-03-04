@@ -12,6 +12,7 @@ import {
   methodNotAllowed,
   assertRequiredEnv,
   handleMissingEnvironmentError,
+  parseAggregatedTags,
   initSentry,
   captureError,
   flushSentry,
@@ -30,26 +31,6 @@ interface BookmarkWithTags {
   submitterGithubUrl: string | null;
   createdAt: string;
   tags: { id: string; name: string }[];
-}
-
-interface RawTagEntry {
-  id: string | null;
-  name: string | null;
-}
-
-/**
- * Parses aggregated tag JSON and removes null placeholder entries.
- */
-function parseTags(tagsJson: string): Array<{ id: string; name: string }> {
-  try {
-    const parsed = JSON.parse(tagsJson) as Array<RawTagEntry | null>;
-    return parsed.filter(
-      (tag): tag is { id: string; name: string } =>
-        tag !== null && tag.id !== null && tag.name !== null,
-    );
-  } catch {
-    return [];
-  }
 }
 
 export default async (req: Request, _context: Context) => {
@@ -175,7 +156,7 @@ export default async (req: Request, _context: Context) => {
       submitterName: bookmark.submitterName,
       submitterGithubUrl: bookmark.submitterGithubUrl,
       createdAt: bookmark.createdAt,
-      tags: parseTags(bookmark.tagsJson),
+      tags: parseAggregatedTags(bookmark.tagsJson),
     }));
 
     const dbDuration = Date.now() - dbStart;
