@@ -43,7 +43,7 @@ function createGetBookmarksHandler() {
       data: {
         bookmarks: paginatedBookmarks,
         pagination: {
-          total: mockBookmarks.length,
+          total: null,
           limit,
           offset,
           hasMore: offset + paginatedBookmarks.length < mockBookmarks.length,
@@ -137,7 +137,7 @@ describe("useBookmarks", () => {
             success: true,
             data: {
               bookmarks: [mockBookmarks[0]],
-              pagination: { total: 2, limit: 1, offset: 0, hasMore: true },
+              pagination: { total: null, limit: 1, offset: 0, hasMore: true },
             },
           });
         }
@@ -146,7 +146,7 @@ describe("useBookmarks", () => {
           success: true,
           data: {
             bookmarks: [mockBookmarks[1]],
-            pagination: { total: 2, limit: 1, offset: 1, hasMore: false },
+            pagination: { total: null, limit: 1, offset: 1, hasMore: false },
           },
         });
       }),
@@ -180,7 +180,7 @@ describe("useBookmarks", () => {
           success: true,
           data: {
             bookmarks: mockBookmarks,
-            pagination: { total: 2, limit: 20, offset: 0, hasMore: false },
+            pagination: { total: null, limit: 20, offset: 0, hasMore: false },
           },
         });
       }),
@@ -229,7 +229,7 @@ describe("useBookmarks", () => {
           success: true,
           data: {
             bookmarks: mockBookmarks,
-            pagination: { total: 2, limit: 20, offset: 0, hasMore: false },
+            pagination: { total: null, limit: 20, offset: 0, hasMore: false },
           },
         });
       }),

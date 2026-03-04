@@ -1,5 +1,5 @@
 import type { Context, Config } from "@netlify/functions";
-import { eq, desc, count } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 
 import {
   getDb,
@@ -33,6 +33,7 @@ interface BookmarkWithTags {
 }
 
 export default async (req: Request, _context: Context) => {
+  const handlerStart = Date.now();
   initSentry();
 
   if (req.method !== "GET") {
@@ -71,65 +72,79 @@ export default async (req: Request, _context: Context) => {
 
   try {
     const db = getDb();
+    const dbStart = Date.now();
 
-    // Get total count of approved bookmarks
-    const [{ total }] = await db
-      .select({ total: count() })
-      .from(bookmarksTable)
-      .where(eq(bookmarksTable.status, "approved"));
-
-    // Get bookmarks with tags
-    const rows = await db
+    const paginatedBookmarks = await db
       .select({
-        bookmark: bookmarksTable,
-        tagId: tagsTable.id,
-        tagName: tagsTable.name,
+        id: bookmarksTable.id,
+        url: bookmarksTable.url,
+        title: bookmarksTable.title,
+        description: bookmarksTable.description,
+        imageUrl: bookmarksTable.imageUrl,
+        submitterName: bookmarksTable.submitterName,
+        submitterGithubUrl: bookmarksTable.submitterGithubUrl,
+        createdAt: bookmarksTable.createdAt,
       })
       .from(bookmarksTable)
-      .leftJoin(
-        bookmarkTagsTable,
-        eq(bookmarksTable.id, bookmarkTagsTable.bookmarkId),
-      )
-      .leftJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
       .where(eq(bookmarksTable.status, "approved"))
       .orderBy(desc(bookmarksTable.createdAt))
-      .limit(limit)
+      .limit(limit + 1)
       .offset(offset);
 
-    // Group tags by bookmark
-    const bookmarksMap = new Map<string, BookmarkWithTags>();
+    const hasMore = paginatedBookmarks.length > limit;
+    const pageBookmarks = paginatedBookmarks.slice(0, limit);
+    const pageBookmarkIds = pageBookmarks.map((bookmark) => bookmark.id);
 
-    for (const row of rows) {
-      const { bookmark, tagId, tagName } = row;
+    const tagRows =
+      pageBookmarkIds.length > 0
+        ? await db
+            .select({
+              bookmarkId: bookmarkTagsTable.bookmarkId,
+              tagId: tagsTable.id,
+              tagName: tagsTable.name,
+            })
+            .from(bookmarkTagsTable)
+            .innerJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
+            .where(inArray(bookmarkTagsTable.bookmarkId, pageBookmarkIds))
+        : [];
 
-      if (!bookmarksMap.has(bookmark.id)) {
-        bookmarksMap.set(bookmark.id, {
-          id: bookmark.id,
-          url: bookmark.url,
-          title: bookmark.title ?? bookmark.url,
-          description: bookmark.description,
-          imageUrl: bookmark.imageUrl,
-          submitterName: bookmark.submitterName,
-          submitterGithubUrl: bookmark.submitterGithubUrl,
-          createdAt: bookmark.createdAt,
-          tags: [],
-        });
-      }
-
-      if (tagId && tagName) {
-        bookmarksMap.get(bookmark.id)!.tags.push({ id: tagId, name: tagName });
-      }
+    const tagMap = new Map<string, { id: string; name: string }[]>();
+    for (const row of tagRows) {
+      const existing = tagMap.get(row.bookmarkId) ?? [];
+      existing.push({ id: row.tagId, name: row.tagName });
+      tagMap.set(row.bookmarkId, existing);
     }
 
-    const bookmarks = Array.from(bookmarksMap.values());
+    const bookmarks: BookmarkWithTags[] = pageBookmarks.map((bookmark) => ({
+      id: bookmark.id,
+      url: bookmark.url,
+      title: bookmark.title ?? bookmark.url,
+      description: bookmark.description,
+      imageUrl: bookmark.imageUrl,
+      submitterName: bookmark.submitterName,
+      submitterGithubUrl: bookmark.submitterGithubUrl,
+      createdAt: bookmark.createdAt,
+      tags: tagMap.get(bookmark.id) ?? [],
+    }));
+
+    const dbDuration = Date.now() - dbStart;
+    const handlerDuration = Date.now() - handlerStart;
+    console.info("[perf] get-bookmarks", {
+      dbDuration,
+      handlerDuration,
+      hasMore,
+      limit,
+      offset,
+      resultCount: bookmarks.length,
+    });
 
     return ok({
       bookmarks,
       pagination: {
-        total,
+        total: null,
         limit,
         offset,
-        hasMore: offset + bookmarks.length < total,
+        hasMore,
       },
     });
   } catch (error) {

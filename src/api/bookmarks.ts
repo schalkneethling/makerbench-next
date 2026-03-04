@@ -23,7 +23,7 @@ const bookmarkTagSchema = z.object({
 });
 
 const paginationSchema = z.object({
-  total: z.number(),
+  total: z.number().nullable().optional(),
   limit: z.number(),
   offset: z.number(),
   hasMore: z.boolean(),

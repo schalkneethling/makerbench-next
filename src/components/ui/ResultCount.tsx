@@ -1,8 +1,8 @@
 export interface ResultCountProps {
   /** Number of items currently displayed */
   count: number;
-  /** Total number of items available */
-  total: number;
+  /** Total number of items available (optional when backend skips exact count) */
+  total?: number | null;
   /** Custom class name */
   className?: string;
 }
@@ -18,9 +18,16 @@ export function ResultCount({
 }: ResultCountProps) {
   return (
     <p className={`ResultCount ${className}`.trim()} aria-live="polite">
-      Showing <span className="ResultCount-value">{count}</span> of{" "}
-      <span className="ResultCount-value">{total}</span> tools
+      {typeof total === "number" ? (
+        <>
+          Showing <span className="ResultCount-value">{count}</span> of{" "}
+          <span className="ResultCount-value">{total}</span> tools
+        </>
+      ) : (
+        <>
+          Showing <span className="ResultCount-value">{count}</span> tools
+        </>
+      )}
     </p>
   );
 }
-

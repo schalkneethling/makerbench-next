@@ -181,10 +181,13 @@ export function HomePage() {
     initialSearchTriggered.current = true;
 
     const trimmed = searchQuery.trim();
-    search({
-      q: trimmed.length >= 3 ? trimmed : undefined,
-      tags: selectedTagNames.length > 0 ? selectedTagNames : undefined,
-    });
+    search(
+      {
+        q: trimmed.length >= 3 ? trimmed : undefined,
+        tags: selectedTagNames.length > 0 ? selectedTagNames : undefined,
+      },
+      { immediate: true },
+    );
   }, [searchQuery, selectedTagNames, availableTags, search]);
 
   /**
@@ -243,10 +246,13 @@ export function HomePage() {
       if (newTagNames.length === 0 && searchQuery.trim() === "") {
         resetSearch();
       } else {
-        search({
-          q: searchQuery.trim() || undefined,
-          tags: newTagNames.length > 0 ? newTagNames : undefined,
-        });
+        search(
+          {
+            q: searchQuery.trim() || undefined,
+            tags: newTagNames.length > 0 ? newTagNames : undefined,
+          },
+          { immediate: true },
+        );
       }
     },
     [availableTags, selectedTagNames, searchQuery, search, resetSearch, updateUrlParams]
@@ -262,7 +268,7 @@ export function HomePage() {
     if (searchQuery.trim() === "") {
       resetSearch();
     } else {
-      search({ q: searchQuery.trim() });
+      search({ q: searchQuery.trim() }, { immediate: true });
     }
   }, [searchQuery, search, resetSearch, updateUrlParams]);
 
@@ -278,7 +284,7 @@ export function HomePage() {
   }, [isFiltering, loadMoreSearch, loadMoreBookmarks]);
 
   const hasMore = currentPagination?.hasMore ?? false;
-  const total = currentPagination?.total ?? 0;
+  const total = currentPagination?.total;
 
   return (
     <div className="HomePage">

@@ -57,7 +57,7 @@ function createGetBookmarksHandler() {
       data: {
         bookmarks: paginatedBookmarks,
         pagination: {
-          total: mockBookmarks.length,
+          total: null,
           limit,
           offset,
           hasMore: offset + paginatedBookmarks.length < mockBookmarks.length,
@@ -102,7 +102,7 @@ function createSearchBookmarksHandler() {
       data: {
         bookmarks: paginatedResults,
         pagination: {
-          total: filtered.length,
+          total: null,
           limit,
           offset,
           hasMore: offset + paginatedResults.length < filtered.length,
@@ -174,7 +174,7 @@ describe("getBookmarks", () => {
 
     expect(result.bookmarks).toHaveLength(2);
     expect(result.bookmarks[0].title).toBe("Tool One");
-    expect(result.pagination.total).toBe(2);
+    expect(result.pagination.total).toBeNull();
     expect(result.pagination.limit).toBe(20);
     expect(result.pagination.offset).toBe(0);
   });
@@ -233,7 +233,7 @@ describe("searchBookmarks", () => {
     const result = await searchBookmarks({ q: "nonexistent" });
 
     expect(result.bookmarks).toHaveLength(0);
-    expect(result.pagination.total).toBe(0);
+    expect(result.pagination.total).toBeNull();
   });
 
   it("handles pagination in search results", async () => {
