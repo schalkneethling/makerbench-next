@@ -1,5 +1,9 @@
 import { useId } from "react";
 import { TagBadge } from "../tags";
+import {
+  getGithubUsernameFromProfileUrl,
+  isValidGithubProfileUrl,
+} from "../../lib/github";
 
 import "./ToolCard.css";
 
@@ -22,25 +26,6 @@ export interface ToolCardProps {
   onTagClick?: (tagId: string) => void;
   /** Additional className */
   className?: string;
-}
-
-/**
- * Extracts display text from a GitHub profile URL.
- */
-function toGithubDisplayValue(submitterGithubUrl: string): string {
-  try {
-    const githubUrl = new URL(submitterGithubUrl);
-    const pathSegments = githubUrl.pathname.split("/").filter(Boolean);
-    const username = pathSegments[0];
-
-    if (username) {
-      return `@${username}`;
-    }
-  } catch {
-    // Fall back to the original value if URL parsing fails.
-  }
-
-  return submitterGithubUrl;
 }
 
 /** Fallback image path */
@@ -87,14 +72,13 @@ export function ToolCard({
   const titleId = useId();
   // Extract hostname for display
   const hostname = new URL(url).hostname.replace(/^www\./, "");
-  const githubDisplayValue = submitterGithubUrl
-    ? toGithubDisplayValue(submitterGithubUrl)
-    : null;
-  const submitterAttribution = submitterName
-    ? githubDisplayValue
-      ? `${submitterName} · ${githubDisplayValue}`
-      : submitterName
-    : githubDisplayValue;
+  const hasValidGithubProfile =
+    submitterGithubUrl !== undefined &&
+    isValidGithubProfileUrl(submitterGithubUrl);
+  const githubUsername =
+    hasValidGithubProfile && submitterGithubUrl
+      ? getGithubUsernameFromProfileUrl(submitterGithubUrl)
+      : null;
 
   return (
     <article className={`ToolCard ${className}`.trim()}>
@@ -118,9 +102,32 @@ export function ToolCard({
         </div>
       </a>
 
-      {submitterAttribution && (
+      {(submitterName || githubUsername) && (
         <p className="ToolCard-submitter ui-caption">
-          Submitted by {submitterAttribution}
+          Submitted by{" "}
+          {submitterName && hasValidGithubProfile && submitterGithubUrl ? (
+            <a
+              href={submitterGithubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ToolCard-submitterLink"
+            >
+              {submitterName}
+            </a>
+          ) : (
+            submitterName
+          )}
+          {submitterName && githubUsername ? " · " : ""}
+          {githubUsername && submitterGithubUrl && (
+            <a
+              href={submitterGithubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ToolCard-submitterLink"
+            >
+              @{githubUsername}
+            </a>
+          )}
         </p>
       )}
 

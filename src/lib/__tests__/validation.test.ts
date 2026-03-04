@@ -39,6 +39,28 @@ describe("Validation Schemas", () => {
       const result = validateToolSubmission(invalidSubmission);
       expect(result.success).toBe(false);
     });
+
+    it("should reject non-GitHub submitter URLs", () => {
+      const invalidSubmission = {
+        url: "https://example.com",
+        tags: ["development"],
+        submitterGithubUrl: "https://gitlab.com/johndoe",
+      };
+
+      const result = validateToolSubmission(invalidSubmission);
+      expect(result.success).toBe(false);
+    });
+
+    it("should reject GitHub URLs that are not profile URLs", () => {
+      const invalidSubmission = {
+        url: "https://example.com",
+        tags: ["development"],
+        submitterGithubUrl: "https://github.com/johndoe/repo",
+      };
+
+      const result = validateToolSubmission(invalidSubmission);
+      expect(result.success).toBe(false);
+    });
   });
 
   describe("validateUrl", () => {

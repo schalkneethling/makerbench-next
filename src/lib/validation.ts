@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidGithubProfileUrl } from "./github";
 
 // URL validation schema
 const urlSchema = z.string().url("Please enter a valid URL");
@@ -19,7 +20,13 @@ export const submitterSchema = z.object({
     .string()
     .min(1, "Name is required")
     .max(100, "Name must be 100 characters or less"),
-  githubUrl: z.string().url("Please enter a valid GitHub URL"),
+  githubUrl: z
+    .string()
+    .url("Please enter a valid GitHub URL")
+    .refine(
+      (url) => isValidGithubProfileUrl(url),
+      "Please enter a valid GitHub profile URL (https://github.com/username)",
+    ),
 });
 
 // Tool submission validation schema
@@ -28,6 +35,10 @@ export const toolSubmissionSchema = z.object({
   githubUrl: z
     .string()
     .url("Please enter a valid GitHub URL")
+    .refine(
+      (url) => isValidGithubProfileUrl(url),
+      "Please enter a valid GitHub profile URL (https://github.com/username)",
+    )
     .optional()
     .or(z.literal("")),
   tags: z
@@ -40,6 +51,10 @@ export const toolSubmissionSchema = z.object({
   submitterGithubUrl: z
     .string()
     .url("Please enter a valid GitHub URL")
+    .refine(
+      (url) => isValidGithubProfileUrl(url),
+      "Please enter a valid GitHub profile URL (https://github.com/username)",
+    )
     .optional()
     .or(z.literal("")),
 });
@@ -77,6 +92,10 @@ export const bookmarkRequestSchema = z.object({
   submitterGithubUrl: z
     .string()
     .url("Please enter a valid GitHub URL")
+    .refine(
+      (url) => isValidGithubProfileUrl(url),
+      "Please enter a valid GitHub profile URL (https://github.com/username)",
+    )
     .optional()
     .or(z.literal("")),
 });
