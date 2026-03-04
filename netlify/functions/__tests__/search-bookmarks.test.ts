@@ -50,9 +50,9 @@ function createMockContext(): Context {
 function createMockDb() {
   const mockDb = {
     select: vi.fn().mockReturnThis(),
-    selectDistinct: vi.fn().mockReturnThis(),
     from: vi.fn().mockReturnThis(),
     where: vi.fn().mockReturnThis(),
+    groupBy: vi.fn().mockReturnThis(),
     limit: vi.fn().mockReturnThis(),
     offset: vi.fn().mockReturnThis(),
     orderBy: vi.fn().mockReturnThis(),
@@ -144,6 +144,7 @@ describe("search-bookmarks", () => {
           submitterName: null,
           submitterGithubUrl: null,
           createdAt: "2024-01-01",
+          tagsJson: '[{"id":"t1","name":"react"}]',
         },
         {
           id: "b2",
@@ -154,13 +155,9 @@ describe("search-bookmarks", () => {
           submitterName: null,
           submitterGithubUrl: null,
           createdAt: "2024-01-01",
+          tagsJson: "[]",
         },
       ]);
-      mockDb.where
-        .mockImplementationOnce(() => mockDb)
-        .mockResolvedValueOnce([
-          { bookmarkId: "b1", tagId: "t1", tagName: "react" },
-        ]);
 
       const req = new Request(
         "https://test.com/api/bookmarks/search?q=react&limit=1",
@@ -190,11 +187,9 @@ describe("search-bookmarks", () => {
           submitterName: null,
           submitterGithubUrl: null,
           createdAt: "2024-01-01",
+          tagsJson: "[]",
         },
       ]);
-      mockDb.where
-        .mockImplementationOnce(() => mockDb)
-        .mockResolvedValueOnce([]);
 
       const req = new Request(
         "https://test.com/api/bookmarks/search?tags=javascript,react",
