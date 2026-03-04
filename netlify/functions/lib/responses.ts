@@ -80,6 +80,13 @@ export function serverError(error: string): Response {
 }
 
 /**
+ * Service unavailable error (503)
+ */
+export function serviceUnavailable(error: string): Response {
+  return jsonResponse({ success: false, error }, 503);
+}
+
+/**
  * Method not allowed (405)
  */
 export function methodNotAllowed(allowed: string[]): Response {

@@ -12,6 +12,8 @@ import {
   serverError,
   methodNotAllowed,
   parseAndNormalizeUrl,
+  assertRequiredEnv,
+  handleMissingEnvironmentError,
   initSentry,
   captureError,
   flushSentry,
@@ -28,6 +30,12 @@ export default async (req: Request, _context: Context) => {
 
   if (req.method !== "POST") {
     return methodNotAllowed(["POST"]);
+  }
+
+  try {
+    assertRequiredEnv(["TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN"]);
+  } catch (error) {
+    return handleMissingEnvironmentError(error, "process-bookmark");
   }
 
   let body: unknown;

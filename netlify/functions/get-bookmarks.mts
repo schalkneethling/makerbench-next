@@ -10,6 +10,8 @@ import {
   badRequest,
   serverError,
   methodNotAllowed,
+  assertRequiredEnv,
+  handleMissingEnvironmentError,
   initSentry,
   captureError,
   flushSentry,
@@ -33,6 +35,12 @@ export default async (req: Request, _context: Context) => {
 
   if (req.method !== "GET") {
     return methodNotAllowed(["GET"]);
+  }
+
+  try {
+    assertRequiredEnv(["TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN"]);
+  } catch (error) {
+    return handleMissingEnvironmentError(error, "get-bookmarks");
   }
 
   const url = new URL(req.url);
