@@ -71,9 +71,7 @@ Package manager note: this repository pins pnpm via `packageManager` in `package
 
 ## Issue Tracking
 
-This project now uses GitHub Issues (not beads/bd).
-
-Open backlog is tracked at:
+Open backlog is tracked in GitHub Issues:
 [https://github.com/schalkneethling/makerbench-next/issues](https://github.com/schalkneethling/makerbench-next/issues)
 
 ## Documentation
