@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 /**
  * Site footer with copyright and navigation links.
  */
@@ -13,10 +15,10 @@ export function Footer() {
         <nav className="Footer-nav" aria-label="Footer">
           <ul className="Footer-links reset-list">
             <li>
-              <a href="/about">About</a>
+              <Link to="/about">About</Link>
             </li>
             <li>
-              <a href="/privacy">Privacy</a>
+              <Link to="/privacy">Privacy</Link>
             </li>
             <li>
               <a

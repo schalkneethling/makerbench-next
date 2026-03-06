@@ -1,7 +1,7 @@
 import "./AboutPage.css";
 
 /**
- * About page explaining MakerBench's purpose and mission.
+ * About page explaining MakerBench's purpose and how to contribute.
  */
 export function AboutPage() {
   return (
@@ -9,49 +9,44 @@ export function AboutPage() {
       <h1 className="heading-4xl">About MakerBench</h1>
 
       <section>
-        <h2 className="heading-2xl">Our Mission</h2>
+        <h2 className="heading-2xl">What MakerBench Is</h2>
         <p>
-          MakerBench is a curated directory of tools and resources for makers,
-          developers, and creators. We help you discover the right tools to
-          bring your ideas to life, whether you're building a side project,
-          launching a startup, or exploring new technologies.
+          MakerBench is a curated directory of tools for makers, developers,
+          and teams building products on the web. The goal is simple: make it
+          easier to discover useful tools without turning the site into a noisy
+          list of everything on the internet.
         </p>
       </section>
 
       <section>
-        <h2 className="heading-2xl">What We Do</h2>
+        <h2 className="heading-2xl">How It Works</h2>
         <p>
-          We collect and organize tools across categories like development,
-          design, productivity, marketing, and more. Each tool in our directory
-          includes:
-        </p>
-        <ul>
-          <li>A clear description of what the tool does</li>
-          <li>Relevant tags to help you find related tools</li>
-          <li>Screenshots to see the tool in action</li>
-          <li>Direct links to try or learn more</li>
-        </ul>
-      </section>
-
-      <section>
-        <h2 className="heading-2xl">Community-Driven</h2>
-        <p>
-          MakerBench is built by makers, for makers. Anyone can submit a tool
-          to the directory. We review each submission to ensure quality and
-          relevance before adding it to the catalog.
-        </p>
-        <p>
-          Have a tool you love? Share it with the community by{" "}
-          <a href="/submit">submitting it here</a>.
+          Tools can be submitted by the community and are reviewed before they
+          appear in the directory. Each approved listing includes the tool
+          metadata we can reliably collect, relevant tags, and a screenshot or
+          image so visitors can quickly evaluate whether it is worth exploring.
         </p>
       </section>
 
       <section>
-        <h2 className="heading-2xl">Open Source</h2>
+        <h2 className="heading-2xl">Contributing Tools</h2>
         <p>
-          MakerBench is open source and built in the open. We believe in
-          transparency and welcome contributions from the community. You can
-          view the source code, report issues, or contribute improvements on{" "}
+          If you know a tool that belongs here, use the{" "}
+          <a href="/submit">submission form</a>. A good submission starts with
+          the tool URL and a small set of accurate tags. You can also include
+          your name and GitHub username if you want credit shown on the card.
+        </p>
+        <p>
+          Submissions are reviewed before publication so the directory stays
+          useful, consistent, and focused.
+        </p>
+      </section>
+
+      <section>
+        <h2 className="heading-2xl">Contributing Code</h2>
+        <p>
+          MakerBench is open source. If you want to fix a bug, improve the UI,
+          or tighten the docs, open an issue or pull request on{" "}
           <a
             href="https://github.com/schalkneethling/makerbench-next"
             target="_blank"
@@ -59,20 +54,29 @@ export function AboutPage() {
           >
             GitHub
           </a>
-          .
+          . Small, focused contributions are preferred.
+        </p>
+      </section>
+
+      <section>
+        <h2 className="heading-2xl">Project Scope</h2>
+        <p>
+          MakerBench is intentionally opinionated. The aim is not exhaustive
+          coverage. The aim is a clean, searchable catalogue that helps people
+          find high-signal tools quickly.
         </p>
       </section>
 
       <section>
         <h2 className="heading-2xl">Contact</h2>
         <p>
-          Questions or feedback? Reach out on GitHub at{" "}
+          Questions, corrections, or feedback can be shared in{" "}
           <a
             href="https://github.com/schalkneethling/makerbench-next"
             target="_blank"
             rel="noopener noreferrer"
           >
-            our project repository
+            the project repository
           </a>
           .
         </p>
