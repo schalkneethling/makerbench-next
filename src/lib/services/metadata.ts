@@ -10,6 +10,21 @@ export interface MetadataResult {
   error?: string;
 }
 
+function resolveMetadataUrl(
+  candidateUrl: string | undefined,
+  pageUrl: string,
+): string | null {
+  if (!candidateUrl) {
+    return null;
+  }
+
+  try {
+    return new URL(candidateUrl, pageUrl).href;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Extracts metadata (title, description, OG image) from a URL
  * @param url - URL to fetch and extract metadata from
@@ -47,7 +62,10 @@ export async function extractMetadata(url: string): Promise<MetadataResult> {
     const description = ogDescription || metaDescription || null;
 
     // Extract OG image
-    const ogImage = $('meta[property="og:image"]').attr("content") || null;
+    const ogImage = resolveMetadataUrl(
+      $('meta[property="og:image"]').attr("content"),
+      url,
+    );
 
     return { title, description, ogImage };
   } catch (error) {

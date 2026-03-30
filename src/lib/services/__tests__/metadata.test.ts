@@ -18,6 +18,14 @@ describe("extractMetadata", () => {
     expect(result.ogImage).toBeNull();
   });
 
+  it("resolves relative OG image paths against the page URL", async () => {
+    const result = await extractMetadata("https://example.com/relative-og-image");
+
+    expect(result.title).toBe("Tool With Relative OG Image");
+    expect(result.description).toBeNull();
+    expect(result.ogImage).toBe("https://example.com/social-media-tile.png");
+  });
+
   it("handles pages with minimal metadata", async () => {
     const result = await extractMetadata("https://example.com/minimal");
 

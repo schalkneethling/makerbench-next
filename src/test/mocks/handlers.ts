@@ -51,6 +51,23 @@ export const handlers = [
     `);
   }),
 
+  // Mock external page with relative OG image path
+  http.get("https://example.com/relative-og-image", () => {
+    return HttpResponse.html(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Tool With Relative OG Image</title>
+          <meta
+            property="og:image"
+            content="/social-media-tile.png"
+          />
+        </head>
+        <body><h1>Tool</h1></body>
+      </html>
+    `);
+  }),
+
   // Mock external page with minimal metadata
   http.get("https://example.com/minimal", () => {
     return HttpResponse.html(`
