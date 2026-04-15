@@ -30,6 +30,15 @@ export interface ToolCardProps {
 
 /** Fallback image path */
 const FALLBACK_IMAGE = "/makerbench-fallback.png";
+const LEGACY_FALLBACK_IMAGE = "/social-media-tile.png";
+
+function getToolImageSrc(imageUrl?: string): string {
+  if (!imageUrl || imageUrl === LEGACY_FALLBACK_IMAGE) {
+    return FALLBACK_IMAGE;
+  }
+
+  return imageUrl;
+}
 
 /**
  * Builds a URL that applies a tag filter while preserving current search query.
@@ -70,6 +79,7 @@ export function ToolCard({
   className = "",
 }: ToolCardProps) {
   const titleId = useId();
+  const imageSrc = getToolImageSrc(imageUrl);
   // Extract hostname for display
   const hostname = new URL(url).hostname.replace(/^www\./, "");
   const hasValidGithubProfile =
@@ -85,10 +95,17 @@ export function ToolCard({
       <a href={url} className="ToolCard-link" aria-labelledby={titleId}>
         <div className="ToolCard-imageWrapper">
           <img
-            src={imageUrl || FALLBACK_IMAGE}
+            src={imageSrc}
             alt=""
             className="ToolCard-image"
             loading="lazy"
+            onError={(event) => {
+              if (event.currentTarget.src.endsWith(FALLBACK_IMAGE)) {
+                return;
+              }
+
+              event.currentTarget.src = FALLBACK_IMAGE;
+            }}
           />
         </div>
 

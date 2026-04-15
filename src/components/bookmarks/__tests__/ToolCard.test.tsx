@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ToolCard } from "../ToolCard";
 
@@ -32,6 +32,27 @@ describe("ToolCard", () => {
     expect(img).toHaveAttribute("src", "https://cdn.example.com/image.jpg");
   });
 
+  it("maps the legacy social media tile path to the shipped fallback image", () => {
+    const { container } = render(
+      <ToolCard {...defaultProps} imageUrl="/social-media-tile.png" />
+    );
+    const img = container.querySelector("img");
+    expect(img).toHaveAttribute("src", "/makerbench-fallback.png");
+  });
+
+  it("falls back to the MakerBench image when the provided image fails to load", () => {
+    const { container } = render(
+      <ToolCard {...defaultProps} imageUrl="https://cdn.example.com/broken.jpg" />
+    );
+    const img = container.querySelector("img");
+
+    expect(img).toHaveAttribute("src", "https://cdn.example.com/broken.jpg");
+
+    fireEvent.error(img!);
+
+    expect(img).toHaveAttribute("src", "/makerbench-fallback.png");
+  });
+
   it("calls onTagClick with tag id when a tag badge is clicked", async () => {
     const user = userEvent.setup();
     const handleTagClick = vi.fn();
@@ -61,7 +82,7 @@ describe("ToolCard", () => {
         submitterGithubUrl="https://github.com/octocat"
       />
     );
-    expect(screen.getByText("Submitted by @octocat")).toBeInTheDocument();
+    expect(screen.getByText(/^Submitted by$/)).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "@octocat" }),
     ).toHaveAttribute("href", "https://github.com/octocat");
