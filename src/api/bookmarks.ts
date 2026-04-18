@@ -22,6 +22,12 @@ const bookmarkTagSchema = z.object({
   name: z.string(),
 });
 
+const tagSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  usageCount: z.number().int().nonnegative().optional(),
+});
+
 const paginationSchema = z.object({
   total: z.number().nullable().optional(),
   limit: z.number(),
@@ -47,6 +53,10 @@ const bookmarksDataSchema = z.object({
   pagination: paginationSchema,
 });
 
+const tagsDataSchema = z.object({
+  tags: z.array(tagSchema),
+});
+
 const bookmarksResponseSchema = z.object({
   success: z.literal(true),
   data: bookmarksDataSchema,
@@ -62,6 +72,11 @@ const submitResponseSchema = z.object({
   data: submitDataSchema,
 });
 
+const tagsResponseSchema = z.object({
+  success: z.literal(true),
+  data: tagsDataSchema,
+});
+
 const errorResponseSchema = z.object({
   success: z.literal(false),
   error: z.string(),
@@ -73,9 +88,11 @@ const errorResponseSchema = z.object({
 // ============================================================================
 
 export type BookmarkTag = z.infer<typeof bookmarkTagSchema>;
+export type Tag = z.infer<typeof tagSchema>;
 export type PaginationInfo = z.infer<typeof paginationSchema>;
 export type Bookmark = z.infer<typeof bookmarkSchema>;
 export type BookmarksResponse = z.infer<typeof bookmarksDataSchema>;
+export type TagsResponse = z.infer<typeof tagsDataSchema>;
 export type SubmitBookmarkResponse = z.infer<typeof submitDataSchema>;
 export type ApiError = z.infer<typeof errorResponseSchema>;
 
@@ -90,6 +107,10 @@ export interface SearchBookmarksParams {
   tags?: string[];
   limit?: number;
   offset?: number;
+}
+
+interface RequestOptions {
+  signal?: AbortSignal;
 }
 
 // ============================================================================
@@ -130,6 +151,74 @@ function throwApiError(json: unknown, status: number): never {
   );
 }
 
+function getNow(): number {
+  if (typeof performance !== "undefined" && typeof performance.now === "function") {
+    return performance.now();
+  }
+
+  return Date.now();
+}
+
+function createRequestId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `request-${Date.now()}`;
+}
+
+async function fetchValidatedResponse<T>(
+  path: string,
+  schema: z.ZodSchema<{ success: true; data: T }>,
+  options: RequestInit & RequestOptions = {},
+): Promise<T> {
+  const requestId = createRequestId();
+  const startTime = getNow();
+
+  try {
+    const response = await fetch(`${getBaseUrl()}${path}`, options);
+    const json = await response.json();
+    const durationMs = Math.round(getNow() - startTime);
+
+    console.info("[perf] client-request", {
+      requestId,
+      path,
+      durationMs,
+      status: response.status,
+      ok: response.ok,
+      aborted: false,
+    });
+
+    if (!response.ok) {
+      throwApiError(json, response.status);
+    }
+
+    const result = schema.safeParse(json);
+    if (!result.success) {
+      throw new BookmarkApiError("Invalid response from server", 500);
+    }
+
+    return result.data.data;
+  } catch (error) {
+    const durationMs = Math.round(getNow() - startTime);
+    const aborted =
+      error instanceof DOMException && error.name === "AbortError";
+
+    console.info("[perf] client-request", {
+      requestId,
+      path,
+      durationMs,
+      aborted,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Unexpected request failure",
+    });
+
+    throw error;
+  }
+}
+
 // ============================================================================
 // API Client Functions
 // ============================================================================
@@ -155,22 +244,7 @@ export async function getBookmarks(
   const queryString = searchParams.toString();
   const path = `/api/bookmarks${queryString ? `?${queryString}` : ""}`;
 
-  const response = await fetch(`${getBaseUrl()}${path}`);
-  const json = await response.json();
-
-  // HTTP error - extract structured error if available
-  if (!response.ok) {
-    throwApiError(json, response.status);
-  }
-
-  // HTTP success - validate expected shape
-  const result = bookmarksResponseSchema.safeParse(json);
-  if (!result.success) {
-    // Server returned 2xx but body doesn't match - this is a bug
-    throw new BookmarkApiError("Invalid response from server", 500);
-  }
-
-  return result.data.data;
+  return fetchValidatedResponse(path, bookmarksResponseSchema);
 }
 
 /**
@@ -181,6 +255,7 @@ export async function getBookmarks(
  */
 export async function searchBookmarks(
   params: SearchBookmarksParams = {},
+  options: RequestOptions = {},
 ): Promise<BookmarksResponse> {
   const searchParams = new URLSearchParams();
 
@@ -200,22 +275,18 @@ export async function searchBookmarks(
   const queryString = searchParams.toString();
   const path = `/api/bookmarks/search${queryString ? `?${queryString}` : ""}`;
 
-  const response = await fetch(`${getBaseUrl()}${path}`);
-  const json = await response.json();
+  return fetchValidatedResponse(path, bookmarksResponseSchema, {
+    signal: options.signal,
+  });
+}
 
-  // HTTP error - extract structured error if available
-  if (!response.ok) {
-    throwApiError(json, response.status);
-  }
-
-  // HTTP success - validate expected shape
-  const result = bookmarksResponseSchema.safeParse(json);
-  if (!result.success) {
-    // Server returned 2xx but body doesn't match - this is a bug
-    throw new BookmarkApiError("Invalid response from server", 500);
-  }
-
-  return result.data.data;
+/**
+ * Fetches tags for the homepage filter UI.
+ * @returns Available tags with optional usage counts
+ * @throws BookmarkApiError on API errors
+ */
+export async function getTags(): Promise<TagsResponse> {
+  return fetchValidatedResponse("/api/tags", tagsResponseSchema);
 }
 
 /**

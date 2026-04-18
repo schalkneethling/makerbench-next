@@ -49,6 +49,8 @@ function createMockContext(): Context {
 
 function createMockDb() {
   const mockDb = {
+    all: vi.fn().mockResolvedValue([]),
+    selectDistinct: vi.fn().mockReturnThis(),
     select: vi.fn().mockReturnThis(),
     from: vi.fn().mockReturnThis(),
     where: vi.fn().mockReturnThis(),
@@ -119,7 +121,7 @@ describe("search-bookmarks", () => {
 
   describe("search and pagination", () => {
     it("returns empty results when no bookmarks match", async () => {
-      mockDb.offset.mockResolvedValueOnce([]);
+      mockDb.all.mockResolvedValueOnce([]);
 
       const req = new Request("https://test.com/api/bookmarks/search?q=xyz");
 
@@ -134,7 +136,11 @@ describe("search-bookmarks", () => {
     });
 
     it("returns hasMore=true when limit+1 results are found", async () => {
-      mockDb.offset.mockResolvedValueOnce([
+      mockDb.all.mockResolvedValueOnce([
+        { id: "b1", rank: 0.1 },
+        { id: "b2", rank: 0.2 },
+      ]);
+      mockDb.groupBy.mockResolvedValueOnce([
         {
           id: "b1",
           url: "https://react.dev",
@@ -145,17 +151,6 @@ describe("search-bookmarks", () => {
           submitterGithubUrl: null,
           createdAt: "2024-01-01",
           tagsJson: '[{"id":"t1","name":"react"}]',
-        },
-        {
-          id: "b2",
-          url: "https://example.com",
-          title: "Example",
-          description: null,
-          imageUrl: null,
-          submitterName: null,
-          submitterGithubUrl: null,
-          createdAt: "2024-01-01",
-          tagsJson: "[]",
         },
       ]);
 
@@ -178,6 +173,11 @@ describe("search-bookmarks", () => {
 
     it("supports tag filter requests", async () => {
       mockDb.offset.mockResolvedValueOnce([
+        {
+          id: "b1",
+        },
+      ]);
+      mockDb.groupBy.mockResolvedValueOnce([
         {
           id: "b1",
           url: "https://example.com",

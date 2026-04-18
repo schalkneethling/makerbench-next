@@ -159,6 +159,51 @@ describe("useSearch", () => {
     expect(searchSpy).toHaveBeenCalledTimes(1);
   });
 
+  it("ignores stale responses after a newer search starts", async () => {
+    server.use(
+      http.get("/api/bookmarks/search", async ({ request }) => {
+        const url = new URL(request.url);
+        const q = url.searchParams.get("q");
+
+        if (q === "old") {
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+
+        return HttpResponse.json({
+          success: true,
+          data: {
+            bookmarks:
+              q === "old"
+                ? [mockBookmarks[0]]
+                : [mockBookmarks[1]],
+            pagination: {
+              total: null,
+              limit: 20,
+              offset: 0,
+              hasMore: false,
+            },
+          },
+        });
+      }),
+    );
+
+    const { result } = renderHook(() => useSearch(0));
+
+    act(() => {
+      result.current.search({ q: "old" });
+    });
+
+    act(() => {
+      result.current.search({ q: "new" });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.results).toEqual([mockBookmarks[1]]);
+  });
+
   it("can execute search immediately without debounce", async () => {
     const searchSpy = vi.fn();
     server.use(

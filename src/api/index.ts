@@ -1,15 +1,17 @@
 export {
   getBookmarks,
+  getTags,
   searchBookmarks,
   submitBookmark,
   BookmarkApiError,
   type Bookmark,
   type BookmarkTag,
+  type Tag,
   type BookmarksResponse,
+  type TagsResponse,
   type SubmitBookmarkResponse,
   type PaginationInfo,
   type ApiError,
   type GetBookmarksParams,
   type SearchBookmarksParams,
 } from "./bookmarks";
-
