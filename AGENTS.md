@@ -150,6 +150,12 @@ After modifying `src/db/schema.ts`:
 2. Push to Turso: `npx drizzle-kit push`
 3. Verify locally with `netlify dev` before deploying
 
+### Migration Gotchas
+
+- **CRITICAL: Drizzle migrations are driven by `migrations/meta/_journal.json`, not just the `.sql` files.** If you add a migration SQL file manually, you must also add the corresponding journal entry and snapshot file or Drizzle will silently skip it.
+- **If Turso reports duplicate column errors during migrate, check `__drizzle_migrations` before changing schema files.** This usually means the database schema is ahead of Drizzle's recorded migration history, not that the new migration itself is wrong.
+- **Verify SQLite FTS5 syntax against the official docs before shipping search migrations.** In particular, wrapper tokenizers must be declared in the correct order, e.g. `tokenize = 'porter unicode61'`, not `tokenize = 'unicode61 porter'`.
+
 ### Production Deployment
 
 **Before deploying code with schema changes:**
