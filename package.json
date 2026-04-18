@@ -51,6 +51,7 @@
     "@varlock/vite-integration": "^0.2.10",
     "@vitejs/plugin-react": "^4.4.1",
     "@vitest/ui": "^3.2.4",
+    "babel-plugin-react-compiler": "^1.0.0",
     "drizzle-kit": "^0.31.1",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^7.1.1",
