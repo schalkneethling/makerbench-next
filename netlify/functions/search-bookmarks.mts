@@ -1,5 +1,5 @@
 import type { Context, Config } from "@netlify/functions";
-import { eq, desc, like, inArray, and, or, sql } from "drizzle-orm";
+import { eq, desc, inArray, and, sql } from "drizzle-orm";
 
 import {
   getDb,
@@ -33,7 +33,103 @@ interface BookmarkWithTags {
   tags: { id: string; name: string }[];
 }
 
-export default async (req: Request, _context: Context) => {
+interface SearchIdRow {
+  id: string;
+  rank?: number;
+}
+
+function buildSearchMode(query: string, tagFilters: string[]): string {
+  if (query && tagFilters.length > 0) {
+    return "text+tag";
+  }
+
+  if (query) {
+    return "text";
+  }
+
+  return "tag";
+}
+
+function buildFtsQuery(query: string): string {
+  return query
+    .toLowerCase()
+    .trim()
+    .split(/\s+/)
+    .map((token) => token.replace(/[^\p{L}\p{N}_-]/gu, ""))
+    .filter((token) => token.length > 0)
+    .map((token) => `${token}*`)
+    .join(" ");
+}
+
+async function hydrateBookmarks(
+  bookmarkIds: string[],
+): Promise<BookmarkWithTags[]> {
+  if (bookmarkIds.length === 0) {
+    return [];
+  }
+
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: bookmarksTable.id,
+      url: bookmarksTable.url,
+      title: bookmarksTable.title,
+      description: bookmarksTable.description,
+      imageUrl: bookmarksTable.imageUrl,
+      submitterName: bookmarksTable.submitterName,
+      submitterGithubUrl: bookmarksTable.submitterGithubUrl,
+      createdAt: bookmarksTable.createdAt,
+      tagsJson: sql<string>`coalesce(
+        json_group_array(
+          case
+            when ${tagsTable.id} is not null
+              then json_object('id', ${tagsTable.id}, 'name', ${tagsTable.name})
+          end
+        ),
+        '[]'
+      )`,
+    })
+    .from(bookmarksTable)
+    .leftJoin(
+      bookmarkTagsTable,
+      eq(bookmarksTable.id, bookmarkTagsTable.bookmarkId),
+    )
+    .leftJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
+    .where(inArray(bookmarksTable.id, bookmarkIds))
+    .groupBy(
+      bookmarksTable.id,
+      bookmarksTable.url,
+      bookmarksTable.title,
+      bookmarksTable.description,
+      bookmarksTable.imageUrl,
+      bookmarksTable.submitterName,
+      bookmarksTable.submitterGithubUrl,
+      bookmarksTable.createdAt,
+    );
+
+  const rowsById = new Map(
+    rows.map((row) => [
+      row.id,
+      {
+        id: row.id,
+        url: row.url,
+        title: row.title ?? row.url,
+        description: row.description,
+        imageUrl: row.imageUrl,
+        submitterName: row.submitterName,
+        submitterGithubUrl: row.submitterGithubUrl,
+        createdAt: row.createdAt,
+        tags: parseAggregatedTags(row.tagsJson),
+      } satisfies BookmarkWithTags,
+    ]),
+  );
+
+  return bookmarkIds
+    .map((bookmarkId) => rowsById.get(bookmarkId))
+    .filter((bookmark): bookmark is BookmarkWithTags => bookmark !== undefined);
+}
+
+export default async (req: Request, context: Context) => {
   const handlerStart = Date.now();
   initSentry();
 
@@ -82,92 +178,79 @@ export default async (req: Request, _context: Context) => {
   try {
     const db = getDb();
     const dbStart = Date.now();
+    let matchedIds: SearchIdRow[] = [];
 
-    // Build conditions
-    const conditions = [eq(bookmarksTable.status, "approved")];
-
-    // Search by title OR tag name if query provided.
     if (query) {
-      conditions.push(
-        or(
-          like(bookmarksTable.title, `%${query}%`),
-          like(tagsTable.name, `%${query}%`)
-        )!
-      );
-    }
+      const ftsQuery = buildFtsQuery(query);
 
-    // Any selected tag can match.
-    if (tagFilters.length > 0) {
-      conditions.push(inArray(tagsTable.name, tagFilters));
-    }
-
-    const whereClause = and(...conditions);
-
-    const paginatedBookmarks = await db
-      .select({
-        id: bookmarksTable.id,
-        url: bookmarksTable.url,
-        title: bookmarksTable.title,
-        description: bookmarksTable.description,
-        imageUrl: bookmarksTable.imageUrl,
-        submitterName: bookmarksTable.submitterName,
-        submitterGithubUrl: bookmarksTable.submitterGithubUrl,
-        createdAt: bookmarksTable.createdAt,
-        tagsJson: sql<string>`coalesce(
-          json_group_array(
-            case
-              when ${tagsTable.id} is not null
-                then json_object('id', ${tagsTable.id}, 'name', ${tagsTable.name})
-            end
+      matchedIds = await db.all<SearchIdRow>(sql`
+        select
+          bookmark_search.bookmark_id as id,
+          bm25(bookmark_search) as rank
+        from bookmark_search
+        inner join ${bookmarksTable}
+          on ${bookmarksTable.id} = bookmark_search.bookmark_id
+        where
+          ${bookmarksTable.status} = 'approved'
+          and bookmark_search match ${ftsQuery}
+          ${
+            tagFilters.length > 0
+              ? sql`and exists (
+                  select 1
+                  from ${bookmarkTagsTable}
+                  inner join ${tagsTable}
+                    on ${bookmarkTagsTable.tagId} = ${tagsTable.id}
+                  where
+                    ${bookmarkTagsTable.bookmarkId} = ${bookmarksTable.id}
+                    and ${inArray(tagsTable.name, tagFilters)}
+                )`
+              : sql``
+          }
+        order by rank, ${bookmarksTable.createdAt} desc
+        limit ${limit + 1}
+        offset ${offset}
+      `);
+    } else {
+      matchedIds = await db
+        .selectDistinct({
+          id: bookmarksTable.id,
+        })
+        .from(bookmarksTable)
+        .innerJoin(
+          bookmarkTagsTable,
+          eq(bookmarksTable.id, bookmarkTagsTable.bookmarkId),
+        )
+        .innerJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
+        .where(
+          and(
+            eq(bookmarksTable.status, "approved"),
+            inArray(tagsTable.name, tagFilters),
           ),
-          '[]'
-        )`,
-      })
-      .from(bookmarksTable)
-      .leftJoin(
-        bookmarkTagsTable,
-        eq(bookmarksTable.id, bookmarkTagsTable.bookmarkId),
-      )
-      .leftJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
-      .where(whereClause)
-      .groupBy(
-        bookmarksTable.id,
-        bookmarksTable.url,
-        bookmarksTable.title,
-        bookmarksTable.description,
-        bookmarksTable.imageUrl,
-        bookmarksTable.submitterName,
-        bookmarksTable.submitterGithubUrl,
-        bookmarksTable.createdAt,
-      )
-      .orderBy(desc(bookmarksTable.createdAt))
-      .limit(limit + 1)
-      .offset(offset);
+        )
+        .orderBy(desc(bookmarksTable.createdAt))
+        .limit(limit + 1)
+        .offset(offset);
+    }
 
-    const hasMore = paginatedBookmarks.length > limit;
-    const pageBookmarks = paginatedBookmarks.slice(0, limit);
+    const dbDurationMs = Date.now() - dbStart;
+    const pageBookmarkIds = matchedIds.slice(0, limit).map((row) => row.id);
+    const hasMore = matchedIds.length > limit;
+    const mapStart = Date.now();
+    const bookmarks = await hydrateBookmarks(pageBookmarkIds);
+    const mapDurationMs = Date.now() - mapStart;
+    const handlerDurationMs = Date.now() - handlerStart;
 
-    const bookmarks: BookmarkWithTags[] = pageBookmarks.map((bookmark) => ({
-      id: bookmark.id,
-      url: bookmark.url,
-      title: bookmark.title ?? bookmark.url,
-      description: bookmark.description,
-      imageUrl: bookmark.imageUrl,
-      submitterName: bookmark.submitterName,
-      submitterGithubUrl: bookmark.submitterGithubUrl,
-      createdAt: bookmark.createdAt,
-      tags: parseAggregatedTags(bookmark.tagsJson),
-    }));
-
-    const dbDuration = Date.now() - dbStart;
-    const handlerDuration = Date.now() - handlerStart;
     console.info("[perf] search-bookmarks", {
-      dbDuration,
-      handlerDuration,
+      requestId: context.requestId,
+      queryMode: buildSearchMode(query, tagFilters),
+      dbDurationMs,
+      mapDurationMs,
+      handlerDurationMs,
       hasMore,
       limit,
       offset,
       queryLength: query.length,
+      rowCount: matchedIds.length,
       resultCount: bookmarks.length,
       tagFilterCount: tagFilters.length,
     });
@@ -182,7 +265,13 @@ export default async (req: Request, _context: Context) => {
       },
     });
   } catch (error) {
-    captureError(error, { query, tagFilters, limit, offset });
+    captureError(error, {
+      requestId: context.requestId,
+      query,
+      tagFilters,
+      limit,
+      offset,
+    });
     await flushSentry();
     return serverError("An error occurred while searching bookmarks");
   }

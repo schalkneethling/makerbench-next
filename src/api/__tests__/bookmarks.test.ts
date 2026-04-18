@@ -4,6 +4,7 @@ import { http, HttpResponse } from "msw";
 import { server } from "../../test/mocks/server";
 import {
   getBookmarks,
+  getTags,
   searchBookmarks,
   submitBookmark,
   BookmarkApiError,
@@ -112,6 +113,20 @@ function createSearchBookmarksHandler() {
   });
 }
 
+function createGetTagsHandler() {
+  return http.get(`${API_BASE}/api/tags`, () => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        tags: [
+          { id: "t1", name: "javascript", usageCount: 2 },
+          { id: "t2", name: "react", usageCount: 1 },
+        ],
+      },
+    });
+  });
+}
+
 /**
  * Creates the POST /api/bookmarks handler
  */
@@ -159,6 +174,7 @@ function createSubmitBookmarkHandler() {
 beforeEach(() => {
   server.use(
     createGetBookmarksHandler(),
+    createGetTagsHandler(),
     createSearchBookmarksHandler(),
     createSubmitBookmarkHandler(),
   );
@@ -241,6 +257,27 @@ describe("searchBookmarks", () => {
 
     expect(result.bookmarks).toHaveLength(1);
     expect(result.pagination.hasMore).toBe(true);
+  });
+
+  it("passes an AbortSignal through to fetch", async () => {
+    const controller = new AbortController();
+
+    await searchBookmarks({ q: "tool" }, { signal: controller.signal });
+
+    expect(controller.signal.aborted).toBe(false);
+  });
+});
+
+describe("getTags", () => {
+  it("fetches tags independently from bookmarks", async () => {
+    const result = await getTags();
+
+    expect(result.tags).toHaveLength(2);
+    expect(result.tags[0]).toEqual({
+      id: "t1",
+      name: "javascript",
+      usageCount: 2,
+    });
   });
 });
 

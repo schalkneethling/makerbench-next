@@ -5,29 +5,10 @@ import { SearchInput } from "../components/search";
 import { TagCloud, type Tag } from "../components/tags";
 import { ToolGrid } from "../components/bookmarks";
 import { ResultCount, LoadMoreButton, Alert } from "../components/ui";
-import { useBookmarks, useSearch } from "../hooks";
+import { useBookmarks, useSearch, useTags } from "../hooks";
 import type { Bookmark } from "../api";
 
 import "./HomePage.css";
-
-/**
- * Extracts unique tags from bookmarks for the tag cloud.
- */
-function extractTags(bookmarks: Bookmark[]): Tag[] {
-  const tagMap = new Map<string, Tag>();
-
-  for (const bookmark of bookmarks) {
-    for (const tag of bookmark.tags) {
-      if (!tagMap.has(tag.id)) {
-        tagMap.set(tag.id, { id: tag.id, label: tag.name });
-      }
-    }
-  }
-
-  return Array.from(tagMap.values()).sort((a, b) =>
-    a.label.localeCompare(b.label)
-  );
-}
 
 /**
  * Transforms bookmarks to ToolCard props format.
@@ -84,6 +65,8 @@ export function HomePage() {
 
   // Track if initial URL-based search has been triggered
   const initialSearchTriggered = useRef(false);
+  const hasInitialFilters =
+    searchQuery.trim() !== "" || selectedTagNames.length > 0;
 
   // Fetch all bookmarks on mount
   const {
@@ -91,8 +74,14 @@ export function HomePage() {
     pagination: bookmarksPagination,
     isLoading: bookmarksLoading,
     error: bookmarksError,
+    fetch: fetchBookmarks,
     loadMore: loadMoreBookmarks,
-  } = useBookmarks();
+  } = useBookmarks({ fetchOnMount: !hasInitialFilters });
+
+  const {
+    tags: homepageTags,
+    error: tagsError,
+  } = useTags();
 
   // Search hook for filtered results
   const {
@@ -113,10 +102,16 @@ export function HomePage() {
   const currentBookmarks = isFiltering ? searchResults : bookmarks;
   const currentPagination = isFiltering ? searchPagination : bookmarksPagination;
   const isLoading = isFiltering ? searchLoading : bookmarksLoading;
-  const error = isFiltering ? searchError : bookmarksError;
+  const error = searchError ?? bookmarksError ?? tagsError;
 
-  // Extract unique tags from all loaded bookmarks
-  const availableTags = useMemo(() => extractTags(bookmarks), [bookmarks]);
+  const availableTags = useMemo<Tag[]>(
+    () =>
+      homepageTags.map((tag) => ({
+        id: tag.id,
+        label: tag.name,
+      })),
+    [homepageTags],
+  );
 
   // Convert selected tag names to IDs for TagCloud
   const selectedTags = useMemo(() => {
@@ -157,8 +152,7 @@ export function HomePage() {
   );
 
   /**
-   * Trigger search from URL params on initial load (after bookmarks load).
-   * Waits for availableTags so tag-only URL filters work correctly.
+   * Trigger search from URL params on initial load.
    */
   useEffect(() => {
     if (initialSearchTriggered.current) {
@@ -170,11 +164,6 @@ export function HomePage() {
 
     if (!hasUrlFilters) {
       initialSearchTriggered.current = true;
-      return;
-    }
-
-    // For tag-only filters, wait until tags are available
-    if (selectedTagNames.length > 0 && availableTags.length === 0) {
       return;
     }
 
@@ -205,6 +194,9 @@ export function HomePage() {
       if (trimmed === "" && !hasTags) {
         resetSearch();
         updateUrlParams("", []);
+        if (bookmarks.length === 0 && !bookmarksLoading) {
+          void fetchBookmarks();
+        }
         return;
       }
 
@@ -221,7 +213,7 @@ export function HomePage() {
         tags: hasTags ? selectedTagNames : undefined,
       });
     },
-    [selectedTagNames, search, resetSearch, updateUrlParams]
+    [selectedTagNames, search, resetSearch, updateUrlParams, bookmarks.length, bookmarksLoading, fetchBookmarks]
   );
 
   /**
@@ -245,6 +237,9 @@ export function HomePage() {
 
       if (newTagNames.length === 0 && searchQuery.trim() === "") {
         resetSearch();
+        if (bookmarks.length === 0 && !bookmarksLoading) {
+          void fetchBookmarks();
+        }
       } else {
         search(
           {
@@ -255,7 +250,7 @@ export function HomePage() {
         );
       }
     },
-    [availableTags, selectedTagNames, searchQuery, search, resetSearch, updateUrlParams]
+    [availableTags, selectedTagNames, searchQuery, search, resetSearch, updateUrlParams, bookmarks.length, bookmarksLoading, fetchBookmarks]
   );
 
   /**
@@ -267,10 +262,13 @@ export function HomePage() {
 
     if (searchQuery.trim() === "") {
       resetSearch();
+      if (bookmarks.length === 0 && !bookmarksLoading) {
+        void fetchBookmarks();
+      }
     } else {
       search({ q: searchQuery.trim() }, { immediate: true });
     }
-  }, [searchQuery, search, resetSearch, updateUrlParams]);
+  }, [searchQuery, search, resetSearch, updateUrlParams, bookmarks.length, bookmarksLoading, fetchBookmarks]);
 
   /**
    * Handles load more button click

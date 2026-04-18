@@ -33,7 +33,7 @@ interface BookmarkWithTags {
   tags: { id: string; name: string }[];
 }
 
-export default async (req: Request, _context: Context) => {
+export default async (req: Request, context: Context) => {
   const handlerStart = Date.now();
   initSentry();
 
@@ -116,6 +116,9 @@ export default async (req: Request, _context: Context) => {
       .limit(limit + 1)
       .offset(offset);
 
+    const dbDurationMs = Date.now() - dbStart;
+    const mapStart = Date.now();
+
     const hasMore = paginatedBookmarks.length > limit;
     const pageBookmarks = paginatedBookmarks.slice(0, limit);
 
@@ -131,14 +134,18 @@ export default async (req: Request, _context: Context) => {
       tags: parseAggregatedTags(bookmark.tagsJson),
     }));
 
-    const dbDuration = Date.now() - dbStart;
-    const handlerDuration = Date.now() - handlerStart;
+    const mapDurationMs = Date.now() - mapStart;
+    const handlerDurationMs = Date.now() - handlerStart;
     console.info("[perf] get-bookmarks", {
-      dbDuration,
-      handlerDuration,
+      requestId: context.requestId,
+      queryMode: "browse",
+      dbDurationMs,
+      mapDurationMs,
+      handlerDurationMs,
       hasMore,
       limit,
       offset,
+      rowCount: paginatedBookmarks.length,
       resultCount: bookmarks.length,
     });
 
