@@ -21,8 +21,8 @@ importers:
         specifier: ^10.32.1
         version: 10.40.0
       '@varlock/1password-plugin':
-        specifier: ^0.2.1
-        version: 0.2.1(varlock@0.9.0)
+        specifier: ^0.3.5
+        version: 0.3.5(varlock@0.7.4)
       cheerio:
         specifier: ^1.1.2
         version: 1.2.0
@@ -42,8 +42,8 @@ importers:
         specifier: ^7.11.0
         version: 7.13.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       varlock:
-        specifier: ^0.9.0
-        version: 0.9.0
+        specifier: ^0.7.4
+        version: 0.7.4
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -71,7 +71,7 @@ importers:
         version: 19.2.3(@types/react@19.2.14)
       '@varlock/vite-integration':
         specifier: ^0.2.10
-        version: 0.2.10(varlock@0.9.0)(vite@6.4.2(@types/node@25.6.0))
+        version: 0.2.10(varlock@0.7.4)(vite@6.4.2(@types/node@25.6.0))
       '@vitejs/plugin-react':
         specifier: ^4.4.1
         version: 4.7.0(vite@6.4.2(@types/node@25.6.0))
@@ -1334,11 +1334,11 @@ packages:
     resolution: {integrity: sha512-KiROIzYdEV85YygXw6BI/Dx4fnBlFQu6Mq4QE4MOH9fFnhohw6wX/OAvDY2/C+ut0I3RSPKenvZJIVYqJNkhEw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@varlock/1password-plugin@0.2.1':
-    resolution: {integrity: sha512-4gBqhQCFEhH2JPb9vI/h4B5SKnVz45T1bDtwkaFOtobAPdy/fwrBBAt+vqkk0cak+OOrSEu5Aw1aIMLtiqe5EA==}
+  '@varlock/1password-plugin@0.3.5':
+    resolution: {integrity: sha512-JFrNPHdXtHa2VVs/BQ4Yx7gtPhQxkFyoYzejdzeXAxpRgTiQ/4AkdWQOwd+yGL08y+pkl+vQOTUBh2Z5QiUhpA==}
     engines: {node: '>=22'}
     peerDependencies:
-      varlock: workspace:^
+      varlock: ^0.7.3
 
   '@varlock/vite-integration@0.2.10':
     resolution: {integrity: sha512-awd2fSWA/p/kR6eqX4+qCiVqVHhnMt01sjHCIBcuNq7qyTmyaet+9MSdPHd8TykeiectJhGPodzMj4Zw6cy8gA==}
@@ -2697,8 +2697,8 @@ packages:
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
-  varlock@0.9.0:
-    resolution: {integrity: sha512-Lau2o5t9Y99MsHvWhlr3jvCOQUyCjUud8/QfjOOw+acuGgLUX3ZXRlp6M8a6kiFfVoQ8Jrc/4mOGFn8ZwWwfBQ==}
+  varlock@0.7.4:
+    resolution: {integrity: sha512-F6L99HHJMHBrLs6/6Mijgu/8q6JbHGHwmpKFnYGQMB1CTFekJXJ3FbK8IHhHwC0mokUnKIx5HGiPApWJMNvBcg==}
     engines: {bun: '>=1.3.3', node: '>=22'}
     hasBin: true
 
@@ -4027,13 +4027,13 @@ snapshots:
       '@typescript-eslint/types': 8.56.1
       eslint-visitor-keys: 5.0.1
 
-  '@varlock/1password-plugin@0.2.1(varlock@0.9.0)':
+  '@varlock/1password-plugin@0.3.5(varlock@0.7.4)':
     dependencies:
-      varlock: 0.9.0
+      varlock: 0.7.4
 
-  '@varlock/vite-integration@0.2.10(varlock@0.9.0)(vite@6.4.2(@types/node@25.6.0))':
+  '@varlock/vite-integration@0.2.10(varlock@0.7.4)(vite@6.4.2(@types/node@25.6.0))':
     dependencies:
-      varlock: 0.9.0
+      varlock: 0.7.4
       vite: 6.4.2(@types/node@25.6.0)
 
   '@vitejs/plugin-react@4.7.0(vite@6.4.2(@types/node@25.6.0))':
@@ -5345,7 +5345,7 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
-  varlock@0.9.0: {}
+  varlock@0.7.4: {}
 
   vite-node@3.2.4(@types/node@25.6.0):
     dependencies:
