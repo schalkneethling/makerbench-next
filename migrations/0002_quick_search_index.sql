@@ -2,7 +2,7 @@ CREATE VIRTUAL TABLE `bookmark_search` USING fts5(
 	`bookmark_id` UNINDEXED,
 	`title`,
 	`tags`,
-	tokenize = 'unicode61 porter'
+	tokenize = 'porter unicode61'
 );
 --> statement-breakpoint
 INSERT INTO `bookmark_search` (`bookmark_id`, `title`, `tags`)

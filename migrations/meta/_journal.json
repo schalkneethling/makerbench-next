@@ -15,6 +15,13 @@
       "when": 1766781368370,
       "tag": "0001_strong_leopardon",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1766781900000,
+      "tag": "0002_quick_search_index",
+      "breakpoints": true
     }
   ]
 }
