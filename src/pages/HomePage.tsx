@@ -10,6 +10,29 @@ import type { Bookmark } from "../api";
 
 import "./HomePage.css";
 
+const HOMEPAGE_TAG_LIMIT = 10;
+const IDLE_TAG_LOAD_FALLBACK_MS = 1;
+
+function scheduleAfterMainUiReady(onReady: () => void): () => void {
+  if (typeof globalThis.requestIdleCallback === "function") {
+    const idleCallbackId = globalThis.requestIdleCallback(() => {
+      onReady();
+    });
+
+    return () => {
+      globalThis.cancelIdleCallback?.(idleCallbackId);
+    };
+  }
+
+  const timeoutId = globalThis.setTimeout(() => {
+    onReady();
+  }, IDLE_TAG_LOAD_FALLBACK_MS);
+
+  return () => {
+    globalThis.clearTimeout(timeoutId);
+  };
+}
+
 /**
  * Transforms bookmarks to ToolCard props format.
  */
@@ -58,6 +81,7 @@ export function HomePage() {
   const [searchQuery, setSearchQuery] = useState(
     () => searchParams.get("q") ?? ""
   );
+  const [shouldLoadTags, setShouldLoadTags] = useState(false);
   const [selectedTagNames, setSelectedTagNames] = useState<string[]>(() => {
     const tagsParam = searchParams.get("tags");
     return tagsParam ? tagsParam.split(",").filter(Boolean) : [];
@@ -81,7 +105,7 @@ export function HomePage() {
   const {
     tags: homepageTags,
     error: tagsError,
-  } = useTags();
+  } = useTags({ enabled: shouldLoadTags, limit: HOMEPAGE_TAG_LIMIT });
 
   // Search hook for filtered results
   const {
@@ -154,6 +178,12 @@ export function HomePage() {
   /**
    * Trigger search from URL params on initial load.
    */
+  useEffect(() => {
+    return scheduleAfterMainUiReady(() => {
+      setShouldLoadTags(true);
+    });
+  }, []);
+
   useEffect(() => {
     if (initialSearchTriggered.current) {
       return;

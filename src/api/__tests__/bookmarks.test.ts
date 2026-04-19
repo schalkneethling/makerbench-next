@@ -114,14 +114,18 @@ function createSearchBookmarksHandler() {
 }
 
 function createGetTagsHandler() {
-  return http.get(`${API_BASE}/api/tags`, () => {
+  return http.get(`${API_BASE}/api/tags`, ({ request }) => {
+    const url = new URL(request.url);
+    const limit = url.searchParams.get("limit");
+    const tags = [
+      { id: "t1", name: "javascript", usageCount: 2 },
+      { id: "t2", name: "react", usageCount: 1 },
+    ];
+
     return HttpResponse.json({
       success: true,
       data: {
-        tags: [
-          { id: "t1", name: "javascript", usageCount: 2 },
-          { id: "t2", name: "react", usageCount: 1 },
-        ],
+        tags: limit ? tags.slice(0, parseInt(limit, 10)) : tags,
       },
     });
   });
@@ -278,6 +282,18 @@ describe("getTags", () => {
       name: "javascript",
       usageCount: 2,
     });
+  });
+
+  it("passes limit through to the tags endpoint", async () => {
+    const result = await getTags({ limit: 1 });
+
+    expect(result.tags).toEqual([
+      {
+        id: "t1",
+        name: "javascript",
+        usageCount: 2,
+      },
+    ]);
   });
 });
 

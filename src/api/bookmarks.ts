@@ -113,6 +113,10 @@ interface RequestOptions {
   signal?: AbortSignal;
 }
 
+export interface GetTagsParams {
+  limit?: number;
+}
+
 // ============================================================================
 // Error Class
 // ============================================================================
@@ -285,8 +289,19 @@ export async function searchBookmarks(
  * @returns Available tags with optional usage counts
  * @throws BookmarkApiError on API errors
  */
-export async function getTags(): Promise<TagsResponse> {
-  return fetchValidatedResponse("/api/tags", tagsResponseSchema);
+export async function getTags(
+  params: GetTagsParams = {},
+): Promise<TagsResponse> {
+  const searchParams = new URLSearchParams();
+
+  if (params.limit !== undefined) {
+    searchParams.set("limit", String(params.limit));
+  }
+
+  const queryString = searchParams.toString();
+  const path = `/api/tags${queryString ? `?${queryString}` : ""}`;
+
+  return fetchValidatedResponse(path, tagsResponseSchema);
 }
 
 /**
