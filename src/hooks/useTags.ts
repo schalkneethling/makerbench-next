@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 
-import { getTags, type BookmarkApiError, type Tag } from "../api";
+import {
+  getTags,
+  type BookmarkApiError,
+  type GetTagsParams,
+  type Tag,
+} from "../api";
 
 interface UseTagsState {
   tags: Tag[];
@@ -8,10 +13,15 @@ interface UseTagsState {
   error: BookmarkApiError | null;
 }
 
+interface UseTagsOptions extends GetTagsParams {
+  enabled?: boolean;
+}
+
 /**
  * Fetches homepage tags independently from the bookmark listing payload.
  */
-export function useTags(): UseTagsState {
+export function useTags(options: UseTagsOptions = {}): UseTagsState {
+  const { enabled = true, limit } = options;
   const [state, setState] = useState<UseTagsState>({
     tags: [],
     isLoading: false,
@@ -19,6 +29,10 @@ export function useTags(): UseTagsState {
   });
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     let isActive = true;
     const startedAt =
       typeof performance !== "undefined" && typeof performance.now === "function"
@@ -27,7 +41,7 @@ export function useTags(): UseTagsState {
 
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-    getTags()
+    getTags({ limit })
       .then((data) => {
         if (!isActive) {
           return;
@@ -65,7 +79,7 @@ export function useTags(): UseTagsState {
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [enabled, limit]);
 
   return state;
 }

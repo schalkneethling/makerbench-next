@@ -13,5 +13,6 @@ export {
   type PaginationInfo,
   type ApiError,
   type GetBookmarksParams,
+  type GetTagsParams,
   type SearchBookmarksParams,
 } from "./bookmarks";

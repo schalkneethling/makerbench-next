@@ -40,7 +40,8 @@ function createMockDb() {
     leftJoin: vi.fn().mockReturnThis(),
     where: vi.fn().mockReturnThis(),
     groupBy: vi.fn().mockReturnThis(),
-    orderBy: vi.fn().mockResolvedValue([]),
+    orderBy: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockResolvedValue([]),
   };
 }
 
@@ -97,5 +98,30 @@ describe("get-tags", () => {
       { id: "t1", name: "react", usageCount: 2 },
       { id: "t2", name: "typescript", usageCount: 1 },
     ]);
+  });
+
+  it("applies a limit when requested", async () => {
+    mockDb.limit.mockResolvedValueOnce([
+      { id: "t1", name: "react", usageCount: 2 },
+    ]);
+
+    const req = new Request("https://test.com/api/tags?limit=10");
+    const res = await getTags(req, mockContext);
+
+    expect(res.status).toBe(200);
+    expect(mockDb.limit).toHaveBeenCalledWith(10);
+
+    const body = (await res.json()) as SuccessResponse<TagsResponseData>;
+    expect(body.data.tags).toEqual([
+      { id: "t1", name: "react", usageCount: 2 },
+    ]);
+  });
+
+  it("returns 400 for an invalid limit", async () => {
+    const req = new Request("https://test.com/api/tags?limit=0");
+    const res = await getTags(req, mockContext);
+
+    expect(res.status).toBe(400);
+    expect(mockDb.limit).not.toHaveBeenCalled();
   });
 });
