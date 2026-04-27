@@ -14,7 +14,7 @@
 }
 
 .SearchInput-icon {
-  color: var(--color-text-muted);
+  color: var(--color-primary);
   inset-block-start: 50%;
   inset-inline-start: var(--size-16);
   pointer-events: none;
@@ -24,8 +24,18 @@
 }
 
 .SearchInput-field {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--size-8) var(--size-8) 0
+    color-mix(in oklch, var(--color-border) 45%, transparent);
   inline-size: 100%;
   padding-inline: calc(var(--size-16) + var(--size-20) + var(--size-8));
+}
+
+.SearchInput-field:focus-visible {
+  box-shadow:
+    var(--focus-ring-shadow),
+    var(--size-8) var(--size-8) 0
+      color-mix(in oklch, var(--color-primary) 18%, transparent);
 }
 
 /* Remove default search input styling (clear button, etc.) */

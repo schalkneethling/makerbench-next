@@ -6,7 +6,9 @@
 .Logo {
   display: inline-flex;
   font: var(--typography-logo-base);
+  gap: 0.05em;
   text-decoration: none;
+  text-transform: uppercase;
 }
 
 .Logo:hover {

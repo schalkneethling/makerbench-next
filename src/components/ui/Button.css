@@ -4,7 +4,7 @@
 
 .Button {
   align-items: center;
-  border: none;
+  border: var(--size-1) solid transparent;
   border-radius: var(--radius-md);
   display: inline-flex;
   font: var(--typography-button);
@@ -31,6 +31,7 @@
 /* Primary variant */
 .Button--primary {
   background-color: var(--color-primary);
+  border-color: var(--color-primary);
   color: var(--color-text-inverted);
 }
 
@@ -44,13 +45,14 @@
 
 /* Secondary variant */
 .Button--secondary {
-  background-color: transparent;
+  background-color: var(--color-surface-raised);
   border: var(--border-strong);
   color: var(--color-text);
 }
 
 .Button--secondary:not(:disabled):hover {
-  background-color: var(--color-surface-sunken);
+  background-color: var(--color-text);
+  color: var(--color-text-inverted);
 }
 
 /* Ghost variant */

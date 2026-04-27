@@ -3,9 +3,9 @@
  */
 
 .Header {
-  background-color: var(--color-surface-raised);
-  border-block-end: var(--border-default);
-  padding: var(--size-16);
+  background-color: transparent;
+  padding-block: var(--size-14);
+  padding-inline: var(--size-16);
 }
 
 .Header-inner {
@@ -18,7 +18,7 @@
 
 .Header-nav {
   display: flex;
-  gap: var(--size-16);
+  gap: var(--size-12);
 }
 
 @media (width < 48rem) {
