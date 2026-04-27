@@ -5,12 +5,14 @@
 .HomePage {
   display: flex;
   flex-direction: column;
-  gap: var(--size-32);
-  padding-block: var(--size-32);
+  gap: var(--size-40);
+  padding-block: var(--size-48);
   padding-inline: var(--size-16);
 }
 
 .HomePage-hero {
+  margin-inline: auto;
+  max-inline-size: 48rem;
   text-align: center;
 }
 
@@ -21,7 +23,7 @@
 
 .HomePage-subtitle {
   color: var(--color-text-muted);
-  margin-block-start: var(--size-8);
+  margin-block-start: var(--size-12);
 }
 
 .HomePage-search {
@@ -30,7 +32,9 @@
 }
 
 .HomePage-tags {
+  inline-size: min(100%, 64rem);
   justify-content: center;
+  margin-inline: auto;
 }
 
 .HomePage-results {

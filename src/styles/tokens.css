@@ -19,9 +19,11 @@
   /* ========================================
    * Typography - Font Families
    * ======================================== */
+  --font-family-display:
+    "Avenir Next Condensed", "Arial Narrow", "Source Sans 3", sans-serif;
   --font-family-base:
-    inter, "Source Sans 3", "IBM Plex Sans", -apple-system, blinkmacsystemfont,
-    "Segoe UI", roboto, helvetica, arial, sans-serif;
+    "Source Sans 3", aptos, -apple-system, blinkmacsystemfont, "Segoe UI",
+    sans-serif;
   --font-family-mono:
     ui-monospace, "SF Mono", "Cascadia Code", "Segoe UI Mono",
     "Liberation Mono", menlo, monaco, consolas, monospace;
@@ -70,9 +72,9 @@
    * Border Radius (uses size tokens)
    * ======================================== */
   --radius-sm: var(--size-4);
-  --radius-md: var(--size-8);
-  --radius-lg: var(--size-12);
-  --radius-xl: var(--size-16);
+  --radius-md: var(--size-4);
+  --radius-lg: var(--size-8);
+  --radius-xl: var(--size-12);
   --radius-full: 50%;
 
   /* ========================================
@@ -97,33 +99,33 @@
    * ======================================== */
 
   /* Surfaces */
-  --color-surface: oklch(98% 0.005 250deg); /* Near white */
-  --color-surface-raised: oklch(100% 0 0deg); /* Pure white */
-  --color-surface-sunken: oklch(95% 0.01 250deg); /* Slightly darker */
+  --color-surface: oklch(97.5% 0.025 102deg); /* Warm bench paper */
+  --color-surface-raised: oklch(99% 0.015 102deg); /* Soft card surface */
+  --color-surface-sunken: oklch(93% 0.03 102deg); /* Ruled paper shade */
 
   /* Text */
-  --color-text: oklch(25% 0.02 250deg); /* Dark slate */
-  --color-text-muted: oklch(50% 0.015 250deg); /* Medium gray */
+  --color-text: oklch(34% 0.015 225deg); /* Charcoal */
+  --color-text-muted: oklch(49% 0.012 225deg); /* Soft graphite */
   --color-text-inverted: oklch(
-    98% 0.005 250deg
+    97.5% 0.025 102deg
   ); /* Light for dark backgrounds */
 
   /* Logo Colors - derived from brand */
-  --color-logo-maker: oklch(40% 0.025 220deg); /* Dark slate-blue */
-  --color-logo-bench: oklch(55% 0.15 185deg); /* Teal */
+  --color-logo-maker: var(--color-text);
+  --color-logo-bench: oklch(61% 0.19 32deg); /* Workshop red */
 
-  /* Primary - Teal (matches logo "Bench") */
-  --color-primary: oklch(50% 0.14 185deg);
-  --color-primary-hover: oklch(45% 0.14 185deg);
-  --color-primary-active: oklch(40% 0.14 185deg);
+  /* Primary - workshop red */
+  --color-primary: oklch(61% 0.19 32deg);
+  --color-primary-hover: oklch(55% 0.19 32deg);
+  --color-primary-active: oklch(49% 0.18 32deg);
 
-  /* Accent - Coral/Orange for CTAs */
-  --color-accent: oklch(65% 0.18 35deg);
-  --color-accent-hover: oklch(60% 0.18 35deg);
+  /* Accent - charcoal for firm secondary actions */
+  --color-accent: oklch(34% 0.015 225deg);
+  --color-accent-hover: oklch(27% 0.015 225deg);
 
   /* Borders */
-  --color-border: oklch(88% 0.01 250deg);
-  --color-border-strong: oklch(75% 0.015 250deg);
+  --color-border: oklch(82% 0.018 102deg);
+  --color-border-strong: oklch(42% 0.015 225deg);
 
   /* States */
   --color-success: oklch(55% 0.15 145deg);
@@ -132,7 +134,7 @@
   --color-info: oklch(55% 0.12 240deg);
 
   /* Focus ring */
-  --color-focus-ring: oklch(55% 0.15 185deg / 50%);
+  --color-focus-ring: oklch(61% 0.19 32deg / 45%);
   --focus-ring-width: 0.1875rem; /* 3px */
   --focus-ring-offset: var(--size-4);
   --focus-ring-offset-sm: 0.125rem; /* 2px - tighter for inline elements */
@@ -144,33 +146,33 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* Surfaces */
-    --color-surface: oklch(18% 0.015 250deg); /* Deep charcoal */
-    --color-surface-raised: oklch(22% 0.015 250deg); /* Elevated dark */
-    --color-surface-sunken: oklch(14% 0.015 250deg); /* Deeper */
+    --color-surface: oklch(22% 0.012 225deg); /* Deep charcoal */
+    --color-surface-raised: oklch(26% 0.012 225deg); /* Elevated dark */
+    --color-surface-sunken: oklch(18% 0.012 225deg); /* Deeper */
 
     /* Text */
-    --color-text: oklch(92% 0.01 250deg); /* Light gray */
-    --color-text-muted: oklch(65% 0.01 250deg); /* Muted gray */
+    --color-text: oklch(95% 0.018 102deg); /* Warm light */
+    --color-text-muted: oklch(73% 0.015 102deg); /* Muted paper */
     --color-text-inverted: oklch(
-      18% 0.015 250deg
+      22% 0.012 225deg
     ); /* Dark for light backgrounds */
 
     /* Logo Colors - brighter for dark mode */
-    --color-logo-maker: oklch(75% 0.02 220deg); /* Lighter slate */
-    --color-logo-bench: oklch(65% 0.15 185deg); /* Brighter teal */
+    --color-logo-maker: var(--color-text);
+    --color-logo-bench: oklch(68% 0.17 32deg);
 
-    /* Primary - Brighter teal for dark mode */
-    --color-primary: oklch(60% 0.14 185deg);
-    --color-primary-hover: oklch(65% 0.14 185deg);
-    --color-primary-active: oklch(55% 0.14 185deg);
+    /* Primary - brighter red for dark mode */
+    --color-primary: oklch(68% 0.17 32deg);
+    --color-primary-hover: oklch(73% 0.16 32deg);
+    --color-primary-active: oklch(61% 0.17 32deg);
 
     /* Accent */
-    --color-accent: oklch(70% 0.16 35deg);
-    --color-accent-hover: oklch(75% 0.16 35deg);
+    --color-accent: oklch(95% 0.018 102deg);
+    --color-accent-hover: oklch(88% 0.018 102deg);
 
     /* Borders */
-    --color-border: oklch(30% 0.015 250deg);
-    --color-border-strong: oklch(40% 0.015 250deg);
+    --color-border: oklch(36% 0.012 225deg);
+    --color-border-strong: oklch(58% 0.015 102deg);
 
     /* States */
     --color-success: oklch(60% 0.15 145deg);
@@ -179,6 +181,6 @@
     --color-info: oklch(60% 0.12 240deg);
 
     /* Focus ring */
-    --color-focus-ring: oklch(60% 0.15 185deg / 50%);
+    --color-focus-ring: oklch(68% 0.17 32deg / 50%);
   }
 }
