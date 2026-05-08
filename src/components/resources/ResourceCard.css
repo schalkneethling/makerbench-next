@@ -1,36 +1,60 @@
 .ResourceCard {
-  background: var(--color-surface);
-  border: var(--border-width-thin) solid var(--color-border);
-  border-radius: var(--radius-md);
+  background-color: var(--color-surface-raised);
+  border: var(--border-default);
+  border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
-  gap: var(--size-16);
-  padding: var(--size-20);
+  overflow: hidden;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.ResourceCard:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--size-8) var(--size-8) 0
+    color-mix(in oklch, var(--color-border) 45%, transparent);
+}
+
+.ResourceCard:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring-shadow);
 }
 
 .ResourceCard-main {
   display: flex;
   flex-direction: column;
-  gap: var(--size-12);
+  flex-grow: 1;
 }
 
 .ResourceCard-link {
   color: inherit;
   display: flex;
   flex-direction: column;
-  gap: var(--size-8);
+  flex-grow: 1;
+  gap: var(--size-4);
+  padding: var(--size-16);
   text-decoration: none;
+}
+
+.ResourceCard-link:focus {
+  outline: none;
 }
 
 .ResourceCard-kind {
   color: var(--color-primary);
   font-weight: var(--font-weight-bold);
+  margin: 0;
   text-transform: uppercase;
 }
 
 .ResourceCard-title {
   color: var(--color-text);
+  line-clamp: 2;
+  line-height: var(--line-height-snug);
   margin: 0;
+  overflow: hidden;
 }
 
 .ResourceCard-link:hover .ResourceCard-title {
@@ -42,20 +66,30 @@
   color: var(--color-text-muted);
 }
 
+.ResourceCard-hostname {
+  color: var(--color-primary);
+  margin: 0;
+  text-transform: uppercase;
+}
+
 .ResourceCard-description {
   color: var(--color-text-muted);
+  line-clamp: 3;
   margin: 0;
+  overflow: hidden;
 }
 
 .ResourceCard-tags {
+  border-block-start: var(--border-default);
   display: flex;
   flex-wrap: wrap;
   gap: var(--size-8);
+  padding: var(--size-12);
 }
 
 .ResourceCard-stack {
   border-block-start: var(--border-width-thin) solid var(--color-border);
-  padding-block-start: var(--size-12);
+  padding: var(--size-12);
 }
 
 .ResourceCard-stackSummary {
