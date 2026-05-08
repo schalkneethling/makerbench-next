@@ -43,10 +43,10 @@ const mockBookmarks = [
 ];
 
 /**
- * Creates the GET /api/bookmarks handler
+ * Creates the GET /api/tools handler
  */
 function createGetBookmarksHandler() {
-  return http.get(`${API_BASE}/api/bookmarks`, ({ request }) => {
+  return http.get(`${API_BASE}/api/tools`, ({ request }) => {
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get("limit") || "20");
     const offset = parseInt(url.searchParams.get("offset") || "0");
@@ -69,10 +69,10 @@ function createGetBookmarksHandler() {
 }
 
 /**
- * Creates the GET /api/bookmarks/search handler
+ * Creates the GET /api/tools/search handler
  */
 function createSearchBookmarksHandler() {
-  return http.get(`${API_BASE}/api/bookmarks/search`, ({ request }) => {
+  return http.get(`${API_BASE}/api/tools/search`, ({ request }) => {
     const url = new URL(request.url);
     const q = url.searchParams.get("q")?.toLowerCase() || "";
     const tagsParam = url.searchParams.get("tags") || "";
@@ -114,7 +114,7 @@ function createSearchBookmarksHandler() {
 }
 
 function createGetTagsHandler() {
-  return http.get(`${API_BASE}/api/tags`, ({ request }) => {
+  return http.get(`${API_BASE}/api/tools/tags`, ({ request }) => {
     const url = new URL(request.url);
     const limit = url.searchParams.get("limit");
     const tags = [
@@ -132,10 +132,10 @@ function createGetTagsHandler() {
 }
 
 /**
- * Creates the POST /api/bookmarks handler
+ * Creates the POST /api/tools handler
  */
 function createSubmitBookmarkHandler() {
-  return http.post(`${API_BASE}/api/bookmarks`, async ({ request }) => {
+  return http.post(`${API_BASE}/api/tools`, async ({ request }) => {
     const body = (await request.json()) as { url?: string; tags?: string[] };
 
     // Validate URL is present
@@ -216,7 +216,7 @@ describe("getBookmarks", () => {
 
   it("throws BookmarkApiError on server error", async () => {
     server.use(
-      http.get(`${API_BASE}/api/bookmarks`, () => {
+      http.get(`${API_BASE}/api/tools`, () => {
         return HttpResponse.json(
           { success: false, error: "Database connection failed" },
           { status: 500 },

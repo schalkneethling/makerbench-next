@@ -27,9 +27,12 @@
 @import url("../components/bookmarks/ToolGrid.css") layer(components);
 @import url("../components/bookmarks/ToolCard.css") layer(components);
 @import url("../components/bookmarks/ToolCardSkeleton.css") layer(components);
+@import url("../components/resources/ResourceGrid.css") layer(components);
+@import url("../components/resources/ResourceCard.css") layer(components);
 @import url("../components/layout/Header.css") layer(components);
 @import url("../components/layout/Footer.css") layer(components);
 @import url("../pages/HomePage.css") layer(components);
+@import url("../pages/ResourcesPage.css") layer(components);
 @import url("../pages/SubmitPage.css") layer(components);
 @import url("./utilities.css") layer(utilities);
 

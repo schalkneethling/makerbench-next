@@ -26,8 +26,9 @@ vi.stubGlobal("Netlify", {
   env: {
     get: (key: string): string | undefined => {
       const testEnv: Record<string, string> = {
-        TURSO_DATABASE_URL: "libsql://test.turso.io",
-        TURSO_AUTH_TOKEN: "test-token",
+        SUPABASE_DATABASE_URL: "postgres://test:test@localhost:5432/test",
+        VITE_SUPABASE_URL: "https://example.supabase.co",
+        VITE_SUPABASE_ANON_KEY: "test-anon-key",
         BROWSERLESS_API_KEY: "test-browserless-key",
         CLOUDINARY_CLOUD_NAME: "test-cloud",
         CLOUDINARY_API_KEY: "test-api-key",
@@ -37,8 +38,9 @@ vi.stubGlobal("Netlify", {
     },
     has: (key: string): boolean => {
       const keys = [
-        "TURSO_DATABASE_URL",
-        "TURSO_AUTH_TOKEN",
+        "SUPABASE_DATABASE_URL",
+        "VITE_SUPABASE_URL",
+        "VITE_SUPABASE_ANON_KEY",
         "BROWSERLESS_API_KEY",
         "CLOUDINARY_CLOUD_NAME",
         "CLOUDINARY_API_KEY",

@@ -1,0 +1,82 @@
+.ResourceCard {
+  background: var(--color-surface);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-16);
+  padding: var(--size-20);
+}
+
+.ResourceCard-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-12);
+}
+
+.ResourceCard-link {
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-8);
+  text-decoration: none;
+}
+
+.ResourceCard-kind {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+}
+
+.ResourceCard-title {
+  color: var(--color-text);
+  margin: 0;
+}
+
+.ResourceCard-link:hover .ResourceCard-title {
+  color: var(--color-primary-hover);
+}
+
+.ResourceCard-hostname,
+.ResourceCard-stackHost {
+  color: var(--color-text-muted);
+}
+
+.ResourceCard-description {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.ResourceCard-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-8);
+}
+
+.ResourceCard-stack {
+  border-block-start: var(--border-width-thin) solid var(--color-border);
+  padding-block-start: var(--size-12);
+}
+
+.ResourceCard-stackSummary {
+  color: var(--color-text);
+  cursor: pointer;
+  font-weight: var(--font-weight-bold);
+}
+
+.ResourceCard-stackList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-12);
+  margin-block-start: var(--size-12);
+}
+
+.ResourceCard-stackItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4);
+}
+
+.ResourceCard-stackLink {
+  font-weight: var(--font-weight-bold);
+}

@@ -4,10 +4,9 @@ import { ENV } from "varlock/env";
 
 export default {
   schema: "./src/db/schema.ts",
-  out: "./migrations",
-  dialect: "turso",
+  out: "./migrations/postgres",
+  dialect: "postgresql",
   dbCredentials: {
-    url: ENV.TURSO_DATABASE_URL!,
-    authToken: ENV.TURSO_AUTH_TOKEN,
+    url: ENV.SUPABASE_DATABASE_URL ?? ENV.DATABASE_URL!,
   },
 } satisfies Config;

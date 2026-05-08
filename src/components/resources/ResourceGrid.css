@@ -1,0 +1,21 @@
+.ResourceGrid {
+  display: grid;
+  gap: var(--size-24);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+}
+
+.ResourceGrid-empty {
+  padding-block: var(--size-48);
+  text-align: center;
+}
+
+.ResourceGrid-emptyTitle {
+  color: var(--color-text);
+  margin-block: 0 var(--size-8);
+  margin-inline: 0;
+}
+
+.ResourceGrid-emptyDescription {
+  color: var(--color-text-muted);
+  margin: 0;
+}

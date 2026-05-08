@@ -12,7 +12,9 @@ export {
   handleMissingEnvironmentError,
 } from "./env";
 export {
-  bookmarksTable,
-  tagsTable,
-  bookmarkTagsTable,
+  resourcesTable,
+  toolListingsTable,
+  publicListingsTable,
+  publicStacksTable,
+  publicStackItemsTable,
 } from "../../../src/db/schema";

@@ -77,7 +77,7 @@ describe("get-bookmarks", () => {
 
   describe("validation", () => {
     it("returns 405 for non-GET requests", async () => {
-      const req = new Request("https://test.com/api/bookmarks", {
+      const req = new Request("https://test.com/api/tools", {
         method: "POST",
       });
 
@@ -87,7 +87,7 @@ describe("get-bookmarks", () => {
     });
 
     it("returns 400 for invalid limit", async () => {
-      const req = new Request("https://test.com/api/bookmarks?limit=abc");
+      const req = new Request("https://test.com/api/tools?limit=abc");
 
       const res = await getBookmarks(req, mockContext);
 
@@ -97,7 +97,7 @@ describe("get-bookmarks", () => {
     });
 
     it("returns 400 for invalid offset", async () => {
-      const req = new Request("https://test.com/api/bookmarks?offset=-1");
+      const req = new Request("https://test.com/api/tools?offset=-1");
 
       const res = await getBookmarks(req, mockContext);
 
@@ -107,11 +107,11 @@ describe("get-bookmarks", () => {
     it("returns generic 503 when required env vars are missing", async () => {
       const originalGet = Netlify.env.get;
       Netlify.env.get = vi.fn((envKey: string) =>
-        envKey === "TURSO_DATABASE_URL" ? undefined : originalGet(envKey),
+        envKey === "SUPABASE_DATABASE_URL" ? undefined : originalGet(envKey),
       );
 
       try {
-        const req = new Request("https://test.com/api/bookmarks");
+        const req = new Request("https://test.com/api/tools");
         const res = await getBookmarks(req, mockContext);
 
         expect(res.status).toBe(503);
@@ -127,7 +127,7 @@ describe("get-bookmarks", () => {
     it("returns 200 with empty bookmarks array and null total", async () => {
       mockDb.offset.mockResolvedValueOnce([]);
 
-      const req = new Request("https://test.com/api/bookmarks");
+      const req = new Request("https://test.com/api/tools");
 
       const res = await getBookmarks(req, mockContext);
 
@@ -165,7 +165,7 @@ describe("get-bookmarks", () => {
         },
       ]);
 
-      const req = new Request("https://test.com/api/bookmarks?limit=1");
+      const req = new Request("https://test.com/api/tools?limit=1");
 
       const res = await getBookmarks(req, mockContext);
 
@@ -180,7 +180,7 @@ describe("get-bookmarks", () => {
     it("caps limit at MAX_LIMIT (100)", async () => {
       mockDb.offset.mockResolvedValueOnce([]);
 
-      const req = new Request("https://test.com/api/bookmarks?limit=500");
+      const req = new Request("https://test.com/api/tools?limit=500");
 
       const res = await getBookmarks(req, mockContext);
 

@@ -1,11 +1,8 @@
 import type { Config, Context } from "@netlify/functions";
-import { countDistinct, desc, eq } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 
 import {
   getDb,
-  tagsTable,
-  bookmarkTagsTable,
-  bookmarksTable,
   ok,
   badRequest,
   methodNotAllowed,
@@ -19,6 +16,11 @@ import {
 
 const MAX_LIMIT = 100;
 
+interface TagUsageRow extends Record<string, unknown> {
+  name: string;
+  usage_count: number;
+}
+
 export default async (req: Request, context: Context) => {
   const handlerStart = Date.now();
   initSentry();
@@ -28,9 +30,9 @@ export default async (req: Request, context: Context) => {
   }
 
   try {
-    assertRequiredEnv(["TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN"]);
+    assertRequiredEnv(["SUPABASE_DATABASE_URL"]);
   } catch (error) {
-    return handleMissingEnvironmentError(error, "get-tags");
+    return handleMissingEnvironmentError(error, "get-tool-tags");
   }
 
   const url = new URL(req.url);
@@ -40,7 +42,7 @@ export default async (req: Request, context: Context) => {
   if (limitParam) {
     const parsedLimit = parseInt(limitParam, 10);
 
-    if (isNaN(parsedLimit) || parsedLimit < 1) {
+    if (Number.isNaN(parsedLimit) || parsedLimit < 1) {
       return badRequest("limit must be a positive integer");
     }
 
@@ -50,45 +52,33 @@ export default async (req: Request, context: Context) => {
   try {
     const db = getDb();
     const dbStart = Date.now();
+    const result = await db.execute<TagUsageRow>(sql`
+      select
+        tag_name as name,
+        count(*)::int as usage_count
+      from tool_listings
+      cross join unnest(tags) as tag_name
+      where status = 'approved'
+      group by tag_name
+      order by usage_count desc, tag_name asc
+      ${limit === undefined ? sql`` : sql`limit ${limit}`}
+    `);
 
-    const tagsQuery = db
-      .select({
-        id: tagsTable.id,
-        name: tagsTable.name,
-        usageCount: countDistinct(bookmarkTagsTable.bookmarkId),
-      })
-      .from(tagsTable)
-      .leftJoin(bookmarkTagsTable, eq(tagsTable.id, bookmarkTagsTable.tagId))
-      .leftJoin(
-        bookmarksTable,
-        eq(bookmarkTagsTable.bookmarkId, bookmarksTable.id),
-      )
-      .where(eq(bookmarksTable.status, "approved"))
-      .groupBy(tagsTable.id, tagsTable.name)
-      .orderBy(desc(countDistinct(bookmarkTagsTable.bookmarkId)), tagsTable.name);
-
-    const rows = limit === undefined
-      ? await tagsQuery
-      : await tagsQuery.limit(limit);
-
-    const dbDurationMs = Date.now() - dbStart;
-    const handlerDurationMs = Date.now() - handlerStart;
-
-    console.info("[perf] get-tags", {
+    console.info("[perf] get-tool-tags", {
       requestId: context.requestId,
       queryMode: "tags",
       limit,
-      rowCount: rows.length,
-      dbDurationMs,
+      rowCount: result.rows.length,
+      dbDurationMs: Date.now() - dbStart,
       mapDurationMs: 0,
-      handlerDurationMs,
+      handlerDurationMs: Date.now() - handlerStart,
     });
 
     return ok({
-      tags: rows.map((row) => ({
-        id: row.id,
+      tags: result.rows.map((row) => ({
+        id: row.name,
         name: row.name,
-        usageCount: row.usageCount,
+        usageCount: row.usage_count,
       })),
     });
   } catch (error) {
@@ -99,6 +89,6 @@ export default async (req: Request, context: Context) => {
 };
 
 export const config: Config = {
-  path: "/api/tags",
+  path: "/api/tools/tags",
   method: "GET",
 };

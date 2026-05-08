@@ -1,96 +1,67 @@
-import { eq, desc, like, count } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { db } from "../index";
-import {
-  tagsTable,
-  bookmarkTagsTable,
-  bookmarksTable,
-  type InsertTag,
-} from "../schema";
 
-/**
- * Creates a new tag in the database
- * @param data - Tag data to insert
- * @returns Array containing the created tag
- */
-export async function createTag(data: InsertTag) {
-  return await db.insert(tagsTable).values(data).returning();
+interface TagUsageRow extends Record<string, unknown> {
+  name: string;
+  usage_count: number;
 }
 
-/**
- * Retrieves a tag by its ID
- * @param id - Tag ID to find
- * @returns Array containing the tag if found
- */
-export async function getTagById(id: string) {
-  return await db.select().from(tagsTable).where(eq(tagsTable.id, id));
-}
-
-/**
- * Retrieves a tag by its name
- * @param name - Tag name to find
- * @returns Array containing the tag if found
- */
-export async function getTagByName(name: string) {
-  return await db.select().from(tagsTable).where(eq(tagsTable.name, name));
-}
-
-/**
- * Retrieves all tags with pagination
- * @param limit - Maximum number of tags to return
- * @param offset - Number of tags to skip
- * @returns Array of tags ordered by creation date
- */
 export async function getAllTags(limit = 100, offset = 0) {
-  return await db
-    .select()
-    .from(tagsTable)
-    .orderBy(desc(tagsTable.createdAt))
-    .limit(limit)
-    .offset(offset);
+  const result = await db.execute<TagUsageRow>(sql`
+    select distinct tag_name as name
+    from tool_listings
+    cross join unnest(tags) as tag_name
+    order by tag_name asc
+    limit ${limit}
+    offset ${offset}
+  `);
+
+  return result.rows.map((row) => ({ id: row.name, name: row.name }));
 }
 
-/**
- * Searches tags by name using pattern matching
- * @param searchTerm - Text to search for in tag names
- * @param limit - Maximum number of tags to return
- * @param offset - Number of tags to skip
- * @returns Array of tags with matching names
- */
+export async function getTagById(id: string) {
+  const rows = await getAllTags();
+  return rows.filter((tag) => tag.id === id);
+}
+
+export async function getTagByName(name: string) {
+  const rows = await getAllTags();
+  return rows.filter((tag) => tag.name === name);
+}
+
 export async function searchTagsByName(
   searchTerm: string,
   limit = 50,
   offset = 0,
 ) {
-  const searchPattern = `%${searchTerm}%`;
+  const result = await db.execute<TagUsageRow>(sql`
+    select distinct tag_name as name
+    from tool_listings
+    cross join unnest(tags) as tag_name
+    where tag_name ilike ${`%${searchTerm}%`}
+    order by tag_name asc
+    limit ${limit}
+    offset ${offset}
+  `);
 
-  return await db
-    .select()
-    .from(tagsTable)
-    .where(like(tagsTable.name, searchPattern))
-    .orderBy(desc(tagsTable.createdAt))
-    .limit(limit)
-    .offset(offset);
+  return result.rows.map((row) => ({ id: row.name, name: row.name }));
 }
 
-/**
- * Retrieves popular tags ordered by usage count
- * @param limit - Maximum number of tags to return
- * @returns Array of tags with their usage counts
- */
 export async function getPopularTags(limit = 20) {
-  return await db
-    .select({
-      tag: tagsTable,
-      count: count(bookmarkTagsTable.id).as("count"),
-    })
-    .from(tagsTable)
-    .innerJoin(bookmarkTagsTable, eq(tagsTable.id, bookmarkTagsTable.tagId))
-    .innerJoin(
-      bookmarksTable,
-      eq(bookmarkTagsTable.bookmarkId, bookmarksTable.id),
-    )
-    .where(eq(bookmarksTable.status, "approved"))
-    .groupBy(tagsTable.id)
-    .orderBy(desc(count(bookmarkTagsTable.id)))
-    .limit(limit);
+  const result = await db.execute<TagUsageRow>(sql`
+    select
+      tag_name as name,
+      count(*)::int as usage_count
+    from tool_listings
+    cross join unnest(tags) as tag_name
+    where status = 'approved'
+    group by tag_name
+    order by usage_count desc, tag_name asc
+    limit ${limit}
+  `);
+
+  return result.rows.map((row) => ({
+    tag: { id: row.name, name: row.name },
+    count: row.usage_count,
+  }));
 }

@@ -24,7 +24,7 @@ export function useTags(options: UseTagsOptions = {}): UseTagsState {
   const { enabled = true, limit } = options;
   const [state, setState] = useState<UseTagsState>({
     tags: [],
-    isLoading: false,
+    isLoading: enabled,
     error: null,
   });
 
@@ -39,7 +39,11 @@ export function useTags(options: UseTagsOptions = {}): UseTagsState {
         ? performance.now()
         : Date.now();
 
-    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+    queueMicrotask(() => {
+      if (isActive) {
+        setState((prev) => ({ ...prev, isLoading: true, error: null }));
+      }
+    });
 
     getTags({ limit })
       .then((data) => {

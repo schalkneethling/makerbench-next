@@ -79,7 +79,7 @@ describe("search-bookmarks", () => {
 
   describe("validation", () => {
     it("returns 405 for non-GET requests", async () => {
-      const req = new Request("https://test.com/api/bookmarks/search", {
+      const req = new Request("https://test.com/api/tools/search", {
         method: "POST",
       });
 
@@ -90,7 +90,7 @@ describe("search-bookmarks", () => {
 
     it("returns 400 for invalid limit", async () => {
       const req = new Request(
-        "https://test.com/api/bookmarks/search?limit=abc",
+        "https://test.com/api/tools/search?limit=abc",
       );
 
       const res = await searchBookmarks(req, mockContext);
@@ -103,11 +103,11 @@ describe("search-bookmarks", () => {
     it("returns generic 503 when required env vars are missing", async () => {
       const originalGet = Netlify.env.get;
       Netlify.env.get = vi.fn((envKey: string) =>
-        envKey === "TURSO_AUTH_TOKEN" ? undefined : originalGet(envKey),
+        envKey === "SUPABASE_DATABASE_URL" ? undefined : originalGet(envKey),
       );
 
       try {
-        const req = new Request("https://test.com/api/bookmarks/search?q=test");
+        const req = new Request("https://test.com/api/tools/search?q=test");
         const res = await searchBookmarks(req, mockContext);
 
         expect(res.status).toBe(503);
@@ -121,9 +121,9 @@ describe("search-bookmarks", () => {
 
   describe("search and pagination", () => {
     it("returns empty results when no bookmarks match", async () => {
-      mockDb.all.mockResolvedValueOnce([]);
+      mockDb.offset.mockResolvedValueOnce([]);
 
-      const req = new Request("https://test.com/api/bookmarks/search?q=xyz");
+      const req = new Request("https://test.com/api/tools/search?q=xyz");
 
       const res = await searchBookmarks(req, mockContext);
 
@@ -136,11 +136,7 @@ describe("search-bookmarks", () => {
     });
 
     it("returns hasMore=true when limit+1 results are found", async () => {
-      mockDb.all.mockResolvedValueOnce([
-        { id: "b1", rank: 0.1 },
-        { id: "b2", rank: 0.2 },
-      ]);
-      mockDb.groupBy.mockResolvedValueOnce([
+      mockDb.offset.mockResolvedValueOnce([
         {
           id: "b1",
           url: "https://react.dev",
@@ -152,10 +148,21 @@ describe("search-bookmarks", () => {
           createdAt: "2024-01-01",
           tagsJson: '[{"id":"t1","name":"react"}]',
         },
+        {
+          id: "b2",
+          url: "https://react.dev/learn",
+          title: "React Learn",
+          description: null,
+          imageUrl: null,
+          submitterName: null,
+          submitterGithubUrl: null,
+          createdAt: "2024-01-01",
+          tagsJson: "[]",
+        },
       ]);
 
       const req = new Request(
-        "https://test.com/api/bookmarks/search?q=react&limit=1",
+        "https://test.com/api/tools/search?q=react&limit=1",
       );
 
       const res = await searchBookmarks(req, mockContext);
@@ -175,11 +182,6 @@ describe("search-bookmarks", () => {
       mockDb.offset.mockResolvedValueOnce([
         {
           id: "b1",
-        },
-      ]);
-      mockDb.groupBy.mockResolvedValueOnce([
-        {
-          id: "b1",
           url: "https://example.com",
           title: "Example",
           description: null,
@@ -190,9 +192,8 @@ describe("search-bookmarks", () => {
           tagsJson: "[]",
         },
       ]);
-
       const req = new Request(
-        "https://test.com/api/bookmarks/search?tags=javascript,react",
+        "https://test.com/api/tools/search?tags=javascript,react",
       );
 
       const res = await searchBookmarks(req, mockContext);

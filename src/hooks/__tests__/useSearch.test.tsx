@@ -32,7 +32,7 @@ const mockBookmarks = [
 ];
 
 function createSearchHandler() {
-  return http.get("/api/bookmarks/search", ({ request }) => {
+  return http.get("/api/tools/search", ({ request }) => {
     const url = new URL(request.url);
     const q = url.searchParams.get("q")?.toLowerCase() || "";
     const tagsParam = url.searchParams.get("tags") || "";
@@ -125,7 +125,7 @@ describe("useSearch", () => {
     // Use real debounce with short delay
     const searchSpy = vi.fn();
     server.use(
-      http.get("/api/bookmarks/search", () => {
+      http.get("/api/tools/search", () => {
         searchSpy();
         return HttpResponse.json({
           success: true,
@@ -161,7 +161,7 @@ describe("useSearch", () => {
 
   it("ignores stale responses after a newer search starts", async () => {
     server.use(
-      http.get("/api/bookmarks/search", async ({ request }) => {
+      http.get("/api/tools/search", async ({ request }) => {
         const url = new URL(request.url);
         const q = url.searchParams.get("q");
 
@@ -207,7 +207,7 @@ describe("useSearch", () => {
   it("can execute search immediately without debounce", async () => {
     const searchSpy = vi.fn();
     server.use(
-      http.get("/api/bookmarks/search", () => {
+      http.get("/api/tools/search", () => {
         searchSpy();
         return HttpResponse.json({
           success: true,
@@ -231,7 +231,7 @@ describe("useSearch", () => {
 
   it("handles search errors", async () => {
     server.use(
-      http.get("/api/bookmarks/search", () => {
+      http.get("/api/tools/search", () => {
         return HttpResponse.json(
           { success: false, error: "Search failed" },
           { status: 500 },
@@ -255,7 +255,7 @@ describe("useSearch", () => {
 
   it("loads more search results", async () => {
     server.use(
-      http.get("/api/bookmarks/search", ({ request }) => {
+      http.get("/api/tools/search", ({ request }) => {
         const url = new URL(request.url);
         const offset = parseInt(url.searchParams.get("offset") || "0");
 
