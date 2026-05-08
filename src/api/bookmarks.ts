@@ -1,102 +1,95 @@
-import { z } from "zod";
+import * as v from "valibot";
 import type { BookmarkRequest } from "../lib/validation";
 
-/**
- * Gets the base URL for API requests.
- * Uses relative URLs in browser, absolute in Node.js (tests).
- */
 function getBaseUrl(): string {
   if (typeof window !== "undefined") {
     return "";
   }
-  // Node.js environment (tests) - use localhost
+
   return process.env.API_BASE_URL || "http://localhost:8888";
 }
 
-// ============================================================================
-// Zod Schemas - Single source of truth for both validation and types
-// ============================================================================
-
-const bookmarkTagSchema = z.object({
-  id: z.string(),
-  name: z.string(),
+const bookmarkTagSchema = v.object({
+  id: v.string(),
+  name: v.string(),
 });
 
-const tagSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  usageCount: z.number().int().nonnegative().optional(),
+const tagSchema = v.object({
+  id: v.string(),
+  name: v.string(),
+  usageCount: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
 });
 
-const paginationSchema = z.object({
-  total: z.number().nullable().optional(),
-  limit: z.number(),
-  offset: z.number(),
-  hasMore: z.boolean(),
+const paginationSchema = v.object({
+  total: v.optional(v.nullable(v.number())),
+  limit: v.number(),
+  offset: v.number(),
+  hasMore: v.boolean(),
 });
 
-const bookmarkSchema = z.object({
-  id: z.string(),
-  url: z.string(),
-  title: z.string(),
-  // nullable (not optional) - API explicitly returns null from DB, not undefined
-  description: z.string().nullable(),
-  imageUrl: z.string().nullable(),
-  submitterName: z.string().nullable(),
-  submitterGithubUrl: z.string().nullable(),
-  createdAt: z.string(),
-  tags: z.array(bookmarkTagSchema),
+const bookmarkSchema = v.object({
+  id: v.string(),
+  url: v.string(),
+  title: v.string(),
+  description: v.nullable(v.string()),
+  imageUrl: v.nullable(v.string()),
+  submitterName: v.nullable(v.string()),
+  submitterGithubUrl: v.nullable(v.string()),
+  createdAt: v.string(),
+  tags: v.array(bookmarkTagSchema),
 });
 
-const bookmarksDataSchema = z.object({
-  bookmarks: z.array(bookmarkSchema),
+const bookmarksDataSchema = v.object({
+  bookmarks: v.array(bookmarkSchema),
   pagination: paginationSchema,
 });
 
-const tagsDataSchema = z.object({
-  tags: z.array(tagSchema),
+const tagsDataSchema = v.object({
+  tags: v.array(tagSchema),
 });
 
-const bookmarksResponseSchema = z.object({
-  success: z.literal(true),
+const bookmarksResponseSchema = v.object({
+  success: v.literal(true),
   data: bookmarksDataSchema,
 });
 
-const submitDataSchema = z.object({
-  bookmarkId: z.string(),
-  message: z.string(),
+const submitDataSchema = v.object({
+  bookmarkId: v.string(),
+  message: v.string(),
 });
 
-const submitResponseSchema = z.object({
-  success: z.literal(true),
+const submitResponseSchema = v.object({
+  success: v.literal(true),
   data: submitDataSchema,
 });
 
-const tagsResponseSchema = z.object({
-  success: z.literal(true),
+const tagsResponseSchema = v.object({
+  success: v.literal(true),
   data: tagsDataSchema,
 });
 
-const errorResponseSchema = z.object({
-  success: z.literal(false),
-  error: z.string(),
-  details: z.record(z.string(), z.array(z.string())).optional(),
+const errorResponseSchema = v.object({
+  success: v.literal(false),
+  error: v.string(),
+  details: v.optional(v.record(v.string(), v.array(v.string()))),
 });
 
-// ============================================================================
-// Types - Inferred from Zod schemas (for validated data)
-// ============================================================================
+// TODO(#61): These bookmark* schemas are legacy compatibility exports for the
+// tools API response envelope. Rename bookmarkSchema/Bookmark to Tool* once the
+// client no longer needs the historical "bookmarks" response key.
+export type BookmarkTag = v.InferOutput<typeof bookmarkTagSchema>;
+export type Tag = v.InferOutput<typeof tagSchema>;
+export type PaginationInfo = v.InferOutput<typeof paginationSchema>;
+export type Bookmark = v.InferOutput<typeof bookmarkSchema>;
+export type BookmarksResponse = v.InferOutput<typeof bookmarksDataSchema>;
+export type TagsResponse = v.InferOutput<typeof tagsDataSchema>;
+export type SubmitBookmarkResponse = v.InferOutput<typeof submitDataSchema>;
+export type ApiError = v.InferOutput<typeof errorResponseSchema>;
 
-export type BookmarkTag = z.infer<typeof bookmarkTagSchema>;
-export type Tag = z.infer<typeof tagSchema>;
-export type PaginationInfo = z.infer<typeof paginationSchema>;
-export type Bookmark = z.infer<typeof bookmarkSchema>;
-export type BookmarksResponse = z.infer<typeof bookmarksDataSchema>;
-export type TagsResponse = z.infer<typeof tagsDataSchema>;
-export type SubmitBookmarkResponse = z.infer<typeof submitDataSchema>;
-export type ApiError = z.infer<typeof errorResponseSchema>;
+export type Tool = Bookmark;
+export type ToolsResponse = BookmarksResponse;
+export type SubmitToolResponse = SubmitBookmarkResponse;
 
-// Function parameter types (no runtime validation needed - we control the input)
 export interface GetBookmarksParams {
   limit?: number;
   offset?: number;
@@ -117,13 +110,6 @@ export interface GetTagsParams {
   limit?: number;
 }
 
-// ============================================================================
-// Error Class
-// ============================================================================
-
-/**
- * Custom error class for API errors
- */
 export class BookmarkApiError extends Error {
   status: number;
   details?: Record<string, string[]>;
@@ -140,18 +126,12 @@ export class BookmarkApiError extends Error {
   }
 }
 
-/**
- * Throws a BookmarkApiError, extracting structured error details if available.
- * @param json - Response body to parse for error details
- * @param status - HTTP status code
- * @throws BookmarkApiError always
- */
 function throwApiError(json: unknown, status: number): never {
-  const parsed = errorResponseSchema.safeParse(json);
+  const parsed = v.safeParse(errorResponseSchema, json);
   throw new BookmarkApiError(
-    parsed.success ? parsed.data.error : "An unexpected error occurred",
+    parsed.success ? parsed.output.error : "An unexpected error occurred",
     status,
-    parsed.success ? parsed.data.details : undefined,
+    parsed.success ? parsed.output.details : undefined,
   );
 }
 
@@ -173,7 +153,7 @@ function createRequestId(): string {
 
 async function fetchValidatedResponse<T>(
   path: string,
-  schema: z.ZodSchema<{ success: true; data: T }>,
+  schema: v.BaseSchema<unknown, { success: true; data: T }, v.BaseIssue<unknown>>,
   options: RequestInit & RequestOptions = {},
 ): Promise<T> {
   const requestId = createRequestId();
@@ -197,12 +177,12 @@ async function fetchValidatedResponse<T>(
       throwApiError(json, response.status);
     }
 
-    const result = schema.safeParse(json);
+    const result = v.safeParse(schema, json);
     if (!result.success) {
       throw new BookmarkApiError("Invalid response from server", 500);
     }
 
-    return result.data.data;
+    return result.output.data;
   } catch (error) {
     const durationMs = Math.round(getNow() - startTime);
     const aborted =
@@ -223,107 +203,72 @@ async function fetchValidatedResponse<T>(
   }
 }
 
-// ============================================================================
-// API Client Functions
-// ============================================================================
-
-/**
- * Fetches paginated bookmarks from the API
- * @param params - Optional pagination parameters
- * @returns Bookmarks with pagination info
- * @throws BookmarkApiError on API errors
- */
-export async function getBookmarks(
-  params: GetBookmarksParams = {},
-): Promise<BookmarksResponse> {
+function appendListParams(
+  path: string,
+  params: GetBookmarksParams | SearchBookmarksParams | GetTagsParams,
+): string {
   const searchParams = new URLSearchParams();
 
-  if (params.limit !== undefined) {
-    searchParams.set("limit", String(params.limit));
-  }
-  if (params.offset !== undefined) {
-    searchParams.set("offset", String(params.offset));
-  }
-
-  const queryString = searchParams.toString();
-  const path = `/api/bookmarks${queryString ? `?${queryString}` : ""}`;
-
-  return fetchValidatedResponse(path, bookmarksResponseSchema);
-}
-
-/**
- * Searches bookmarks by query and/or tags
- * @param params - Search parameters
- * @returns Matching bookmarks with pagination info
- * @throws BookmarkApiError on API errors
- */
-export async function searchBookmarks(
-  params: SearchBookmarksParams = {},
-  options: RequestOptions = {},
-): Promise<BookmarksResponse> {
-  const searchParams = new URLSearchParams();
-
-  if (params.q) {
+  if ("q" in params && params.q) {
     searchParams.set("q", params.q);
   }
-  if (params.tags && params.tags.length > 0) {
+  if ("tags" in params && params.tags && params.tags.length > 0) {
     searchParams.set("tags", params.tags.join(","));
   }
   if (params.limit !== undefined) {
     searchParams.set("limit", String(params.limit));
   }
-  if (params.offset !== undefined) {
+  if ("offset" in params && params.offset !== undefined) {
     searchParams.set("offset", String(params.offset));
   }
 
   const queryString = searchParams.toString();
-  const path = `/api/bookmarks/search${queryString ? `?${queryString}` : ""}`;
-
-  return fetchValidatedResponse(path, bookmarksResponseSchema, {
-    signal: options.signal,
-  });
+  return `${path}${queryString ? `?${queryString}` : ""}`;
 }
 
-/**
- * Fetches tags for the homepage filter UI.
- * @returns Available tags with optional usage counts
- * @throws BookmarkApiError on API errors
- */
+export async function getBookmarks(
+  params: GetBookmarksParams = {},
+): Promise<BookmarksResponse> {
+  return fetchValidatedResponse(
+    appendListParams("/api/tools", params),
+    bookmarksResponseSchema,
+  );
+}
+
+export async function searchBookmarks(
+  params: SearchBookmarksParams = {},
+  options: RequestOptions = {},
+): Promise<BookmarksResponse> {
+  return fetchValidatedResponse(
+    appendListParams("/api/tools/search", params),
+    bookmarksResponseSchema,
+    { signal: options.signal },
+  );
+}
+
 export async function getTags(
   params: GetTagsParams = {},
+  options: RequestOptions = {},
 ): Promise<TagsResponse> {
-  const searchParams = new URLSearchParams();
-
-  if (params.limit !== undefined) {
-    searchParams.set("limit", String(params.limit));
-  }
-
-  const queryString = searchParams.toString();
-  const path = `/api/tags${queryString ? `?${queryString}` : ""}`;
-
-  return fetchValidatedResponse(path, tagsResponseSchema);
+  return fetchValidatedResponse(
+    appendListParams("/api/tools/tags", params),
+    tagsResponseSchema,
+    { signal: options.signal },
+  );
 }
 
-/**
- * Submits a new bookmark for review
- * @param data - Bookmark submission data
- * @returns Submission confirmation with bookmark ID
- * @throws BookmarkApiError on API errors
- */
 export async function submitBookmark(
   data: BookmarkRequest,
 ): Promise<SubmitBookmarkResponse> {
-  // Transform username to full GitHub URL for API
+  const { submitterGithubUsername, submitterGithubUrl, ...rest } = data;
   const payload = {
-    ...data,
-    submitterGithubUrl: data.submitterGithubUsername
-      ? `https://github.com/${data.submitterGithubUsername}`
-      : undefined,
+    ...rest,
+    submitterGithubUrl: submitterGithubUsername
+      ? `https://github.com/${submitterGithubUsername}`
+      : submitterGithubUrl,
   };
-  // Remove the username field - API expects the URL
-  delete (payload as Record<string, unknown>).submitterGithubUsername;
 
-  const response = await fetch(`${getBaseUrl()}/api/bookmarks`, {
+  const response = await fetch(`${getBaseUrl()}/api/tools`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -333,17 +278,19 @@ export async function submitBookmark(
 
   const json = await response.json();
 
-  // HTTP error - extract structured error if available
   if (!response.ok) {
     throwApiError(json, response.status);
   }
 
-  // HTTP success - validate expected shape
-  const result = submitResponseSchema.safeParse(json);
+  const result = v.safeParse(submitResponseSchema, json);
   if (!result.success) {
-    // Server returned 2xx but body doesn't match - this is a bug
     throw new BookmarkApiError("Invalid response from server", 500);
   }
 
-  return result.data.data;
+  return result.output.data;
 }
+
+export const getTools = getBookmarks;
+export const searchTools = searchBookmarks;
+export const getToolTags = getTags;
+export const submitTool = submitBookmark;

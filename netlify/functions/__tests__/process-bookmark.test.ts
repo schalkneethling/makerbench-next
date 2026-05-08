@@ -66,6 +66,8 @@ function createMockDb() {
     limit: vi.fn().mockResolvedValue([]),
     insert: vi.fn().mockReturnThis(),
     values: vi.fn().mockReturnThis(),
+    onConflictDoUpdate: vi.fn().mockReturnThis(),
+    onConflictDoNothing: vi.fn().mockReturnThis(),
     returning: vi.fn().mockResolvedValue([{ id: "test-bookmark-id" }]),
     innerJoin: vi.fn().mockReturnThis(),
     leftJoin: vi.fn().mockReturnThis(),
@@ -109,7 +111,7 @@ describe("process-bookmark", () => {
 
   describe("validation", () => {
     it("returns 405 for non-POST requests", async () => {
-      const req = new Request("https://test.com/api/bookmarks", {
+      const req = new Request("https://test.com/api/tools", {
         method: "GET",
       });
 
@@ -121,7 +123,7 @@ describe("process-bookmark", () => {
     });
 
     it("returns 422 for invalid JSON body", async () => {
-      const req = new Request("https://test.com/api/bookmarks", {
+      const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: "not json",
         headers: { "Content-Type": "application/json" },
@@ -133,7 +135,7 @@ describe("process-bookmark", () => {
     });
 
     it("returns 422 for missing URL", async () => {
-      const req = new Request("https://test.com/api/bookmarks", {
+      const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({ tags: ["test"] }),
         headers: { "Content-Type": "application/json" },
@@ -147,7 +149,7 @@ describe("process-bookmark", () => {
     });
 
     it("returns 422 for missing tags", async () => {
-      const req = new Request("https://test.com/api/bookmarks", {
+      const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({ url: "https://example.com" }),
         headers: { "Content-Type": "application/json" },
@@ -161,7 +163,7 @@ describe("process-bookmark", () => {
     });
 
     it("returns 422 for invalid URL format", async () => {
-      const req = new Request("https://test.com/api/bookmarks", {
+      const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({ url: "not-a-url", tags: ["test"] }),
         headers: { "Content-Type": "application/json" },
@@ -175,11 +177,11 @@ describe("process-bookmark", () => {
     it("returns generic 503 when required env vars are missing", async () => {
       const originalGet = Netlify.env.get;
       Netlify.env.get = vi.fn((envKey: string) =>
-        envKey === "TURSO_DATABASE_URL" ? undefined : originalGet(envKey),
+        envKey === "SUPABASE_DATABASE_URL" ? undefined : originalGet(envKey),
       );
 
       try {
-        const req = new Request("https://test.com/api/bookmarks", {
+        const req = new Request("https://test.com/api/tools", {
           method: "POST",
           body: JSON.stringify({
             url: "https://example.com/tool",
@@ -194,6 +196,7 @@ describe("process-bookmark", () => {
         const body = (await res.json()) as ErrorResponse;
         expect(body.error).toBe("Service temporarily unavailable");
         expect(body.error).not.toContain("TURSO");
+        expect(body.error).not.toContain("SUPABASE_DATABASE_URL");
       } finally {
         Netlify.env.get = originalGet;
       }
@@ -202,10 +205,11 @@ describe("process-bookmark", () => {
 
   describe("duplicate detection", () => {
     it("returns 409 for duplicate URL", async () => {
-      // Mock existing bookmark found
-      mockDb.limit.mockResolvedValueOnce([{ id: "existing-id" }]);
+      mockDb.returning
+        .mockResolvedValueOnce([{ id: "existing-resource-id" }])
+        .mockResolvedValueOnce([]);
 
-      const req = new Request("https://test.com/api/bookmarks", {
+      const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({
           url: "https://example.com",
@@ -224,7 +228,7 @@ describe("process-bookmark", () => {
 
   describe("successful submission", () => {
     it("returns 201 with bookmark ID on success", async () => {
-      const req = new Request("https://test.com/api/bookmarks", {
+      const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({
           url: "https://example.com/tool",
@@ -243,7 +247,7 @@ describe("process-bookmark", () => {
     });
 
     it("extracts metadata from the URL", async () => {
-      const req = new Request("https://test.com/api/bookmarks", {
+      const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({
           url: "https://example.com/tool",
@@ -264,7 +268,7 @@ describe("process-bookmark", () => {
         ogImage: "https://example.com/og.png",
       });
 
-      const req = new Request("https://test.com/api/bookmarks", {
+      const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({
           url: "https://example.com/tool",
@@ -291,7 +295,7 @@ describe("process-bookmark", () => {
         publicId: "test-id",
       });
 
-      const req = new Request("https://test.com/api/bookmarks", {
+      const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({
           url: "https://example.com/tool",
@@ -307,7 +311,7 @@ describe("process-bookmark", () => {
     });
 
     it("normalizes tags to lowercase", async () => {
-      const req = new Request("https://test.com/api/bookmarks", {
+      const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({
           url: "https://example.com/tool",

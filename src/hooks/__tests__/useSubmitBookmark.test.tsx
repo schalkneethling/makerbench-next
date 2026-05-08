@@ -7,7 +7,7 @@ import { useSubmitBookmark } from "../useSubmitBookmark";
 import { BookmarkApiError } from "../../api";
 
 function createSubmitHandler() {
-  return http.post("/api/bookmarks", async ({ request }) => {
+  return http.post("/api/tools", async ({ request }) => {
     const body = (await request.json()) as { url?: string; tags?: string[] };
 
     if (!body.url) {

@@ -16,3 +16,14 @@ export {
   type GetTagsParams,
   type SearchBookmarksParams,
 } from "./bookmarks";
+
+export {
+  getResources,
+  searchResources,
+  type Resource,
+  type ResourceChild,
+  type ResourceTag,
+  type ResourcesResponse,
+  type GetResourcesParams,
+  type SearchResourcesParams,
+} from "./resources";

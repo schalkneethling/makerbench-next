@@ -1,42 +1,40 @@
-import { drizzle } from "drizzle-orm/libsql";
-import { createClient } from "@libsql/client/http";
+import { drizzle } from "drizzle-orm/node-postgres";
+import pg from "pg";
 
-/**
- * Creates database client for Netlify Functions context
- * Uses Netlify.env.get() instead of import.meta.env
- */
-function createDbClient() {
-  if (typeof Netlify === "undefined") {
-    throw new Error("Must run in Netlify Functions context");
+import * as schema from "../../../src/db/schema";
+
+function getEnv(key: string): string | undefined {
+  if (typeof Netlify !== "undefined" && Netlify?.env) {
+    return Netlify.env.get(key) ?? undefined;
   }
 
-  const url = Netlify.env.get("TURSO_DATABASE_URL");
-  const authToken = Netlify.env.get("TURSO_AUTH_TOKEN");
-
-  if (!url) {
-    throw new Error("TURSO_DATABASE_URL not configured");
-  }
-
-  const client = createClient({
-    url,
-    authToken,
-  });
-
-  return drizzle(client);
+  return process.env[key];
 }
 
-// Lazy initialization to avoid issues with global scope
+function createDbClient() {
+  const connectionString =
+    getEnv("SUPABASE_DATABASE_URL") ?? getEnv("DATABASE_URL");
+
+  if (!connectionString) {
+    throw new Error("SUPABASE_DATABASE_URL or DATABASE_URL is not configured");
+  }
+
+  // SUPABASE_DATABASE_URL must be the server-only Postgres URL, ideally the
+  // Supabase pooler connection string, because Functions perform trusted writes.
+  const pool = new pg.Pool({
+    connectionString,
+    max: 1,
+    idleTimeoutMillis: 0,
+    connectionTimeoutMillis: 5000,
+  });
+  return drizzle(pool, { schema });
+}
+
 let dbInstance: ReturnType<typeof createDbClient> | null = null;
 
-/**
- * Gets the database instance (lazy singleton)
- */
 export function getDb() {
-  if (!dbInstance) {
-    dbInstance = createDbClient();
-  }
+  dbInstance ??= createDbClient();
   return dbInstance;
 }
 
-// Re-export schema for convenience
 export * from "../../../src/db/schema";

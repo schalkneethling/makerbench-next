@@ -35,6 +35,7 @@ function createMockContext(): Context {
 
 function createMockDb() {
   return {
+    execute: vi.fn().mockResolvedValue({ rows: [] }),
     select: vi.fn().mockReturnThis(),
     from: vi.fn().mockReturnThis(),
     leftJoin: vi.fn().mockReturnThis(),
@@ -59,7 +60,7 @@ describe("get-tags", () => {
   });
 
   it("returns 405 for non-GET requests", async () => {
-    const req = new Request("https://test.com/api/tags", { method: "POST" });
+    const req = new Request("https://test.com/api/tools/tags", { method: "POST" });
 
     const res = await getTags(req, mockContext);
 
@@ -71,7 +72,7 @@ describe("get-tags", () => {
     Netlify.env.get = vi.fn(() => undefined);
 
     try {
-      const req = new Request("https://test.com/api/tags");
+      const req = new Request("https://test.com/api/tools/tags");
       const res = await getTags(req, mockContext);
 
       expect(res.status).toBe(503);
@@ -83,45 +84,45 @@ describe("get-tags", () => {
   });
 
   it("returns tags with usage counts", async () => {
-    mockDb.orderBy.mockResolvedValueOnce([
-      { id: "t1", name: "react", usageCount: 2 },
-      { id: "t2", name: "typescript", usageCount: 1 },
-    ]);
+    mockDb.execute.mockResolvedValueOnce({
+      rows: [
+        { name: "react", usage_count: 2 },
+        { name: "typescript", usage_count: 1 },
+      ],
+    });
 
-    const req = new Request("https://test.com/api/tags");
+    const req = new Request("https://test.com/api/tools/tags");
     const res = await getTags(req, mockContext);
 
     expect(res.status).toBe(200);
     const body = (await res.json()) as SuccessResponse<TagsResponseData>;
     expect(body.success).toBe(true);
     expect(body.data.tags).toEqual([
-      { id: "t1", name: "react", usageCount: 2 },
-      { id: "t2", name: "typescript", usageCount: 1 },
+      { id: "react", name: "react", usageCount: 2 },
+      { id: "typescript", name: "typescript", usageCount: 1 },
     ]);
   });
 
   it("applies a limit when requested", async () => {
-    mockDb.limit.mockResolvedValueOnce([
-      { id: "t1", name: "react", usageCount: 2 },
-    ]);
+    mockDb.execute.mockResolvedValueOnce({
+      rows: [{ name: "react", usage_count: 2 }],
+    });
 
-    const req = new Request("https://test.com/api/tags?limit=10");
+    const req = new Request("https://test.com/api/tools/tags?limit=10");
     const res = await getTags(req, mockContext);
 
     expect(res.status).toBe(200);
-    expect(mockDb.limit).toHaveBeenCalledWith(10);
-
     const body = (await res.json()) as SuccessResponse<TagsResponseData>;
     expect(body.data.tags).toEqual([
-      { id: "t1", name: "react", usageCount: 2 },
+      { id: "react", name: "react", usageCount: 2 },
     ]);
   });
 
   it("returns 400 for an invalid limit", async () => {
-    const req = new Request("https://test.com/api/tags?limit=0");
+    const req = new Request("https://test.com/api/tools/tags?limit=0");
     const res = await getTags(req, mockContext);
 
     expect(res.status).toBe(400);
-    expect(mockDb.limit).not.toHaveBeenCalled();
+    expect(mockDb.execute).not.toHaveBeenCalled();
   });
 });

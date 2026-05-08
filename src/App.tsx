@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MainLayout } from "./components/layout";
 import {
   HomePage,
+  ResourcesPage,
   SubmitPage,
   AboutPage,
   PrivacyPage,
@@ -18,6 +19,8 @@ function App() {
       <MainLayout>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/tools" element={<HomePage />} />
+          <Route path="/resources" element={<ResourcesPage />} />
           <Route path="/submit" element={<SubmitPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />

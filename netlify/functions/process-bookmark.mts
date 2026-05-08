@@ -1,16 +1,16 @@
 import type { Context, Config } from "@netlify/functions";
-import { eq } from "drizzle-orm";
+import type { BaseIssue } from "valibot";
 
 import {
   getDb,
-  bookmarksTable,
-  tagsTable,
-  bookmarkTagsTable,
+  resourcesTable,
+  toolListingsTable,
   created,
   validationError,
   conflict,
   serverError,
   methodNotAllowed,
+  normalizeUrl,
   parseAndNormalizeUrl,
   assertRequiredEnv,
   handleMissingEnvironmentError,
@@ -25,6 +25,27 @@ import { validateBookmarkRequest } from "../../src/lib/validation";
 
 const FALLBACK_IMAGE = "/images/fallback-screenshot.png";
 
+function getIssueField(issue: BaseIssue<unknown>): string {
+  const path = issue.path
+    ?.map((pathItem) => pathItem.key)
+    .filter((key): key is string | number => (
+      typeof key === "string" || typeof key === "number"
+    ));
+
+  return path && path.length > 0 ? path.join(".") : "form";
+}
+
+function getValidationDetails(
+  issues: readonly BaseIssue<unknown>[],
+): Record<string, string[]> {
+  return issues.reduce<Record<string, string[]>>((details, issue) => {
+    const field = getIssueField(issue);
+    details[field] ??= [];
+    details[field].push(issue.message);
+    return details;
+  }, {});
+}
+
 export default async (req: Request, _context: Context) => {
   initSentry();
 
@@ -33,9 +54,9 @@ export default async (req: Request, _context: Context) => {
   }
 
   try {
-    assertRequiredEnv(["TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN"]);
+    assertRequiredEnv(["SUPABASE_DATABASE_URL"]);
   } catch (error) {
-    return handleMissingEnvironmentError(error, "process-bookmark");
+    return handleMissingEnvironmentError(error, "process-tool");
   }
 
   let body: unknown;
@@ -45,12 +66,11 @@ export default async (req: Request, _context: Context) => {
     return validationError("Invalid JSON in request body");
   }
 
-  // Validate request using Zod
   const validation = validateBookmarkRequest(body);
   if (!validation.success) {
     return validationError(
       "Validation failed",
-      validation.error.flatten().fieldErrors,
+      getValidationDetails(validation.issues),
     );
   }
 
@@ -60,9 +80,8 @@ export default async (req: Request, _context: Context) => {
     submitterName,
     submitterGithubUsername,
     submitterGithubUrl,
-  } = validation.data;
+  } = validation.output;
 
-  // Accept either a normalized GitHub URL or username and store URL in DB.
   const normalizedSubmitterGithubUrl =
     submitterGithubUrl && submitterGithubUrl.trim().length > 0
       ? submitterGithubUrl
@@ -70,7 +89,6 @@ export default async (req: Request, _context: Context) => {
         ? `https://github.com/${submitterGithubUsername}`
         : undefined;
 
-  // Normalize URL (additional check for HTTP/HTTPS)
   const normalizedUrl = parseAndNormalizeUrl(url);
   if (!normalizedUrl) {
     return validationError("Validation failed", {
@@ -78,27 +96,11 @@ export default async (req: Request, _context: Context) => {
     });
   }
 
-  // Normalize tags
-  const tags = rawTags.map((t) => t.trim().toLowerCase());
+  const tags = [...new Set(rawTags.map((tag) => tag.trim().toLowerCase()))];
 
   try {
     const db = getDb();
-
-    // Check for duplicate URL
-    const existing = await db
-      .select({ id: bookmarksTable.id })
-      .from(bookmarksTable)
-      .where(eq(bookmarksTable.url, normalizedUrl))
-      .limit(1);
-
-    if (existing.length > 0) {
-      return conflict("This URL has already been submitted");
-    }
-
-    // Extract metadata from page
     const metadata = await extractMetadata(normalizedUrl);
-
-    // Determine image
     let imageUrl: string = FALLBACK_IMAGE;
     let imageSource: "og" | "screenshot" | "fallback" = "fallback";
 
@@ -106,11 +108,12 @@ export default async (req: Request, _context: Context) => {
       imageUrl = metadata.ogImage;
       imageSource = "og";
     } else {
-      // Try to capture screenshot
       const screenshot = await captureScreenshot(normalizedUrl);
       if (screenshot.success && screenshot.buffer) {
-        const bookmarkId = crypto.randomUUID();
-        const upload = await uploadScreenshot(screenshot.buffer, bookmarkId);
+        const upload = await uploadScreenshot(
+          screenshot.buffer,
+          crypto.randomUUID(),
+        );
         if (upload.success && upload.url) {
           imageUrl = upload.url;
           imageSource = "screenshot";
@@ -118,59 +121,52 @@ export default async (req: Request, _context: Context) => {
       }
     }
 
-    // Create bookmark
-    const bookmarkId = crypto.randomUUID();
-    const [bookmark] = await db
-      .insert(bookmarksTable)
+    const [resource] = await db
+      .insert(resourcesTable)
       .values({
-        id: bookmarkId,
-        url: normalizedUrl,
-        title: metadata.title || normalizedUrl,
-        description: metadata.description,
+        normalizedUrl,
+        canonicalUrl: normalizeUrl(url),
+        pageTitle: metadata.title || normalizedUrl,
+        metaDescription: metadata.description || "",
+      })
+      .onConflictDoUpdate({
+        target: resourcesTable.normalizedUrl,
+        set: { normalizedUrl },
+      })
+      .returning({ id: resourcesTable.id });
+
+    const [tool] = await db
+      .insert(toolListingsTable)
+      .values({
+        resourceId: resource.id,
+        pageTitle: metadata.title || normalizedUrl,
+        metaDescription: metadata.description || "",
         status: "pending",
+        tags,
         imageUrl,
         imageSource,
         submitterName,
         submitterGithubUrl: normalizedSubmitterGithubUrl,
       })
-      .returning();
+      .onConflictDoNothing({ target: toolListingsTable.resourceId })
+      .returning({ id: toolListingsTable.id });
 
-    // Create/link tags
-    for (const tagName of tags) {
-      // Find or create tag
-      let [tag] = await db
-        .select()
-        .from(tagsTable)
-        .where(eq(tagsTable.name, tagName))
-        .limit(1);
-
-      if (!tag) {
-        [tag] = await db
-          .insert(tagsTable)
-          .values({ id: crypto.randomUUID(), name: tagName })
-          .returning();
-      }
-
-      // Link tag to bookmark
-      await db.insert(bookmarkTagsTable).values({
-        id: crypto.randomUUID(),
-        bookmarkId: bookmark.id,
-        tagId: tag.id,
-      });
+    if (!tool) {
+      return conflict("This URL has already been submitted");
     }
 
     return created({
-      bookmarkId: bookmark.id,
-      message: "Bookmark submitted. It will be reviewed shortly.",
+      bookmarkId: tool.id,
+      message: "Tool submitted. It will be reviewed shortly.",
     });
   } catch (error) {
     captureError(error, { url, tags: rawTags });
     await flushSentry();
-    return serverError("An error occurred while processing the bookmark");
+    return serverError("An error occurred while processing the tool");
   }
 };
 
 export const config: Config = {
-  path: "/api/bookmarks",
+  path: "/api/tools",
   method: "POST",
 };

@@ -23,22 +23,24 @@
     "quality": "pnpm format && pnpm lint && pnpm lint:css && pnpm typecheck && pnpm test && pnpm build",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "migrate:makerbench-turso": "tsx scripts/import-makerbench-turso.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
-    "@libsql/client": "^0.15.9",
     "@netlify/functions": "^5.1.2",
     "@sentry/node": "^10.32.1",
+    "@supabase/supabase-js": "^2.105.3",
     "@varlock/1password-plugin": "^0.3.5",
     "cheerio": "^1.1.2",
     "cloudinary": "^2.8.0",
     "drizzle-orm": "^0.45.2",
+    "pg": "^8.20.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.11.0",
-    "varlock": "^0.7.4",
-    "zod": "^4.3.6"
+    "valibot": "^1.4.0",
+    "varlock": "^0.7.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
@@ -46,6 +48,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@testing-library/user-event": "^14.6.1",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@varlock/vite-integration": "^0.2.10",

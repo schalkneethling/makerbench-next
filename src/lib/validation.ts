@@ -1,191 +1,169 @@
-import { z } from "zod";
+import * as v from "valibot";
 import { isValidGithubProfileUrl } from "./github";
 
-// URL validation schema
-const urlSchema = z.string().url("Please enter a valid URL");
+const urlSchema = v.pipe(v.string(), v.url("Please enter a valid URL"));
 
-// Tag validation schema
-export const tagSchema = z.object({
-  id: z.string().uuid(),
-  name: z
-    .string()
-    .min(1, "Tag name is required")
-    .max(50, "Tag name must be 50 characters or less"),
-  description: z.string().optional(),
+const githubProfileUrlSchema = v.pipe(
+  v.string(),
+  v.url("Please enter a valid GitHub URL"),
+  v.check(
+    (url) => isValidGithubProfileUrl(url),
+    "Please enter a valid GitHub profile URL (https://github.com/username)",
+  ),
+);
+
+const optionalGithubProfileUrlSchema = v.optional(
+  v.union([githubProfileUrlSchema, v.literal("")]),
+);
+
+export const tagSchema = v.object({
+  id: v.pipe(v.string(), v.uuid()),
+  name: v.pipe(
+    v.string(),
+    v.minLength(1, "Tag name is required"),
+    v.maxLength(50, "Tag name must be 50 characters or less"),
+  ),
+  description: v.optional(v.string()),
 });
 
-// Submitter validation schema
-export const submitterSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Name is required")
-    .max(100, "Name must be 100 characters or less"),
-  githubUrl: z
-    .string()
-    .url("Please enter a valid GitHub URL")
-    .refine(
-      (url) => isValidGithubProfileUrl(url),
-      "Please enter a valid GitHub profile URL (https://github.com/username)",
+export const submitterSchema = v.object({
+  name: v.pipe(
+    v.string(),
+    v.minLength(1, "Name is required"),
+    v.maxLength(100, "Name must be 100 characters or less"),
+  ),
+  githubUrl: githubProfileUrlSchema,
+});
+
+export const toolSubmissionSchema = v.object({
+  url: urlSchema,
+  githubUrl: optionalGithubProfileUrlSchema,
+  tags: v.pipe(
+    v.array(v.pipe(v.string(), v.minLength(1, "Tag cannot be empty"))),
+    v.minLength(1, "At least one tag is required"),
+  ),
+  submitterName: v.optional(
+    v.pipe(v.string(), v.maxLength(100, "Name must be 100 characters or less")),
+  ),
+  submitterGithubUrl: optionalGithubProfileUrlSchema,
+});
+
+export const bookmarkRequestSchema = v.object({
+  url: v.pipe(
+    v.string(),
+    v.minLength(1, "URL is required"),
+    v.maxLength(2000, "URL must be 2000 characters or less"),
+    v.url("Please enter a valid URL"),
+  ),
+  tags: v.pipe(
+    v.array(
+      v.pipe(
+        v.string(),
+        v.minLength(1, "Tag cannot be empty"),
+        v.maxLength(50, "Tag must be 50 characters or less"),
+      ),
     ),
+    v.minLength(1, "At least one tag is required"),
+    v.maxLength(10, "Maximum 10 tags allowed"),
+  ),
+  submitterName: v.optional(
+    v.pipe(v.string(), v.maxLength(100, "Name must be 100 characters or less")),
+  ),
+  submitterGithubUsername: v.optional(
+    v.union([
+      v.pipe(
+        v.string(),
+        v.maxLength(39, "GitHub username must be 39 characters or less"),
+        v.regex(
+          /^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/,
+          "Please enter a valid GitHub username",
+        ),
+      ),
+      v.literal(""),
+    ]),
+  ),
+  submitterGithubUrl: optionalGithubProfileUrlSchema,
 });
 
-// Tool submission validation schema
-export const toolSubmissionSchema = z.object({
+export const toolMetadataSchema = v.object({
+  title: v.optional(v.string()),
+  description: v.optional(v.string()),
+  imageUrl: v.optional(v.pipe(v.string(), v.url())),
+  screenshotUrl: v.optional(v.pipe(v.string(), v.url())),
+  extractedAt: v.pipe(v.string(), v.isoTimestamp()),
+});
+
+export const toolSchema = v.object({
+  id: v.pipe(v.string(), v.uuid()),
   url: urlSchema,
-  githubUrl: z
-    .string()
-    .url("Please enter a valid GitHub URL")
-    .refine(
-      (url) => isValidGithubProfileUrl(url),
-      "Please enter a valid GitHub profile URL (https://github.com/username)",
-    )
-    .optional()
-    .or(z.literal("")),
-  tags: z
-    .array(z.string().min(1, "Tag cannot be empty"))
-    .min(1, "At least one tag is required"),
-  submitterName: z
-    .string()
-    .max(100, "Name must be 100 characters or less")
-    .optional(),
-  submitterGithubUrl: z
-    .string()
-    .url("Please enter a valid GitHub URL")
-    .refine(
-      (url) => isValidGithubProfileUrl(url),
-      "Please enter a valid GitHub profile URL (https://github.com/username)",
-    )
-    .optional()
-    .or(z.literal("")),
+  title: v.string(),
+  description: v.string(),
+  imageUrl: v.optional(v.pipe(v.string(), v.url())),
+  githubUrl: v.optional(v.pipe(v.string(), v.url())),
+  tags: v.array(tagSchema),
+  submitter: v.optional(submitterSchema),
+  status: v.picklist(["pending", "approved", "rejected"]),
+  createdAt: v.pipe(v.string(), v.isoTimestamp()),
+  approvedAt: v.optional(v.pipe(v.string(), v.isoTimestamp())),
 });
 
-// Bookmark request schema (for API endpoint)
-export const bookmarkRequestSchema = z.object({
-  url: z
-    .string()
-    .min(1, "URL is required")
-    .max(2000, "URL must be 2000 characters or less")
-    .url("Please enter a valid URL"),
-  tags: z
-    .array(
-      z
-        .string()
-        .min(1, "Tag cannot be empty")
-        .max(50, "Tag must be 50 characters or less"),
-    )
-    .min(1, "At least one tag is required")
-    .max(10, "Maximum 10 tags allowed"),
-  submitterName: z
-    .string()
-    .max(100, "Name must be 100 characters or less")
-    .optional(),
-  submitterGithubUsername: z
-    .string()
-    .max(39, "GitHub username must be 39 characters or less")
-    .regex(
-      /^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/,
-      "Please enter a valid GitHub username",
-    )
-    .optional()
-    .or(z.literal("")),
-  // Accept full URL for API clients that normalize username before submission.
-  submitterGithubUrl: z
-    .string()
-    .url("Please enter a valid GitHub URL")
-    .refine(
-      (url) => isValidGithubProfileUrl(url),
-      "Please enter a valid GitHub profile URL (https://github.com/username)",
-    )
-    .optional()
-    .or(z.literal("")),
+export const searchRequestSchema = v.object({
+  query: v.optional(v.string()),
+  tags: v.optional(v.array(v.string())),
+  limit: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100))),
+  offset: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
 });
 
-// Tool metadata validation schema
-export const toolMetadataSchema = z.object({
-  title: z.string().optional(),
-  description: z.string().optional(),
-  imageUrl: z.string().url().optional(),
-  screenshotUrl: z.string().url().optional(),
-  extractedAt: z.string().datetime(),
+export const submitToolResponseSchema = v.object({
+  success: v.boolean(),
+  message: v.string(),
+  toolId: v.optional(v.pipe(v.string(), v.uuid())),
 });
 
-// Tool data validation schema
-export const toolSchema = z.object({
-  id: z.string().uuid(),
-  url: urlSchema,
-  title: z.string(),
-  description: z.string(),
-  imageUrl: z.string().url().optional(),
-  githubUrl: z.string().url().optional(),
-  tags: z.array(tagSchema),
-  submitter: submitterSchema.optional(),
-  status: z.enum(["pending", "approved", "rejected"]),
-  createdAt: z.string().datetime(),
-  approvedAt: z.string().datetime().optional(),
+export const getToolsResponseSchema = v.object({
+  tools: v.array(toolSchema),
+  total: v.pipe(v.number(), v.integer(), v.minValue(0)),
+  hasMore: v.boolean(),
 });
 
-// Search request validation schema
-export const searchRequestSchema = z.object({
-  query: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  limit: z.number().int().min(1).max(100).default(20),
-  offset: z.number().int().min(0).default(0),
-});
+export type Tag = v.InferOutput<typeof tagSchema>;
+export type Submitter = v.InferOutput<typeof submitterSchema>;
+export type ToolSubmissionData = v.InferOutput<typeof toolSubmissionSchema>;
+export type BookmarkRequest = v.InferOutput<typeof bookmarkRequestSchema>;
+export type ToolMetadata = v.InferOutput<typeof toolMetadataSchema>;
+export type Tool = v.InferOutput<typeof toolSchema>;
+export type SearchRequest = v.InferOutput<typeof searchRequestSchema>;
+export type SubmitToolResponse = v.InferOutput<typeof submitToolResponseSchema>;
+export type GetToolsResponse = v.InferOutput<typeof getToolsResponseSchema>;
 
-// API response schemas
-export const submitToolResponseSchema = z.object({
-  success: z.boolean(),
-  message: z.string(),
-  toolId: z.string().uuid().optional(),
-});
-
-export const getToolsResponseSchema = z.object({
-  tools: z.array(toolSchema),
-  total: z.number().int().min(0),
-  hasMore: z.boolean(),
-});
-
-// TypeScript types inferred from Zod schemas
-export type Tag = z.infer<typeof tagSchema>;
-export type Submitter = z.infer<typeof submitterSchema>;
-export type ToolSubmissionData = z.infer<typeof toolSubmissionSchema>;
-export type BookmarkRequest = z.infer<typeof bookmarkRequestSchema>;
-export type ToolMetadata = z.infer<typeof toolMetadataSchema>;
-export type Tool = z.infer<typeof toolSchema>;
-export type SearchRequest = z.infer<typeof searchRequestSchema>;
-export type SubmitToolResponse = z.infer<typeof submitToolResponseSchema>;
-export type GetToolsResponse = z.infer<typeof getToolsResponseSchema>;
-
-// Utility validation functions
 export const validateToolSubmission = (data: unknown) => {
-  return toolSubmissionSchema.safeParse(data);
+  return v.safeParse(toolSubmissionSchema, data);
 };
 
 export const validateBookmarkRequest = (data: unknown) => {
-  return bookmarkRequestSchema.safeParse(data);
+  return v.safeParse(bookmarkRequestSchema, data);
 };
 
 export const validateSearchRequest = (data: unknown) => {
-  return searchRequestSchema.safeParse(data);
+  return v.safeParse(searchRequestSchema, data);
 };
 
 export const validateToolMetadata = (data: unknown) => {
-  return toolMetadataSchema.safeParse(data);
+  return v.safeParse(toolMetadataSchema, data);
 };
 
-// Form validation helpers
 export const validateUrl = (url: string) => {
-  return urlSchema.safeParse(url);
+  return v.safeParse(urlSchema, url);
 };
 
 export const validateTags = (tags: string[]) => {
-  const tagArraySchema = z
-    .array(z.string().min(1, "Tag cannot be empty"))
-    .min(1, "At least one tag is required");
-  return tagArraySchema.safeParse(tags);
+  const tagArraySchema = v.pipe(
+    v.array(v.pipe(v.string(), v.minLength(1, "Tag cannot be empty"))),
+    v.minLength(1, "At least one tag is required"),
+  );
+  return v.safeParse(tagArraySchema, tags);
 };
 
-// Parse comma-separated tags utility
 export const parseTagsFromString = (tagsString: string): string[] => {
   return tagsString
     .split(",")

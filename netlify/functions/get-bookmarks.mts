@@ -1,18 +1,16 @@
 import type { Context, Config } from "@netlify/functions";
-import { eq, desc, sql } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 
 import {
   getDb,
-  bookmarksTable,
-  tagsTable,
-  bookmarkTagsTable,
+  resourcesTable,
+  toolListingsTable,
   ok,
   badRequest,
   serverError,
   methodNotAllowed,
   assertRequiredEnv,
   handleMissingEnvironmentError,
-  parseAggregatedTags,
   initSentry,
   captureError,
   flushSentry,
@@ -21,7 +19,7 @@ import {
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
 
-interface BookmarkWithTags {
+interface ToolWithTags {
   id: string;
   url: string;
   title: string;
@@ -33,6 +31,39 @@ interface BookmarkWithTags {
   tags: { id: string; name: string }[];
 }
 
+function parsePagination(url: URL): { limit: number; offset: number } | Response {
+  const limitParam = url.searchParams.get("limit");
+  const offsetParam = url.searchParams.get("offset");
+  let limit = DEFAULT_LIMIT;
+  let offset = 0;
+
+  if (limitParam) {
+    const parsed = parseInt(limitParam, 10);
+    if (Number.isNaN(parsed) || parsed < 1) {
+      return badRequest("limit must be a positive integer");
+    }
+    limit = Math.min(parsed, MAX_LIMIT);
+  }
+
+  if (offsetParam) {
+    const parsed = parseInt(offsetParam, 10);
+    if (Number.isNaN(parsed) || parsed < 0) {
+      return badRequest("offset must be a non-negative integer");
+    }
+    offset = parsed;
+  }
+
+  return { limit, offset };
+}
+
+function mapTags(tags: string[] | null | undefined): { id: string; name: string }[] {
+  return tags?.map((tag) => ({ id: tag, name: tag })) ?? [];
+}
+
+function serializeDate(value: Date | string): string {
+  return value instanceof Date ? value.toISOString() : value;
+}
+
 export default async (req: Request, context: Context) => {
   const handlerStart = Date.now();
   initSentry();
@@ -42,115 +73,65 @@ export default async (req: Request, context: Context) => {
   }
 
   try {
-    assertRequiredEnv(["TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN"]);
+    assertRequiredEnv(["SUPABASE_DATABASE_URL"]);
   } catch (error) {
-    return handleMissingEnvironmentError(error, "get-bookmarks");
+    return handleMissingEnvironmentError(error, "get-tools");
   }
 
-  const url = new URL(req.url);
-  const limitParam = url.searchParams.get("limit");
-  const offsetParam = url.searchParams.get("offset");
-
-  // Parse and validate pagination
-  let limit = DEFAULT_LIMIT;
-  let offset = 0;
-
-  if (limitParam) {
-    const parsed = parseInt(limitParam, 10);
-    if (isNaN(parsed) || parsed < 1) {
-      return badRequest("limit must be a positive integer");
-    }
-    limit = Math.min(parsed, MAX_LIMIT);
+  const parsedPagination = parsePagination(new URL(req.url));
+  if (parsedPagination instanceof Response) {
+    return parsedPagination;
   }
-
-  if (offsetParam) {
-    const parsed = parseInt(offsetParam, 10);
-    if (isNaN(parsed) || parsed < 0) {
-      return badRequest("offset must be a non-negative integer");
-    }
-    offset = parsed;
-  }
+  const { limit, offset } = parsedPagination;
 
   try {
     const db = getDb();
     const dbStart = Date.now();
-
-    const paginatedBookmarks = await db
+    const rows = await db
       .select({
-        id: bookmarksTable.id,
-        url: bookmarksTable.url,
-        title: bookmarksTable.title,
-        description: bookmarksTable.description,
-        imageUrl: bookmarksTable.imageUrl,
-        submitterName: bookmarksTable.submitterName,
-        submitterGithubUrl: bookmarksTable.submitterGithubUrl,
-        createdAt: bookmarksTable.createdAt,
-        tagsJson: sql<string>`coalesce(
-          json_group_array(
-            case
-              when ${tagsTable.id} is not null
-                then json_object('id', ${tagsTable.id}, 'name', ${tagsTable.name})
-            end
-          ),
-          '[]'
-        )`,
+        id: toolListingsTable.id,
+        url: resourcesTable.canonicalUrl,
+        title: toolListingsTable.pageTitle,
+        description: toolListingsTable.metaDescription,
+        imageUrl: toolListingsTable.imageUrl,
+        submitterName: toolListingsTable.submitterName,
+        submitterGithubUrl: toolListingsTable.submitterGithubUrl,
+        createdAt: toolListingsTable.createdAt,
+        tags: toolListingsTable.tags,
       })
-      .from(bookmarksTable)
-      .leftJoin(
-        bookmarkTagsTable,
-        eq(bookmarksTable.id, bookmarkTagsTable.bookmarkId),
-      )
-      .leftJoin(tagsTable, eq(bookmarkTagsTable.tagId, tagsTable.id))
-      .where(eq(bookmarksTable.status, "approved"))
-      .groupBy(
-        bookmarksTable.id,
-        bookmarksTable.url,
-        bookmarksTable.title,
-        bookmarksTable.description,
-        bookmarksTable.imageUrl,
-        bookmarksTable.submitterName,
-        bookmarksTable.submitterGithubUrl,
-        bookmarksTable.createdAt,
-      )
-      .orderBy(desc(bookmarksTable.createdAt))
+      .from(toolListingsTable)
+      .innerJoin(resourcesTable, eq(toolListingsTable.resourceId, resourcesTable.id))
+      .where(eq(toolListingsTable.status, "approved"))
+      .orderBy(desc(toolListingsTable.createdAt))
       .limit(limit + 1)
       .offset(offset);
 
-    const dbDurationMs = Date.now() - dbStart;
-    const mapStart = Date.now();
-
-    const hasMore = paginatedBookmarks.length > limit;
-    const pageBookmarks = paginatedBookmarks.slice(0, limit);
-
-    const bookmarks: BookmarkWithTags[] = pageBookmarks.map((bookmark) => ({
-      id: bookmark.id,
-      url: bookmark.url,
-      title: bookmark.title ?? bookmark.url,
-      description: bookmark.description,
-      imageUrl: bookmark.imageUrl,
-      submitterName: bookmark.submitterName,
-      submitterGithubUrl: bookmark.submitterGithubUrl,
-      createdAt: bookmark.createdAt,
-      tags: parseAggregatedTags(bookmark.tagsJson),
+    const hasMore = rows.length > limit;
+    const tools: ToolWithTags[] = rows.slice(0, limit).map((row) => ({
+      id: row.id,
+      url: row.url,
+      title: row.title || row.url,
+      description: row.description || null,
+      imageUrl: row.imageUrl,
+      submitterName: row.submitterName,
+      submitterGithubUrl: row.submitterGithubUrl,
+      createdAt: serializeDate(row.createdAt),
+      tags: mapTags(row.tags),
     }));
 
-    const mapDurationMs = Date.now() - mapStart;
-    const handlerDurationMs = Date.now() - handlerStart;
-    console.info("[perf] get-bookmarks", {
+    console.info("[perf] get-tools", {
       requestId: context.requestId,
-      queryMode: "browse",
-      dbDurationMs,
-      mapDurationMs,
-      handlerDurationMs,
+      dbDurationMs: Date.now() - dbStart,
+      handlerDurationMs: Date.now() - handlerStart,
       hasMore,
       limit,
       offset,
-      rowCount: paginatedBookmarks.length,
-      resultCount: bookmarks.length,
+      rowCount: rows.length,
+      resultCount: tools.length,
     });
 
     return ok({
-      bookmarks,
+      bookmarks: tools,
       pagination: {
         total: null,
         limit,
@@ -161,11 +142,11 @@ export default async (req: Request, context: Context) => {
   } catch (error) {
     captureError(error, { limit, offset });
     await flushSentry();
-    return serverError("An error occurred while fetching bookmarks");
+    return serverError("An error occurred while fetching tools");
   }
 };
 
 export const config: Config = {
-  path: "/api/bookmarks",
+  path: "/api/tools",
   method: "GET",
 };

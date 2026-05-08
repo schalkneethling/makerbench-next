@@ -1,15 +1,22 @@
-import { drizzle } from "drizzle-orm/libsql";
-import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/node-postgres";
+import pg from "pg";
 
-/**
- * Creates libSQL client for Turso database connection
- */
-const client = createClient({
-  url: import.meta.env.VITE_TURSO_DATABASE_URL,
-  authToken: import.meta.env.VITE_TURSO_AUTH_TOKEN,
+import * as schema from "./schema";
+
+function getDatabaseUrl(): string {
+  const databaseUrl =
+    process.env.SUPABASE_DATABASE_URL ?? process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    throw new Error("SUPABASE_DATABASE_URL or DATABASE_URL is required");
+  }
+
+  return databaseUrl;
+}
+
+const pool = new pg.Pool({
+  connectionString: getDatabaseUrl(),
+  connectionTimeoutMillis: 5000,
 });
 
-/**
- * Drizzle ORM database instance configured for Turso
- */
-export const db = drizzle(client);
+export const db = drizzle(pool, { schema });

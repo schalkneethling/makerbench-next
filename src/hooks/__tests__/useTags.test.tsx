@@ -15,7 +15,7 @@ const requestSpy = vi.fn();
 beforeEach(() => {
   requestSpy.mockReset();
   server.use(
-    http.get("/api/tags", ({ request }) => {
+    http.get("/api/tools/tags", ({ request }) => {
       const url = new URL(request.url);
       requestSpy(url.searchParams.get("limit"));
 

@@ -32,7 +32,7 @@ const mockBookmarks = [
 ];
 
 function createGetBookmarksHandler() {
-  return http.get("/api/bookmarks", ({ request }) => {
+  return http.get("/api/tools", ({ request }) => {
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get("limit") || "20");
     const offset = parseInt(url.searchParams.get("offset") || "0");
@@ -92,7 +92,7 @@ describe("useBookmarks", () => {
 
   it("handles fetch errors", async () => {
     server.use(
-      http.get("/api/bookmarks", () => {
+      http.get("/api/tools", () => {
         return HttpResponse.json(
           { success: false, error: "Database error" },
           { status: 500 },
@@ -128,7 +128,7 @@ describe("useBookmarks", () => {
   it("loads more bookmarks", async () => {
     // Set up handler that returns hasMore: true for first page
     server.use(
-      http.get("/api/bookmarks", ({ request }) => {
+      http.get("/api/tools", ({ request }) => {
         const url = new URL(request.url);
         const offset = parseInt(url.searchParams.get("offset") || "0");
 
@@ -174,7 +174,7 @@ describe("useBookmarks", () => {
   it("does not load more when hasMore is false", async () => {
     const fetchSpy = vi.fn();
     server.use(
-      http.get("/api/bookmarks", () => {
+      http.get("/api/tools", () => {
         fetchSpy();
         return HttpResponse.json({
           success: true,
@@ -223,7 +223,7 @@ describe("useBookmarks", () => {
   it("skips initial fetch when fetchOnMount is false", async () => {
     const fetchSpy = vi.fn();
     server.use(
-      http.get("/api/bookmarks", () => {
+      http.get("/api/tools", () => {
         fetchSpy();
         return HttpResponse.json({
           success: true,

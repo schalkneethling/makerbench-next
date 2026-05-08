@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import * as v from "valibot";
 
 import { Alert } from "../components/ui";
 import { TextInput } from "../components/ui";
@@ -40,15 +41,19 @@ export function SubmitPage() {
       submitterGithubUsername: submitterGithubUsername.trim() || undefined,
     };
 
-    const result = bookmarkRequestSchema.safeParse(data);
+    const result = v.safeParse(bookmarkRequestSchema, data);
 
     if (result.success) {
       return {};
     }
 
     const errors: FormErrors = {};
-    for (const issue of result.error.issues) {
-      const field = issue.path[0] as keyof FormErrors;
+    for (const issue of result.issues) {
+      const pathItem = issue.path?.[0] as { key?: unknown } | undefined;
+      const field = pathItem?.key as keyof FormErrors | undefined;
+      if (!field) {
+        continue;
+      }
       if (!errors[field]) {
         errors[field] = issue.message;
       }
