@@ -129,7 +129,12 @@ async function getApprovedResources(): Promise<PublicResource[]> {
 
   const childrenByStackId = new Map<string, PublicResource["children"]>();
   for (const item of stackItems) {
-    const children = childrenByStackId.get(item.publicStackId) ?? [];
+    let children = childrenByStackId.get(item.publicStackId);
+    if (!children) {
+      children = [];
+      childrenByStackId.set(item.publicStackId, children);
+    }
+
     children.push({
       id: item.id,
       url: item.url,
@@ -137,7 +142,6 @@ async function getApprovedResources(): Promise<PublicResource[]> {
       description: item.description || null,
       tags: mapTags(item.tags),
     });
-    childrenByStackId.set(item.publicStackId, children);
   }
 
   const standaloneResources = listings.map<PublicResource>((listing) => ({
@@ -205,7 +209,7 @@ export default async (req: Request, context: Context) => {
     return ok({
       resources: page,
       pagination: {
-        total: null,
+        total: resources.length,
         limit,
         offset,
         hasMore,

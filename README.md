@@ -19,9 +19,9 @@ Core MVP functionality is implemented:
 - Extract metadata (title/description/OG image)
 - Capture screenshot fallback with Browserless when OG image is missing
 - Store fallback screenshots in Cloudinary
-- Persist bookmarks and tags in Turso (Drizzle ORM)
-- Browse approved bookmarks
-- Search approved bookmarks by title and tags
+- Persist tools and resources in Supabase Postgres (Drizzle ORM)
+- Browse approved tools and public resources
+- Search approved tools and resources by title and tags
 - Filter by tags with URL-synced state
 - Responsive React UI with routing (`/`, `/submit`, `/about`, `/privacy`)
 
@@ -29,8 +29,8 @@ Core MVP functionality is implemented:
 
 - React 19 + TypeScript + Vite
 - Netlify Functions
-- Turso (libSQL) + Drizzle ORM
-- Zod validation
+- Supabase Postgres + Drizzle ORM
+- Valibot validation
 - Browserless (screenshots)
 - Cloudinary (image storage)
 - Vitest + Testing Library + Playwright

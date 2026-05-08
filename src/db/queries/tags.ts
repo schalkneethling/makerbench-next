@@ -8,10 +8,11 @@ interface TagUsageRow extends Record<string, unknown> {
 
 export async function getAllTags(limit = 100, offset = 0) {
   const result = await db.execute<TagUsageRow>(sql`
-    select distinct tag_name as name
+    select distinct t.tag_name as name
     from tool_listings
-    cross join unnest(tags) as tag_name
-    order by tag_name asc
+    cross join unnest(tags) as t(tag_name)
+    where status = 'approved'
+    order by t.tag_name asc
     limit ${limit}
     offset ${offset}
   `);
@@ -20,13 +21,21 @@ export async function getAllTags(limit = 100, offset = 0) {
 }
 
 export async function getTagById(id: string) {
-  const rows = await getAllTags();
-  return rows.filter((tag) => tag.id === id);
+  return getTagByName(id);
 }
 
 export async function getTagByName(name: string) {
-  const rows = await getAllTags();
-  return rows.filter((tag) => tag.name === name);
+  const result = await db.execute<TagUsageRow>(sql`
+    select distinct t.tag_name as name
+    from tool_listings
+    cross join unnest(tags) as t(tag_name)
+    where status = 'approved'
+      and t.tag_name = ${name}
+    limit 1
+  `);
+
+  const row = result.rows[0];
+  return row ? { id: row.name, name: row.name } : undefined;
 }
 
 export async function searchTagsByName(
@@ -35,11 +44,12 @@ export async function searchTagsByName(
   offset = 0,
 ) {
   const result = await db.execute<TagUsageRow>(sql`
-    select distinct tag_name as name
+    select distinct t.tag_name as name
     from tool_listings
-    cross join unnest(tags) as tag_name
-    where tag_name ilike ${`%${searchTerm}%`}
-    order by tag_name asc
+    cross join unnest(tags) as t(tag_name)
+    where status = 'approved'
+      and t.tag_name ilike ${`%${searchTerm}%`}
+    order by t.tag_name asc
     limit ${limit}
     offset ${offset}
   `);
@@ -50,13 +60,13 @@ export async function searchTagsByName(
 export async function getPopularTags(limit = 20) {
   const result = await db.execute<TagUsageRow>(sql`
     select
-      tag_name as name,
+      t.tag_name as name,
       count(*)::int as usage_count
     from tool_listings
-    cross join unnest(tags) as tag_name
+    cross join unnest(tags) as t(tag_name)
     where status = 'approved'
-    group by tag_name
-    order by usage_count desc, tag_name asc
+    group by t.tag_name
+    order by usage_count desc, t.tag_name asc
     limit ${limit}
   `);
 

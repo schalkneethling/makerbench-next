@@ -16,6 +16,7 @@ function getDatabaseUrl(): string {
 
 const pool = new pg.Pool({
   connectionString: getDatabaseUrl(),
+  connectionTimeoutMillis: 5000,
 });
 
 export const db = drizzle(pool, { schema });

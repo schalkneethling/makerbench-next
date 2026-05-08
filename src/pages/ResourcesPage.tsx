@@ -12,6 +12,31 @@ import "./ResourcesPage.css";
 
 type ResourceSort = "newest" | "oldest" | "alpha-asc" | "alpha-desc";
 
+const RESOURCE_SORTS = new Set<ResourceSort>([
+  "newest",
+  "oldest",
+  "alpha-asc",
+  "alpha-desc",
+]);
+const TAG_PARAM_PATTERN = /^[a-z0-9][a-z0-9+.#-]{0,49}$/i;
+
+function parseResourceSort(value: string | null): ResourceSort {
+  return value && RESOURCE_SORTS.has(value as ResourceSort)
+    ? value as ResourceSort
+    : "newest";
+}
+
+function parseTagParam(value: string | null): string[] {
+  if (!value) {
+    return [];
+  }
+
+  return value
+    .split(",")
+    .map((tagName) => tagName.trim().toLowerCase())
+    .filter((tagName) => TAG_PARAM_PATTERN.test(tagName));
+}
+
 function getSortedResources(
   resources: Resource[],
   sortBy: ResourceSort,
@@ -64,11 +89,10 @@ export function ResourcesPage() {
     () => searchParams.get("q") ?? "",
   );
   const [sortBy, setSortBy] = useState<ResourceSort>(
-    () => (searchParams.get("sort") as ResourceSort | null) ?? "newest",
+    () => parseResourceSort(searchParams.get("sort")),
   );
   const [selectedTagNames, setSelectedTagNames] = useState<string[]>(() => {
-    const tagsParam = searchParams.get("tags");
-    return tagsParam ? tagsParam.split(",").filter(Boolean) : [];
+    return parseTagParam(searchParams.get("tags"));
   });
   const initialSearchTriggered = useRef(false);
 
@@ -170,7 +194,9 @@ export function ResourcesPage() {
 
     initialSearchTriggered.current = true;
     runSearch(searchQuery, selectedTagNames, { immediate: true });
-  }, [runSearch, searchQuery, selectedTagNames]);
+    // initialSearchTriggered intentionally makes this a one-time URL hydration.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runSearch]);
 
   const handleSearchChange = useCallback(
     (value: string) => {

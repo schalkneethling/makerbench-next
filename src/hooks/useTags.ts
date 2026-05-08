@@ -29,8 +29,12 @@ export function useTags(options: UseTagsOptions = {}): UseTagsState {
   });
 
   useEffect(() => {
+    const controller = new AbortController();
+
     if (!enabled) {
-      return;
+      return () => {
+        controller.abort();
+      };
     }
 
     let isActive = true;
@@ -45,9 +49,9 @@ export function useTags(options: UseTagsOptions = {}): UseTagsState {
       }
     });
 
-    getTags({ limit })
+    getTags({ limit }, { signal: controller.signal })
       .then((data) => {
-        if (!isActive) {
+        if (!isActive || controller.signal.aborted) {
           return;
         }
 
@@ -69,7 +73,7 @@ export function useTags(options: UseTagsOptions = {}): UseTagsState {
         });
       })
       .catch((error: unknown) => {
-        if (!isActive) {
+        if (!isActive || controller.signal.aborted) {
           return;
         }
 
@@ -82,8 +86,12 @@ export function useTags(options: UseTagsOptions = {}): UseTagsState {
 
     return () => {
       isActive = false;
+      controller.abort();
     };
   }, [enabled, limit]);
 
-  return state;
+  return {
+    ...state,
+    isLoading: enabled ? state.isLoading : false,
+  };
 }

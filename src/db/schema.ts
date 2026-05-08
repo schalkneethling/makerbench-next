@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   bigint,
   index,
   pgSchema,
@@ -36,7 +37,6 @@ export const resourcesTable = pgTable(
     metaDescription: text("meta_description").default("").notNull(),
     ...timestamps,
   },
-  (table) => [index("idx_resources_normalized_url").on(table.normalizedUrl)],
 );
 
 export const toolListingsTable = pgTable(
@@ -67,7 +67,6 @@ export const toolListingsTable = pgTable(
   },
   (table) => [
     index("idx_tool_listings_status_created").on(table.status, table.createdAt),
-    index("idx_tool_listings_resource").on(table.resourceId),
     uniqueIndex("unique_tool_listing_resource").on(table.resourceId),
   ],
 );
@@ -82,7 +81,10 @@ export const bookmarksTable = pgTable(
     resourceId: uuid("resource_id")
       .notNull()
       .references(() => resourcesTable.id, { onDelete: "cascade" }),
-    parentId: uuid("parent_id"),
+    parentId: uuid("parent_id").references(
+      (): AnyPgColumn => bookmarksTable.id,
+      { onDelete: "cascade" },
+    ),
     titleOverride: text("title_override"),
     descriptionOverride: text("description_override"),
     notes: text("notes").default("").notNull(),

@@ -15,7 +15,7 @@ interface TursoBookmark {
   submitterName?: string | null;
   submitter_github_url?: string | null;
   submitterGithubUrl?: string | null;
-  metadata?: string | null;
+  metadata?: unknown;
   created_at?: string;
   createdAt?: string;
   approved_at?: string | null;
@@ -55,6 +55,41 @@ function toDate(value: string | null | undefined): Date | undefined {
 
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const VALID_IMAGE_SOURCES = new Set(["og", "screenshot", "fallback"]);
+
+function getValidUuid(value: string): string | undefined {
+  return UUID_PATTERN.test(value) ? value : undefined;
+}
+
+function normalizeImageSource(value: unknown): "og" | "screenshot" | "fallback" | null {
+  return typeof value === "string" && VALID_IMAGE_SOURCES.has(value)
+    ? value as "og" | "screenshot" | "fallback"
+    : null;
+}
+
+function normalizeMetadata(value: unknown): string | null {
+  if (!value) {
+    return null;
+  }
+
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    return parsed && typeof parsed === "object" ? JSON.stringify(parsed) : null;
+  } catch {
+    return null;
+  }
 }
 
 function getInvalidTimestampFields(bookmark: TursoBookmark): string[] {
@@ -187,22 +222,23 @@ async function run() {
       continue;
     }
 
+    const validBookmarkId = getValidUuid(bookmark.id);
+
     await db.insert(toolListingsTable).values({
-      id: bookmark.id,
+      ...(validBookmarkId ? { id: validBookmarkId } : {}),
       resourceId: resource.id,
       status: bookmark.status,
       pageTitle: bookmark.title ?? bookmark.url,
       metaDescription: bookmark.description ?? "",
       tags: [...new Set(tagsByBookmarkId.get(bookmark.id) ?? [])],
       imageUrl: bookmark.image_url ?? null,
-      imageSource:
-        bookmark.image_source ??
-        (bookmark.imageSource as "og" | "screenshot" | "fallback" | null) ??
-        null,
+      imageSource: normalizeImageSource(
+        bookmark.image_source ?? bookmark.imageSource,
+      ),
       submitterName: bookmark.submitter_name ?? bookmark.submitterName ?? null,
       submitterGithubUrl:
         bookmark.submitter_github_url ?? bookmark.submitterGithubUrl ?? null,
-      metadata: bookmark.metadata ?? null,
+      metadata: normalizeMetadata(bookmark.metadata),
       approvedAt: toDate(bookmark.approved_at ?? bookmark.approvedAt),
       createdAt: toDate(bookmark.created_at ?? bookmark.createdAt),
       updatedAt: toDate(bookmark.updated_at ?? bookmark.updatedAt),

@@ -66,6 +66,8 @@ function createMockDb() {
     limit: vi.fn().mockResolvedValue([]),
     insert: vi.fn().mockReturnThis(),
     values: vi.fn().mockReturnThis(),
+    onConflictDoUpdate: vi.fn().mockReturnThis(),
+    onConflictDoNothing: vi.fn().mockReturnThis(),
     returning: vi.fn().mockResolvedValue([{ id: "test-bookmark-id" }]),
     innerJoin: vi.fn().mockReturnThis(),
     leftJoin: vi.fn().mockReturnThis(),
@@ -194,6 +196,7 @@ describe("process-bookmark", () => {
         const body = (await res.json()) as ErrorResponse;
         expect(body.error).toBe("Service temporarily unavailable");
         expect(body.error).not.toContain("TURSO");
+        expect(body.error).not.toContain("SUPABASE_DATABASE_URL");
       } finally {
         Netlify.env.get = originalGet;
       }
@@ -202,10 +205,9 @@ describe("process-bookmark", () => {
 
   describe("duplicate detection", () => {
     it("returns 409 for duplicate URL", async () => {
-      // Mock existing bookmark found
-      mockDb.limit
+      mockDb.returning
         .mockResolvedValueOnce([{ id: "existing-resource-id" }])
-        .mockResolvedValueOnce([{ id: "existing-tool-id" }]);
+        .mockResolvedValueOnce([]);
 
       const req = new Request("https://test.com/api/tools", {
         method: "POST",

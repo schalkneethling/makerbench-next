@@ -1,5 +1,4 @@
 import type { Context, Config } from "@netlify/functions";
-import { eq } from "drizzle-orm";
 import type { BaseIssue } from "valibot";
 
 import {
@@ -27,8 +26,13 @@ import { validateBookmarkRequest } from "../../src/lib/validation";
 const FALLBACK_IMAGE = "/images/fallback-screenshot.png";
 
 function getIssueField(issue: BaseIssue<unknown>): string {
-  const pathItem = issue.path?.[0] as { key?: unknown } | undefined;
-  return typeof pathItem?.key === "string" ? pathItem.key : "form";
+  const path = issue.path
+    ?.map((pathItem) => pathItem.key)
+    .filter((key): key is string | number => (
+      typeof key === "string" || typeof key === "number"
+    ));
+
+  return path && path.length > 0 ? path.join(".") : "form";
 }
 
 function getValidationDetails(
@@ -96,24 +100,6 @@ export default async (req: Request, _context: Context) => {
 
   try {
     const db = getDb();
-    const existingResource = await db
-      .select({ id: resourcesTable.id })
-      .from(resourcesTable)
-      .where(eq(resourcesTable.normalizedUrl, normalizedUrl))
-      .limit(1);
-
-    if (existingResource.length > 0) {
-      const existingTool = await db
-        .select({ id: toolListingsTable.id })
-        .from(toolListingsTable)
-        .where(eq(toolListingsTable.resourceId, existingResource[0].id))
-        .limit(1);
-
-      if (existingTool.length > 0) {
-        return conflict("This URL has already been submitted");
-      }
-    }
-
     const metadata = await extractMetadata(normalizedUrl);
     let imageUrl: string = FALLBACK_IMAGE;
     let imageSource: "og" | "screenshot" | "fallback" = "fallback";
@@ -135,19 +121,19 @@ export default async (req: Request, _context: Context) => {
       }
     }
 
-    const resource =
-      existingResource[0] ??
-      (
-        await db
-          .insert(resourcesTable)
-          .values({
-            normalizedUrl,
-            canonicalUrl: normalizeUrl(url),
-            pageTitle: metadata.title || normalizedUrl,
-            metaDescription: metadata.description || "",
-          })
-          .returning({ id: resourcesTable.id })
-      )[0];
+    const [resource] = await db
+      .insert(resourcesTable)
+      .values({
+        normalizedUrl,
+        canonicalUrl: normalizeUrl(url),
+        pageTitle: metadata.title || normalizedUrl,
+        metaDescription: metadata.description || "",
+      })
+      .onConflictDoUpdate({
+        target: resourcesTable.normalizedUrl,
+        set: { normalizedUrl },
+      })
+      .returning({ id: resourcesTable.id });
 
     const [tool] = await db
       .insert(toolListingsTable)
@@ -162,7 +148,12 @@ export default async (req: Request, _context: Context) => {
         submitterName,
         submitterGithubUrl: normalizedSubmitterGithubUrl,
       })
+      .onConflictDoNothing({ target: toolListingsTable.resourceId })
       .returning({ id: toolListingsTable.id });
+
+    if (!tool) {
+      return conflict("This URL has already been submitted");
+    }
 
     return created({
       bookmarkId: tool.id,

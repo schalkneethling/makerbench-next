@@ -54,13 +54,13 @@ export default async (req: Request, context: Context) => {
     const dbStart = Date.now();
     const result = await db.execute<TagUsageRow>(sql`
       select
-        tag_name as name,
+        t.tag_name as name,
         count(*)::int as usage_count
       from tool_listings
-      cross join unnest(tags) as tag_name
+      cross join unnest(tags) as t(tag_name)
       where status = 'approved'
-      group by tag_name
-      order by usage_count desc, tag_name asc
+      group by t.tag_name
+      order by usage_count desc, t.tag_name asc
       ${limit === undefined ? sql`` : sql`limit ${limit}`}
     `);
 

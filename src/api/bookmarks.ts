@@ -74,6 +74,9 @@ const errorResponseSchema = v.object({
   details: v.optional(v.record(v.string(), v.array(v.string()))),
 });
 
+// TODO(#61): These bookmark* schemas are legacy compatibility exports for the
+// tools API response envelope. Rename bookmarkSchema/Bookmark to Tool* once the
+// client no longer needs the historical "bookmarks" response key.
 export type BookmarkTag = v.InferOutput<typeof bookmarkTagSchema>;
 export type Tag = v.InferOutput<typeof tagSchema>;
 export type PaginationInfo = v.InferOutput<typeof paginationSchema>;
@@ -245,23 +248,25 @@ export async function searchBookmarks(
 
 export async function getTags(
   params: GetTagsParams = {},
+  options: RequestOptions = {},
 ): Promise<TagsResponse> {
   return fetchValidatedResponse(
     appendListParams("/api/tools/tags", params),
     tagsResponseSchema,
+    { signal: options.signal },
   );
 }
 
 export async function submitBookmark(
   data: BookmarkRequest,
 ): Promise<SubmitBookmarkResponse> {
+  const { submitterGithubUsername, submitterGithubUrl, ...rest } = data;
   const payload = {
-    ...data,
-    submitterGithubUrl: data.submitterGithubUsername
-      ? `https://github.com/${data.submitterGithubUsername}`
-      : data.submitterGithubUrl,
+    ...rest,
+    submitterGithubUrl: submitterGithubUsername
+      ? `https://github.com/${submitterGithubUsername}`
+      : submitterGithubUrl,
   };
-  delete (payload as Record<string, unknown>).submitterGithubUsername;
 
   const response = await fetch(`${getBaseUrl()}/api/tools`, {
     method: "POST",

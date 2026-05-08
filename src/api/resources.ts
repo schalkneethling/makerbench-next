@@ -76,6 +76,8 @@ interface RequestOptions {
 }
 
 function throwApiError(json: unknown, status: number): never {
+  // Parse server error bodies so UI consumers can surface structured details.
+  // If this contract does not parse, treat it as an unexpected server response.
   const parsed = v.safeParse(errorResponseSchema, json);
   throw new BookmarkApiError(
     parsed.success ? parsed.output.error : "An unexpected error occurred",
@@ -108,27 +110,54 @@ async function fetchResourcesResponse(
   path: string,
   options: RequestOptions = {},
 ): Promise<ResourcesResponse> {
-  const response = await fetch(`${getBaseUrl()}${path}`, {
-    signal: options.signal,
-  });
-  const json = await response.json();
+  const startTime =
+    typeof performance !== "undefined" && typeof performance.now === "function"
+      ? performance.now()
+      : Date.now();
+  let status: number | undefined;
+  let aborted = false;
 
-  if (!response.ok) {
-    throwApiError(json, response.status);
+  try {
+    const response = await fetch(`${getBaseUrl()}${path}`, {
+      signal: options.signal,
+    });
+    status = response.status;
+    const json = await response.json();
+
+    if (!response.ok) {
+      throwApiError(json, response.status);
+    }
+
+    const result = v.safeParse(resourcesResponseSchema, json);
+    if (!result.success) {
+      // A malformed success payload signals a server contract violation; callers handle the thrown error.
+      throw new BookmarkApiError("Invalid response from server", 500);
+    }
+
+    return result.output.data;
+  } catch (error) {
+    aborted = error instanceof DOMException && error.name === "AbortError";
+    throw error;
+  } finally {
+    const now =
+      typeof performance !== "undefined" && typeof performance.now === "function"
+        ? performance.now()
+        : Date.now();
+
+    console.info("[perf] client-request", {
+      path,
+      durationMs: Math.round(now - startTime),
+      status,
+      aborted,
+    });
   }
-
-  const result = v.safeParse(resourcesResponseSchema, json);
-  if (!result.success) {
-    throw new BookmarkApiError("Invalid response from server", 500);
-  }
-
-  return result.output.data;
 }
 
 export function getResources(
   params: GetResourcesParams = {},
+  options: RequestOptions = {},
 ): Promise<ResourcesResponse> {
-  return fetchResourcesResponse(buildPath("/api/resources", params));
+  return fetchResourcesResponse(buildPath("/api/resources", params), options);
 }
 
 export function searchResources(

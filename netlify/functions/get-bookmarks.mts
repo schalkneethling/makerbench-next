@@ -56,16 +56,8 @@ function parsePagination(url: URL): { limit: number; offset: number } | Response
   return { limit, offset };
 }
 
-function mapTags(tags: string[] | undefined, tagsJson?: string): { id: string; name: string }[] {
-  if (tags) {
-    return tags.map((tag) => ({ id: tag, name: tag }));
-  }
-
-  if (!tagsJson) {
-    return [];
-  }
-
-  return JSON.parse(tagsJson) as { id: string; name: string }[];
+function mapTags(tags: string[] | null | undefined): { id: string; name: string }[] {
+  return tags?.map((tag) => ({ id: tag, name: tag })) ?? [];
 }
 
 function serializeDate(value: Date | string): string {
@@ -124,7 +116,7 @@ export default async (req: Request, context: Context) => {
       submitterName: row.submitterName,
       submitterGithubUrl: row.submitterGithubUrl,
       createdAt: serializeDate(row.createdAt),
-      tags: mapTags(row.tags, (row as { tagsJson?: string }).tagsJson),
+      tags: mapTags(row.tags),
     }));
 
     console.info("[perf] get-tools", {

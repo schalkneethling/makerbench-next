@@ -11,7 +11,7 @@ This document is the canonical technical reference for how MakerBench works toda
 ```mermaid
 flowchart LR
     U["User Browser (React App)"] --> N["Netlify Functions API"]
-    N --> T["Turso (libSQL) via Drizzle"]
+    N --> T["Supabase Postgres via Drizzle"]
     N --> W["External Website (metadata fetch)"]
     N --> B["Browserless Screenshot API"]
     N --> C["Cloudinary Image Storage"]
@@ -22,8 +22,8 @@ flowchart LR
 
 - Frontend app: React 19 + TypeScript + Vite
 - API layer: Netlify Functions in `netlify/functions`
-- Database access: Drizzle ORM + Turso via `netlify/functions/lib/db.ts`
-- Validation: Zod schemas in `src/lib/validation.ts`
+- Database access: Drizzle ORM + Supabase Postgres via `netlify/functions/lib/db.ts`
+- Validation: Valibot schemas in `src/lib/validation.ts`
 - External integrations:
   - Metadata fetch + parsing (Cheerio)
   - Browserless screenshot fallback
@@ -33,39 +33,45 @@ flowchart LR
 
 Primary tables:
 
-- `bookmarks`
+- `resources`
+  - shared URL identity table for tools and public resources
+- `tool_listings`
   - includes `status` (`pending | approved | rejected`)
   - includes `imageUrl`, `imageSource`, submitter metadata fields
-- `tags`
-- `bookmark_tags`
-  - many-to-many join
-  - unique constraint on (`bookmarkId`, `tagId`)
+- LinkStack resource tables retained for phase-one public resources:
+  - `public_listings`
+  - `public_stacks`
+  - `public_stack_items`
 
 ## API Surface
 
-- `POST /api/bookmarks`
+- `POST /api/tools`
   - validates input
   - extracts metadata
   - tries screenshot fallback if no OG image
-  - writes bookmark as `pending`
-- `GET /api/bookmarks`
-  - returns paginated `approved` bookmarks
-- `GET /api/bookmarks/search`
-  - returns paginated `approved` bookmarks matching query/tags
+  - writes tool listing as `pending`
+- `GET /api/tools`
+  - returns paginated `approved` tools
+- `GET /api/tools/search`
+  - returns paginated `approved` tools matching query/tags
+- `GET /api/resources`
+  - returns public MakerBench resources and stacks
+- `GET /api/resources/search`
+  - searches public MakerBench resources and stacks
 
 ## Sequence: Submit Bookmark
 
 ```mermaid
 sequenceDiagram
     participant Browser as "Browser"
-    participant API as "POST /api/bookmarks"
+    participant API as "POST /api/tools"
     participant Site as "Target Site"
     participant Shot as "Browserless"
     participant Img as "Cloudinary"
-    participant DB as "Turso"
+    participant DB as "Supabase Postgres"
 
     Browser->>API: Submit { url, tags, optional submitter }
-    API->>API: Validate request (Zod), normalize URL, dedupe check
+    API->>API: Validate request (Valibot), normalize URL, atomic upsert
     API->>Site: Fetch HTML for metadata
     Site-->>API: HTML response
     API->>API: Extract title/description/og:image
@@ -93,15 +99,15 @@ sequenceDiagram
 sequenceDiagram
     participant Browser as "Browser"
     participant API as "GET Endpoints"
-    participant DB as "Turso"
+    participant DB as "Supabase Postgres"
 
-    Browser->>API: GET /api/bookmarks?limit&offset
-    API->>DB: Query approved bookmarks + tags
+    Browser->>API: GET /api/tools?limit&offset
+    API->>DB: Query approved tools + tags
     DB-->>API: Rows
     API-->>Browser: Paginated results
 
-    Browser->>API: GET /api/bookmarks/search?q&tags&limit&offset
-    API->>DB: Query approved bookmarks filtered by title/tag
+    Browser->>API: GET /api/tools/search?q&tags&limit&offset
+    API->>DB: Query approved tools filtered by title/tag
     DB-->>API: Rows
     API-->>Browser: Paginated filtered results
 ```
@@ -112,9 +118,9 @@ sequenceDiagram
 sequenceDiagram
     participant Admin as "Admin UI"
     participant AdminAPI as "Admin Function (planned)"
-    participant DB as "Turso"
+    participant DB as "Supabase Postgres"
 
-    Admin->>AdminAPI: GET pending bookmarks
+    Admin->>AdminAPI: GET pending tools/resources
     AdminAPI->>DB: Select where status = pending
     DB-->>AdminAPI: Pending queue
     AdminAPI-->>Admin: Queue data

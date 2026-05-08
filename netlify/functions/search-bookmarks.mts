@@ -27,7 +27,7 @@ function parsePagination(url: URL): { limit: number; offset: number } | Response
 
   if (limitParam) {
     const parsed = parseInt(limitParam, 10);
-    if (Number.isNaN(parsed) || parsed < 1) {
+    if (!/^\d+$/.test(limitParam) || Number.isNaN(parsed) || parsed < 1) {
       return badRequest("limit must be a positive integer");
     }
     limit = Math.min(parsed, MAX_LIMIT);
@@ -35,7 +35,7 @@ function parsePagination(url: URL): { limit: number; offset: number } | Response
 
   if (offsetParam) {
     const parsed = parseInt(offsetParam, 10);
-    if (Number.isNaN(parsed) || parsed < 0) {
+    if (!/^\d+$/.test(offsetParam) || Number.isNaN(parsed) || parsed < 0) {
       return badRequest("offset must be a non-negative integer");
     }
     offset = parsed;
@@ -44,16 +44,8 @@ function parsePagination(url: URL): { limit: number; offset: number } | Response
   return { limit, offset };
 }
 
-function mapTags(tags: string[] | undefined, tagsJson?: string): { id: string; name: string }[] {
-  if (tags) {
-    return tags.map((tag) => ({ id: tag, name: tag }));
-  }
-
-  if (!tagsJson) {
-    return [];
-  }
-
-  return JSON.parse(tagsJson) as { id: string; name: string }[];
+function mapTags(tags: string[] | null | undefined): { id: string; name: string }[] {
+  return tags?.map((tag) => ({ id: tag, name: tag })) ?? [];
 }
 
 function serializeDate(value: Date | string): string {
@@ -135,7 +127,7 @@ export default async (req: Request, context: Context) => {
       submitterName: row.submitterName,
       submitterGithubUrl: row.submitterGithubUrl,
       createdAt: serializeDate(row.createdAt),
-      tags: mapTags(row.tags, (row as { tagsJson?: string }).tagsJson),
+      tags: mapTags(row.tags),
     }));
 
     console.info("[perf] search-tools", {

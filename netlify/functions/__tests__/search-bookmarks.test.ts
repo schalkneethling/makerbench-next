@@ -146,7 +146,7 @@ describe("search-bookmarks", () => {
           submitterName: null,
           submitterGithubUrl: null,
           createdAt: "2024-01-01",
-          tagsJson: '[{"id":"t1","name":"react"}]',
+          tags: ["react"],
         },
         {
           id: "b2",
@@ -157,7 +157,7 @@ describe("search-bookmarks", () => {
           submitterName: null,
           submitterGithubUrl: null,
           createdAt: "2024-01-01",
-          tagsJson: "[]",
+          tags: [],
         },
       ]);
 
@@ -171,7 +171,7 @@ describe("search-bookmarks", () => {
       const body = (await res.json()) as SuccessResponse<SearchResultsData>;
       expect(body.data.bookmarks).toHaveLength(1);
       expect(body.data.bookmarks[0].tags).toContainEqual({
-        id: "t1",
+        id: "react",
         name: "react",
       });
       expect(body.data.pagination.total).toBeNull();
@@ -189,7 +189,7 @@ describe("search-bookmarks", () => {
           submitterName: null,
           submitterGithubUrl: null,
           createdAt: "2024-01-01",
-          tagsJson: "[]",
+          tags: [],
         },
       ]);
       const req = new Request(

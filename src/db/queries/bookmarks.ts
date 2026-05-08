@@ -1,4 +1,4 @@
-import { and, desc, eq, ilike, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "../index";
 import {
   toolListingsTable,
@@ -88,27 +88,6 @@ export async function searchBookmarksByTags(
       and(
         eq(toolListingsTable.status, "approved"),
         sql`${toolListingsTable.tags} && ${tagNames}`,
-      ),
-    )
-    .orderBy(desc(toolListingsTable.createdAt))
-    .limit(limit)
-    .offset(offset);
-}
-
-export async function searchBookmarksByText(
-  searchTerm: string,
-  limit = 50,
-  offset = 0,
-) {
-  const searchPattern = `%${searchTerm}%`;
-
-  return await db
-    .select()
-    .from(toolListingsTable)
-    .where(
-      and(
-        eq(toolListingsTable.status, "approved"),
-        ilike(toolListingsTable.pageTitle, searchPattern),
       ),
     )
     .orderBy(desc(toolListingsTable.createdAt))

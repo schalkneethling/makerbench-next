@@ -150,7 +150,7 @@ describe("get-bookmarks", () => {
           submitterName: null,
           submitterGithubUrl: null,
           createdAt: "2024-01-01",
-          tagsJson: '[{"id":"t1","name":"javascript"}]',
+          tags: ["javascript"],
         },
         {
           id: "b2",
@@ -161,7 +161,7 @@ describe("get-bookmarks", () => {
           submitterName: null,
           submitterGithubUrl: null,
           createdAt: "2024-01-01",
-          tagsJson: "[]",
+          tags: [],
         },
       ]);
 

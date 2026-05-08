@@ -124,7 +124,7 @@ Kill any lingering processes from this workspace before handing off.
 | ----------- | ---------------------- | ---------------------------------------------------- |
 | Browserless | Screenshot capture     | https://docs.browserless.io/rest-apis/screenshot-api |
 | Cloudinary  | Image storage/delivery | https://cloudinary.com/documentation                 |
-| Turso       | SQLite database        | https://docs.turso.tech                              |
+| Supabase    | Postgres/Auth backend  | https://supabase.com/docs                            |
 
 ### Key Implementation Notes
 
@@ -133,35 +133,34 @@ Kill any lingering processes from this workspace before handing off.
 
 **When in doubt, consult the documentation.**
 
-## Database Migrations (Turso)
+## Database Migrations (Supabase Postgres)
 
-**CRITICAL: Schema changes must be pushed to Turso before deploying code that depends on them.**
+**CRITICAL: Schema changes must be pushed to Supabase Postgres before deploying code that depends on them.**
 
 ### Development Setup
 
-1. Copy `.env.example` to `.env` and fill in Turso credentials
-2. Push schema to database: `npx drizzle-kit push`
+1. Copy `.env.example` to `.env` and fill in Supabase credentials
+2. Apply migrations to the database: `pnpm db:migrate`
 
 ### When Schema Changes
 
 After modifying `src/db/schema.ts`:
 
 1. Generate migration: `npx drizzle-kit generate`
-2. Push to Turso: `npx drizzle-kit push`
+2. Apply to Supabase Postgres: `pnpm db:migrate`
 3. Verify locally with `netlify dev` before deploying
 
 ### Migration Gotchas
 
 - **CRITICAL: Drizzle migrations are driven by `migrations/meta/_journal.json`, not just the `.sql` files.** If you add a migration SQL file manually, you must also add the corresponding journal entry and snapshot file or Drizzle will silently skip it.
-- **If Turso reports duplicate column errors during migrate, check `__drizzle_migrations` before changing schema files.** This usually means the database schema is ahead of Drizzle's recorded migration history, not that the new migration itself is wrong.
-- **Verify SQLite FTS5 syntax against the official docs before shipping search migrations.** In particular, wrapper tokenizers must be declared in the correct order, e.g. `tokenize = 'porter unicode61'`, not `tokenize = 'unicode61 porter'`.
+- **If Supabase Postgres reports duplicate object errors during migrate, check `__drizzle_migrations` before changing schema files.** This usually means the database schema is ahead of Drizzle's recorded migration history, not that the new migration itself is wrong.
 
 ### Production Deployment
 
 **Before deploying code with schema changes:**
 
-1. Ensure `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` are set in Netlify environment variables
-2. Run `npx drizzle-kit push` against production database
+1. Ensure `SUPABASE_DATABASE_URL`, `VITE_SUPABASE_URL`, and `VITE_SUPABASE_ANON_KEY` are set in Netlify environment variables
+2. Run `pnpm db:migrate` against the production database
 3. Then deploy the code
 
 **Order matters:** Database schema must be updated BEFORE code that uses new columns is deployed, or requests will fail with "table has no column" errors.
@@ -247,13 +246,13 @@ Adding a dependency without leveraging its strengths wastes the opportunity and 
 
 If a library offers a capability, use it. Don't maintain parallel implementations.
 
-### Example: Zod Type Inference
+### Example: Valibot Type Inference
 
 ```typescript
 // BAD: Duplicate definitions to maintain
-const bookmarkSchema = z.object({
-  id: z.string(),
-  title: z.string(),
+const bookmarkSchema = v.object({
+  id: v.string(),
+  title: v.string(),
 });
 
 interface Bookmark {
@@ -263,20 +262,20 @@ interface Bookmark {
 }
 
 // GOOD: Single source of truth
-const bookmarkSchema = z.object({
-  id: z.string(),
-  title: z.string(),
+const bookmarkSchema = v.object({
+  id: v.string(),
+  title: v.string(),
 });
 
-type Bookmark = z.infer<typeof bookmarkSchema>; // Always in sync
+type Bookmark = v.InferOutput<typeof bookmarkSchema>; // Always in sync
 ```
 
-### When to Use Zod Schemas vs Plain Types
+### When to Use Valibot Schemas vs Plain Types
 
 | Scenario                          | Approach                                                  |
 | --------------------------------- | --------------------------------------------------------- |
-| API response data                 | Zod schema + `z.infer` (needs runtime validation)         |
-| External input (forms, user data) | Zod schema + `z.infer` (needs runtime validation)         |
+| API response data                 | Valibot schema + `v.InferOutput` (needs runtime validation) |
+| External input (forms, user data) | Valibot schema + `v.InferOutput` (needs runtime validation) |
 | Function parameters (internal)    | Plain TypeScript interface (no runtime validation needed) |
 | Internal state shapes             | Plain TypeScript interface                                |
 
@@ -315,9 +314,9 @@ This pattern can confuse readers. Always include comments explaining:
 
 ## Validation
 
-**CRITICAL: NEVER write custom validation logic - use Zod.**
+**CRITICAL: NEVER write custom validation logic - use Valibot.**
 
-### Always Use Zod For
+### Always Use Valibot For
 
 - API request/response validation
 - Form data validation
@@ -335,18 +334,22 @@ This pattern can confuse readers. Always include comments explaining:
 
 ```typescript
 // Define schema once
-export const bookmarkRequestSchema = z.object({
-  url: z.string().url().max(2000),
-  tags: z.array(z.string().min(1).max(50)).min(1).max(10),
+export const bookmarkRequestSchema = v.object({
+  url: v.pipe(v.string(), v.url(), v.maxLength(2000)),
+  tags: v.pipe(
+    v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(50))),
+    v.minLength(1),
+    v.maxLength(10),
+  ),
 });
 
 // Infer type from schema
-export type BookmarkRequest = z.infer<typeof bookmarkRequestSchema>;
+export type BookmarkRequest = v.InferOutput<typeof bookmarkRequestSchema>;
 
 // Validate with safeParse
-const result = bookmarkRequestSchema.safeParse(data);
+const result = v.safeParse(bookmarkRequestSchema, data);
 if (!result.success) {
-  return formatErrors(result.error.issues);
+  return formatErrors(result.issues);
 }
 ```
 

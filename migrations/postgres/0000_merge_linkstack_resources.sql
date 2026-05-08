@@ -28,14 +28,8 @@ CREATE TABLE IF NOT EXISTS public.tool_listings (
   CONSTRAINT unique_tool_listing_resource UNIQUE (resource_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_resources_normalized_url
-  ON public.resources(normalized_url);
-
 CREATE INDEX IF NOT EXISTS idx_tool_listings_status_created
   ON public.tool_listings(status, created_at DESC);
-
-CREATE INDEX IF NOT EXISTS idx_tool_listings_resource
-  ON public.tool_listings(resource_id);
 
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -45,6 +39,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_resources_updated_at ON public.resources;
+CREATE TRIGGER update_resources_updated_at
+  BEFORE UPDATE ON public.resources
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_updated_at_column();
+
 DROP TRIGGER IF EXISTS update_tool_listings_updated_at ON public.tool_listings;
 CREATE TRIGGER update_tool_listings_updated_at
   BEFORE UPDATE ON public.tool_listings
@@ -52,6 +52,25 @@ CREATE TRIGGER update_tool_listings_updated_at
   EXECUTE FUNCTION public.update_updated_at_column();
 
 ALTER TABLE public.tool_listings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.resources ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "resources are public"
+  ON public.resources;
+
+CREATE POLICY "resources are public"
+  ON public.resources
+  FOR SELECT
+  USING (true);
+
+DROP POLICY IF EXISTS "resources are service-role write only"
+  ON public.resources;
+
+CREATE POLICY "resources are service-role write only"
+  ON public.resources
+  FOR ALL
+  TO service_role
+  USING (true)
+  WITH CHECK (true);
 
 DROP POLICY IF EXISTS "approved tool listings are public"
   ON public.tool_listings;
@@ -60,3 +79,13 @@ CREATE POLICY "approved tool listings are public"
   ON public.tool_listings
   FOR SELECT
   USING (status = 'approved');
+
+DROP POLICY IF EXISTS "tool listings are service-role write only"
+  ON public.tool_listings;
+
+CREATE POLICY "tool listings are service-role write only"
+  ON public.tool_listings
+  FOR ALL
+  TO service_role
+  USING (true)
+  WITH CHECK (true);
