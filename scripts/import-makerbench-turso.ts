@@ -1,9 +1,6 @@
 import { readFile } from "node:fs/promises";
-import { eq } from "drizzle-orm";
 
-import { db } from "../src/db";
 import { normalizeUrl } from "../netlify/functions/lib/url";
-import { resourcesTable, toolListingsTable } from "../src/db/schema";
 
 interface TursoBookmark {
   id: string;
@@ -52,7 +49,24 @@ function getArgValue(name: string): string | undefined {
 }
 
 function toDate(value: string | null | undefined): Date | undefined {
-  return value ? new Date(value) : undefined;
+  if (!value) {
+    return undefined;
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+function getInvalidTimestampFields(bookmark: TursoBookmark): string[] {
+  const fields = [
+    ["created_at", bookmark.created_at ?? bookmark.createdAt],
+    ["updated_at", bookmark.updated_at ?? bookmark.updatedAt],
+    ["approved_at", bookmark.approved_at ?? bookmark.approvedAt],
+  ] as const;
+
+  return fields
+    .filter(([, value]) => value && !toDate(value))
+    .map(([fieldName]) => fieldName);
 }
 
 function getBookmarkTags(exportData: TursoExport): Map<string, string[]> {
@@ -103,6 +117,12 @@ async function run() {
   const duplicateUrls = normalizedUrls.filter(
     (url, index) => normalizedUrls.indexOf(url) !== index,
   );
+  const invalidTimestampRows = exportData.bookmarks
+    .map((bookmark) => ({
+      id: bookmark.id,
+      fields: getInvalidTimestampFields(bookmark),
+    }))
+    .filter((row) => row.fields.length > 0);
 
   console.info("MakerBench Turso import dry-run", {
     mode: shouldExecute ? "execute" : "dry-run",
@@ -111,12 +131,26 @@ async function run() {
     bookmarkTags:
       exportData.bookmark_tags?.length ?? exportData.bookmarkTags?.length ?? 0,
     duplicateUrls: [...new Set(duplicateUrls)].length,
+    invalidTimestampRows: invalidTimestampRows.length,
   });
+
+  if (invalidTimestampRows.length > 0) {
+    console.info(
+      "Rows with invalid timestamps will import those fields as null",
+      JSON.stringify({ rows: invalidTimestampRows }, null, 2),
+    );
+  }
 
   if (!shouldExecute) {
     return;
   }
 
+  const [{ eq }, { db }, { resourcesTable, toolListingsTable }] =
+    await Promise.all([
+      import("drizzle-orm"),
+      import("../src/db"),
+      import("../src/db/schema"),
+    ]);
   let inserted = 0;
   let skipped = 0;
 
