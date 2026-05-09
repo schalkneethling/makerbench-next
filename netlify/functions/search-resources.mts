@@ -1,12 +1,8 @@
 import type { Config, Context } from "@netlify/functions";
-import { asc, desc, eq, inArray } from "drizzle-orm";
+import { type SQL, sql } from "drizzle-orm";
 
 import {
   getDb,
-  resourcesTable,
-  publicListingsTable,
-  publicStacksTable,
-  publicStackItemsTable,
   ok,
   badRequest,
   serverError,
@@ -38,7 +34,32 @@ interface PublicResource {
   }>;
 }
 
-function parsePagination(url: URL): { limit: number; offset: number } | Response {
+interface PublicResourceRow extends Record<string, unknown> {
+  id: string;
+  url: string;
+  title: string | null;
+  description: string | null;
+  tags: string[];
+  created_at: Date | string;
+  kind: "resource" | "stack";
+}
+
+interface StackItemRow extends Record<string, unknown> {
+  id: string;
+  public_stack_id: string;
+  url: string;
+  title: string | null;
+  description: string | null;
+  tags: string[];
+}
+
+interface CountRow extends Record<string, unknown> {
+  total: number;
+}
+
+function parsePagination(
+  url: URL,
+): { limit: number; offset: number } | Response {
   const limitParam = url.searchParams.get("limit");
   const offsetParam = url.searchParams.get("offset");
   let limit = DEFAULT_LIMIT;
@@ -71,61 +92,172 @@ function serializeDate(value: Date | string): string {
   return value instanceof Date ? value.toISOString() : value;
 }
 
-async function getApprovedResources(): Promise<PublicResource[]> {
+function searchPredicate(
+  query: string,
+  tags: string[],
+  tableName: "public_listings" | "public_stacks",
+): SQL {
+  const queryPattern = `%${query}%`;
+  const querySql =
+    query.length === 0
+      ? sql``
+      : sql`
+        and (
+          (
+            ${sql.raw(tableName)}.page_title || ' ' ||
+            ${sql.raw(tableName)}.meta_description || ' ' ||
+            array_to_string(${sql.raw(tableName)}.tags, ' ')
+          ) ilike ${queryPattern}
+          or resources.canonical_url ilike ${queryPattern}
+          ${
+            tableName === "public_stacks"
+              ? sql`
+                or exists (
+                  select 1
+                  from public_stack_items
+                  inner join resources stack_item_resources
+                    on public_stack_items.resource_id = stack_item_resources.id
+                  where public_stack_items.public_stack_id = public_stacks.id
+                    and (
+                      (
+                        public_stack_items.page_title || ' ' ||
+                        public_stack_items.meta_description || ' ' ||
+                        array_to_string(public_stack_items.tags, ' ')
+                      ) ilike ${queryPattern}
+                      or stack_item_resources.canonical_url ilike ${queryPattern}
+                    )
+                )
+              `
+              : sql``
+          }
+        )
+      `;
+
+  const tagsSql =
+    tags.length === 0
+      ? sql``
+      : sql`
+        and (
+          ${sql.raw(tableName)}.tags && ${tags}::text[]
+          ${
+            tableName === "public_stacks"
+              ? sql`
+                or exists (
+                  select 1
+                  from public_stack_items
+                  where public_stack_items.public_stack_id = public_stacks.id
+                    and public_stack_items.tags && ${tags}::text[]
+                )
+              `
+              : sql``
+          }
+        )
+      `;
+
+  return sql`${querySql} ${tagsSql}`;
+}
+
+async function searchApprovedResourcesPage(
+  query: string,
+  tags: string[],
+  limit: number,
+  offset: number,
+): Promise<{ resources: PublicResource[]; total: number }> {
   const db = getDb();
-  const [listings, stacks] = await Promise.all([
-    db
-      .select({
-        id: publicListingsTable.id,
-        url: resourcesTable.canonicalUrl,
-        title: publicListingsTable.pageTitle,
-        description: publicListingsTable.metaDescription,
-        tags: publicListingsTable.tags,
-        createdAt: publicListingsTable.createdAt,
-      })
-      .from(publicListingsTable)
-      .innerJoin(resourcesTable, eq(publicListingsTable.resourceId, resourcesTable.id))
-      .where(eq(publicListingsTable.status, "approved"))
-      .orderBy(desc(publicListingsTable.createdAt)),
-    db
-      .select({
-        id: publicStacksTable.id,
-        url: resourcesTable.canonicalUrl,
-        title: publicStacksTable.pageTitle,
-        description: publicStacksTable.metaDescription,
-        tags: publicStacksTable.tags,
-        createdAt: publicStacksTable.createdAt,
-      })
-      .from(publicStacksTable)
-      .innerJoin(resourcesTable, eq(publicStacksTable.resourceId, resourcesTable.id))
-      .where(eq(publicStacksTable.status, "approved"))
-      .orderBy(desc(publicStacksTable.createdAt)),
+  const listingPredicate = searchPredicate(query, tags, "public_listings");
+  const stackPredicate = searchPredicate(query, tags, "public_stacks");
+  const [pageResult, countResult] = await Promise.all([
+    db.execute<PublicResourceRow>(sql`
+      select *
+      from (
+        select
+          public_listings.id,
+          resources.canonical_url as url,
+          public_listings.page_title as title,
+          public_listings.meta_description as description,
+          public_listings.tags,
+          public_listings.created_at,
+          'resource'::text as kind
+        from public_listings
+        inner join resources on public_listings.resource_id = resources.id
+        where public_listings.status = 'approved'
+          ${listingPredicate}
+
+        union all
+
+        select
+          public_stacks.id,
+          resources.canonical_url as url,
+          public_stacks.page_title as title,
+          public_stacks.meta_description as description,
+          public_stacks.tags,
+          public_stacks.created_at,
+          'stack'::text as kind
+        from public_stacks
+        inner join resources on public_stacks.resource_id = resources.id
+        where public_stacks.status = 'approved'
+          ${stackPredicate}
+      ) approved_resources
+      order by created_at desc
+      limit ${limit}
+      offset ${offset}
+    `),
+    db.execute<CountRow>(sql`
+      select (
+        (
+          select count(*)
+          from public_listings
+          inner join resources on public_listings.resource_id = resources.id
+          where public_listings.status = 'approved'
+            ${listingPredicate}
+        ) +
+        (
+          select count(*)
+          from public_stacks
+          inner join resources on public_stacks.resource_id = resources.id
+          where public_stacks.status = 'approved'
+            ${stackPredicate}
+        )
+      )::int as total
+    `),
   ]);
 
-  const stackIds = stacks.map((stack) => stack.id);
+  return {
+    resources: await hydrateStackChildren(pageResult.rows),
+    total: countResult.rows[0]?.total ?? 0,
+  };
+}
+
+async function hydrateStackChildren(
+  resources: PublicResourceRow[],
+): Promise<PublicResource[]> {
+  const db = getDb();
+  const stackIds = resources
+    .filter((resource) => resource.kind === "stack")
+    .map((resource) => resource.id);
   const stackItems =
     stackIds.length === 0
       ? []
-      : await db
-          .select({
-            id: publicStackItemsTable.id,
-            publicStackId: publicStackItemsTable.publicStackId,
-            url: resourcesTable.canonicalUrl,
-            title: publicStackItemsTable.pageTitle,
-            description: publicStackItemsTable.metaDescription,
-            tags: publicStackItemsTable.tags,
-          })
-          .from(publicStackItemsTable)
-          .innerJoin(
-            resourcesTable,
-            eq(publicStackItemsTable.resourceId, resourcesTable.id),
-          )
-          .where(inArray(publicStackItemsTable.publicStackId, stackIds))
-          .orderBy(asc(publicStackItemsTable.displayOrder));
+      : (
+          await db.execute<StackItemRow>(sql`
+            select
+              public_stack_items.id,
+              public_stack_items.public_stack_id,
+              resources.canonical_url as url,
+              public_stack_items.page_title as title,
+              public_stack_items.meta_description as description,
+              public_stack_items.tags
+            from public_stack_items
+            inner join resources on public_stack_items.resource_id = resources.id
+            where public_stack_items.public_stack_id = any(${stackIds}::uuid[])
+            order by public_stack_items.public_stack_id asc,
+              public_stack_items.display_order asc
+          `)
+        ).rows;
 
   const childrenByStackId = new Map<string, PublicResource["children"]>();
   for (const item of stackItems) {
-    const children = childrenByStackId.get(item.publicStackId) ?? [];
+    const children = childrenByStackId.get(item.public_stack_id) ?? [];
     children.push({
       id: item.id,
       url: item.url,
@@ -133,72 +265,21 @@ async function getApprovedResources(): Promise<PublicResource[]> {
       description: item.description || null,
       tags: mapTags(item.tags),
     });
-    childrenByStackId.set(item.publicStackId, children);
+    childrenByStackId.set(item.public_stack_id, children);
   }
 
-  return [
-    ...listings.map<PublicResource>((listing) => ({
-      id: listing.id,
-      url: listing.url,
-      title: listing.title || listing.url,
-      description: listing.description || null,
-      tags: mapTags(listing.tags),
-      createdAt: serializeDate(listing.createdAt),
-      kind: "resource",
-    })),
-    ...stacks.map<PublicResource>((stack) => ({
-      id: stack.id,
-      url: stack.url,
-      title: stack.title || stack.url,
-      description: stack.description || null,
-      tags: mapTags(stack.tags),
-      createdAt: serializeDate(stack.createdAt),
-      kind: "stack",
-      children: childrenByStackId.get(stack.id) ?? [],
-    })),
-  ].sort(
-    (left, right) =>
-      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
-  );
-}
-
-function matchesSearch(resource: PublicResource, query: string): boolean {
-  if (!query) {
-    return true;
-  }
-
-  const normalizedQuery = query.toLowerCase();
-  const haystacks = [
-    resource.title,
-    resource.description,
-    resource.url,
-    ...resource.tags.map((tag) => tag.name),
-    ...(resource.children ?? []).flatMap((child) => [
-      child.title,
-      child.description,
-      child.url,
-      ...child.tags.map((tag) => tag.name),
-    ]),
-  ];
-
-  return haystacks.some((value) =>
-    (value ?? "").toLowerCase().includes(normalizedQuery),
-  );
-}
-
-function matchesTags(resource: PublicResource, tags: string[]): boolean {
-  if (tags.length === 0) {
-    return true;
-  }
-
-  const resourceTags = new Set([
-    ...resource.tags.map((tag) => tag.name.toLowerCase()),
-    ...(resource.children ?? []).flatMap((child) =>
-      child.tags.map((tag) => tag.name.toLowerCase()),
-    ),
-  ]);
-
-  return tags.some((tag) => resourceTags.has(tag));
+  return resources.map<PublicResource>((resource) => ({
+    id: resource.id,
+    url: resource.url,
+    title: resource.title || resource.url,
+    description: resource.description || null,
+    tags: mapTags(resource.tags),
+    createdAt: serializeDate(resource.created_at),
+    kind: resource.kind,
+    ...(resource.kind === "stack"
+      ? { children: childrenByStackId.get(resource.id) ?? [] }
+      : {}),
+  }));
 }
 
 export default async (req: Request, context: Context) => {
@@ -228,17 +309,19 @@ export default async (req: Request, context: Context) => {
   const { limit, offset } = parsedPagination;
 
   try {
-    const resources = (await getApprovedResources()).filter(
-      (resource) => matchesSearch(resource, query) && matchesTags(resource, tags),
+    const { resources, total } = await searchApprovedResourcesPage(
+      query,
+      tags,
+      limit,
+      offset,
     );
-    const page = resources.slice(offset, offset + limit);
-    const hasMore = offset + limit < resources.length;
+    const hasMore = offset + limit < total;
 
     console.info("[perf] search-resources", {
       requestId: context.requestId,
       handlerDurationMs: Date.now() - handlerStart,
-      rowCount: resources.length,
-      resultCount: page.length,
+      rowCount: total,
+      resultCount: resources.length,
       queryLength: query.length,
       tagFilterCount: tags.length,
       hasMore,
@@ -247,9 +330,9 @@ export default async (req: Request, context: Context) => {
     });
 
     return ok({
-      resources: page,
+      resources,
       pagination: {
-        total: null,
+        total,
         limit,
         offset,
         hasMore,

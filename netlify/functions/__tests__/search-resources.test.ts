@@ -1,0 +1,164 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { Context } from "@netlify/functions";
+import type { ErrorResponse, SuccessResponse } from "../lib/responses";
+
+interface PublicResource {
+  id: string;
+  url: string;
+  title: string;
+  description: string | null;
+  tags: { id: string; name: string }[];
+  createdAt: string;
+  kind: "resource" | "stack";
+  children?: Array<{
+    id: string;
+    url: string;
+    title: string;
+    description: string | null;
+    tags: { id: string; name: string }[];
+  }>;
+}
+
+interface Pagination {
+  total: number | null;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+}
+
+interface SearchResultsData {
+  resources: PublicResource[];
+  pagination: Pagination;
+}
+
+vi.mock("../lib/db", () => ({
+  getDb: vi.fn(),
+}));
+
+import searchResources from "../search-resources.mts";
+import { getDb } from "../lib/db";
+
+function createMockContext(): Context {
+  return {
+    account: { id: "test-account" },
+    cookies: { get: vi.fn(), set: vi.fn(), delete: vi.fn() },
+    deploy: { context: "dev", id: "test-deploy", published: false },
+    geo: {},
+    ip: "127.0.0.1",
+    params: {},
+    requestId: "test-request-id",
+    server: { region: "us-east-1" },
+    site: { id: "test-site", name: "test", url: "https://test.netlify.app" },
+    json: vi.fn(),
+    log: vi.fn(),
+  } as unknown as Context;
+}
+
+function createMockDb() {
+  return {
+    execute: vi.fn(),
+  };
+}
+
+describe("search-resources", () => {
+  let mockDb: ReturnType<typeof createMockDb>;
+  let mockContext: Context;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockDb = createMockDb();
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+    mockContext = createMockContext();
+  });
+
+  describe("validation", () => {
+    it("returns 405 for non-GET requests", async () => {
+      const req = new Request("https://test.com/api/resources/search", {
+        method: "POST",
+      });
+
+      const res = await searchResources(req, mockContext);
+
+      expect(res.status).toBe(405);
+    });
+
+    it("returns 400 for invalid offset", async () => {
+      const req = new Request(
+        "https://test.com/api/resources/search?offset=-1",
+      );
+
+      const res = await searchResources(req, mockContext);
+
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as ErrorResponse;
+      expect(body.error).toContain("offset");
+    });
+  });
+
+  it("returns accurate totals for SQL-filtered resource searches", async () => {
+    mockDb.execute
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            id: "stack-1",
+            url: "https://example.com/stack",
+            title: "Automation Stack",
+            description: null,
+            tags: ["workflow"],
+            created_at: "2024-01-03T00:00:00.000Z",
+            kind: "stack",
+          },
+        ],
+      })
+      .mockResolvedValueOnce({ rows: [{ total: 2 }] })
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            id: "stack-item-1",
+            public_stack_id: "stack-1",
+            url: "https://example.com/child",
+            title: "Child",
+            description: null,
+            tags: ["automation"],
+          },
+        ],
+      });
+
+    const req = new Request(
+      "https://test.com/api/resources/search?q=automation&tags=workflow&limit=1",
+    );
+
+    const res = await searchResources(req, mockContext);
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as SuccessResponse<SearchResultsData>;
+    expect(body.data.resources).toHaveLength(1);
+    expect(body.data.resources[0].children).toHaveLength(1);
+    expect(body.data.pagination).toEqual({
+      total: 2,
+      limit: 1,
+      offset: 0,
+      hasMore: true,
+    });
+    expect(mockDb.execute).toHaveBeenCalledTimes(3);
+  });
+
+  it("returns an empty page with total zero when SQL search finds no resources", async () => {
+    mockDb.execute
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [{ total: 0 }] });
+
+    const req = new Request("https://test.com/api/resources/search?q=missing");
+
+    const res = await searchResources(req, mockContext);
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as SuccessResponse<SearchResultsData>;
+    expect(body.data.resources).toEqual([]);
+    expect(body.data.pagination.total).toBe(0);
+    expect(body.data.pagination.hasMore).toBe(false);
+    expect(mockDb.execute).toHaveBeenCalledTimes(2);
+  });
+});
