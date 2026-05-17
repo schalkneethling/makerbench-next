@@ -1,3 +1,4 @@
+-- https://www.postgresql.org/docs/current/pgtrgm.html
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 --> statement-breakpoint
 DROP INDEX IF EXISTS public.idx_public_listings_status;
