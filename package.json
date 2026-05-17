@@ -68,7 +68,7 @@
     "stylelint-order": "^7.0.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.30.1",
-    "vite": "^6.4.2",
+    "vite": "^8.0.13",
     "vitest": "^3.2.4"
   }
 }
