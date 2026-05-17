@@ -129,6 +129,7 @@ describe("get-resources", () => {
             title: "Child",
             description: null,
             tags: ["automation"],
+            status: "approved",
           },
         ],
       });

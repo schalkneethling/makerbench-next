@@ -122,6 +122,7 @@ describe("search-resources", () => {
             title: "Child",
             description: null,
             tags: ["automation"],
+            status: "approved",
           },
         ],
       });
@@ -141,6 +142,68 @@ describe("search-resources", () => {
       limit: 1,
       offset: 0,
       hasMore: true,
+    });
+    expect(mockDb.execute).toHaveBeenCalledTimes(3);
+  });
+
+  it("does not hydrate non-approved stack item rows", async () => {
+    mockDb.execute
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            id: "stack-1",
+            url: "https://example.com/stack",
+            title: "Automation Stack",
+            description: null,
+            tags: ["workflow"],
+            created_at: "2024-01-03T00:00:00.000Z",
+            kind: "stack",
+          },
+        ],
+      })
+      .mockResolvedValueOnce({ rows: [{ total: 1 }] })
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            id: "stack-item-pending",
+            public_stack_id: "stack-1",
+            url: "https://example.com/pending",
+            title: "Pending Child",
+            description: null,
+            tags: ["automation"],
+            status: "pending",
+          },
+          {
+            id: "stack-item-rejected",
+            public_stack_id: "stack-1",
+            url: "https://example.com/rejected",
+            title: "Rejected Child",
+            description: null,
+            tags: ["automation"],
+            status: "rejected",
+          },
+        ],
+      });
+
+    const req = new Request(
+      "https://test.com/api/resources/search?q=automation&limit=1",
+    );
+
+    const res = await searchResources(req, mockContext);
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as SuccessResponse<SearchResultsData>;
+    expect(body.data.resources).toHaveLength(1);
+    expect(body.data.resources[0]).toMatchObject({
+      id: "stack-1",
+      kind: "stack",
+      children: [],
+    });
+    expect(body.data.pagination).toEqual({
+      total: 1,
+      limit: 1,
+      offset: 0,
+      hasMore: false,
     });
     expect(mockDb.execute).toHaveBeenCalledTimes(3);
   });

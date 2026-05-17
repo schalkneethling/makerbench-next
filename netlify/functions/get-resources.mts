@@ -51,6 +51,7 @@ interface StackItemRow extends Record<string, unknown> {
   title: string | null;
   description: string | null;
   tags: string[];
+  status: string;
 }
 
 interface CountRow extends Record<string, unknown> {
@@ -163,10 +164,12 @@ async function hydrateStackChildren(
               resources.canonical_url as url,
               public_stack_items.page_title as title,
               public_stack_items.meta_description as description,
-              public_stack_items.tags
+              public_stack_items.tags,
+              public_stack_items.status
             from public_stack_items
             inner join resources on public_stack_items.resource_id = resources.id
             where public_stack_items.public_stack_id = any(${stackIds}::uuid[])
+              and public_stack_items.status = 'approved'
             order by public_stack_items.public_stack_id asc,
               public_stack_items.display_order asc
           `)
@@ -174,6 +177,10 @@ async function hydrateStackChildren(
 
   const childrenByStackId = new Map<string, PublicResource["children"]>();
   for (const item of stackItems) {
+    if (item.status !== "approved") {
+      continue;
+    }
+
     let children = childrenByStackId.get(item.public_stack_id);
     if (!children) {
       children = [];
