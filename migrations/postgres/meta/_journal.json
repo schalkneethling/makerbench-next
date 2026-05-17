@@ -15,6 +15,13 @@
       "when": 1778265600000,
       "tag": "0001_review_followups",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778354380430,
+      "tag": "0002_foamy_patch",
+      "breakpoints": true
     }
   ]
 }
