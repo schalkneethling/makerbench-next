@@ -37,7 +37,7 @@
     "drizzle-orm": "^0.45.2",
     "pg": "^8.21.0",
     "react": "^19.2.6",
-    "react-dom": "^19.1.0",
+    "react-dom": "^19.2.6",
     "react-router-dom": "^7.15.1",
     "valibot": "^1.4.0",
     "varlock": "^0.7.4"
