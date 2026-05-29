@@ -351,7 +351,7 @@
           "name": "idx_public_listings_search",
           "columns": [
             {
-              "expression": "(\n        page_title || ' ' || meta_description || ' ' || array_to_string(tags, ' ')\n      ) gin_trgm_ops",
+              "expression": "(\n        page_title || ' ' || meta_description || ' ' || public.immutable_array_to_string(tags, ' ')\n      ) gin_trgm_ops",
               "asc": true,
               "isExpression": true,
               "nulls": "last"
@@ -644,7 +644,7 @@
           "name": "idx_public_stack_items_search",
           "columns": [
             {
-              "expression": "(\n        page_title || ' ' || meta_description || ' ' || array_to_string(tags, ' ')\n      ) gin_trgm_ops",
+              "expression": "(\n        page_title || ' ' || meta_description || ' ' || public.immutable_array_to_string(tags, ' ')\n      ) gin_trgm_ops",
               "asc": true,
               "isExpression": true,
               "nulls": "last"
@@ -875,7 +875,7 @@
           "name": "idx_public_stacks_search",
           "columns": [
             {
-              "expression": "(\n        page_title || ' ' || meta_description || ' ' || array_to_string(tags, ' ')\n      ) gin_trgm_ops",
+              "expression": "(\n        page_title || ' ' || meta_description || ' ' || public.immutable_array_to_string(tags, ' ')\n      ) gin_trgm_ops",
               "asc": true,
               "isExpression": true,
               "nulls": "last"
