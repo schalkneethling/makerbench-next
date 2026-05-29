@@ -6,7 +6,6 @@ RETURNS text
 LANGUAGE sql
 IMMUTABLE
 PARALLEL SAFE
-STRICT
 AS $$
   SELECT coalesce(array_to_string($1, $2), '');
 $$;

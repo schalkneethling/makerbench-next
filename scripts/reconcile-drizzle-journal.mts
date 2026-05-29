@@ -14,7 +14,7 @@ async function main() {
   const dbUrl = ENV.SUPABASE_DATABASE_URL ?? ENV.DATABASE_URL;
 
   if (!dbUrl) {
-    throw new Error("SUPABASE_DATABASE_URL is not configured");
+    throw new Error("SUPABASE_DATABASE_URL or DATABASE_URL is not configured");
   }
 
   const migrationPath = join(

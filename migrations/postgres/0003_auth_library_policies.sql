@@ -84,7 +84,7 @@ CREATE POLICY "approved public listings are public"
     OR EXISTS (
       SELECT 1
       FROM public.bookmarks
-      WHERE bookmarks.resource_id = public_listings.resource_id
+      WHERE bookmarks.id = public_listings.submitted_by_bookmark_id
         AND bookmarks.user_id = auth.uid()
     )
   );
@@ -97,14 +97,27 @@ CREATE POLICY "owners and admins can delete public listings"
 CREATE POLICY "owners and admins can update public listings"
   ON public.public_listings
   FOR UPDATE
-  USING (public.is_admin() OR submitted_by_user_id = auth.uid());
+  USING (public.is_admin() OR submitted_by_user_id = auth.uid())
+  WITH CHECK (public.is_admin() OR submitted_by_user_id = auth.uid());
 --> statement-breakpoint
 CREATE POLICY "approved public stack items are public"
   ON public.public_stack_items
   FOR SELECT
   USING (
-    status = 'approved'
-    OR public.is_admin()
+    public.is_admin()
+    OR (
+      status = 'approved'
+      AND EXISTS (
+        SELECT 1
+        FROM public.public_stacks
+        WHERE public_stacks.id = public_stack_items.public_stack_id
+          AND (
+            public_stacks.status = 'approved'
+            OR public.is_admin()
+            OR public_stacks.owner_user_id = auth.uid()
+          )
+      )
+    )
     OR EXISTS (
       SELECT 1
       FROM public.public_stacks
@@ -185,6 +198,16 @@ CREATE POLICY "admins and authenticated users can delete orphan resources"
         FROM public.public_listings
         WHERE public_listings.resource_id = resources.id
       )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM public.public_stacks
+        WHERE public_stacks.resource_id = resources.id
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM public.public_stack_items
+        WHERE public_stack_items.resource_id = resources.id
+      )
     )
   );
 --> statement-breakpoint
@@ -217,6 +240,16 @@ CREATE POLICY "resource owners and public catalog can read resources"
         SELECT 1
         FROM public.public_listings
         WHERE public_listings.resource_id = resources.id
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM public.public_stacks
+        WHERE public_stacks.resource_id = resources.id
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM public.public_stack_items
+        WHERE public_stack_items.resource_id = resources.id
       )
     )
     OR EXISTS (
