@@ -1,8 +1,10 @@
-import { useState, type FormEvent } from "react";
+import { useReducer, type FormEvent } from "react";
 import * as v from "valibot";
 
-import { TagInput } from "../components/forms";
-import { Alert, Button, TextInput } from "../components/ui";
+import { TagInput } from "../components/forms/TagInput";
+import { Alert } from "../components/ui/Alert";
+import { Button } from "../components/ui/Button";
+import { TextInput } from "../components/ui/TextInput";
 import { useAuth } from "../hooks/useAuth";
 import { useLibraryResources } from "../hooks/useLibraryResources";
 import {
@@ -16,6 +18,73 @@ interface FormErrors {
   url?: string;
   tags?: string;
   notes?: string;
+}
+
+interface LibraryPageState {
+  url: string;
+  tags: string[];
+  notes: string;
+  formErrors: FormErrors;
+  didSave: boolean;
+  signInError: string | null;
+  isSignInPending: boolean;
+}
+
+type LibraryPageAction =
+  | { type: "setUrl"; url: string }
+  | { type: "setTags"; tags: string[] }
+  | { type: "setNotes"; notes: string }
+  | { type: "setFormErrors"; formErrors: FormErrors }
+  | { type: "setDidSave"; didSave: boolean }
+  | { type: "startSignIn" }
+  | { type: "finishSignIn" }
+  | { type: "failSignIn"; message: string }
+  | { type: "dismissSignInError" }
+  | { type: "resetFormAfterSave" };
+
+const initialState: LibraryPageState = {
+  url: "",
+  tags: [],
+  notes: "",
+  formErrors: {},
+  didSave: false,
+  signInError: null,
+  isSignInPending: false,
+};
+
+function libraryPageReducer(
+  state: LibraryPageState,
+  action: LibraryPageAction,
+): LibraryPageState {
+  switch (action.type) {
+    case "setUrl":
+      return { ...state, url: action.url };
+    case "setTags":
+      return { ...state, tags: action.tags };
+    case "setNotes":
+      return { ...state, notes: action.notes };
+    case "setFormErrors":
+      return { ...state, formErrors: action.formErrors };
+    case "setDidSave":
+      return { ...state, didSave: action.didSave };
+    case "startSignIn":
+      return { ...state, signInError: null, isSignInPending: true };
+    case "finishSignIn":
+      return { ...state, isSignInPending: false };
+    case "failSignIn":
+      return { ...state, signInError: action.message, isSignInPending: false };
+    case "dismissSignInError":
+      return { ...state, signInError: null };
+    case "resetFormAfterSave":
+      return {
+        ...state,
+        url: "",
+        tags: [],
+        notes: "",
+        formErrors: {},
+        didSave: true,
+      };
+  }
 }
 
 function getFormErrors(data: PersonalResourceRequest): FormErrors {
@@ -47,15 +116,35 @@ export function LibraryPage() {
   } = useAuth();
   const { resources, isLoading, isSaving, error, addResource } =
     useLibraryResources(accessToken);
-  const [url, setUrl] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
-  const [notes, setNotes] = useState("");
-  const [formErrors, setFormErrors] = useState<FormErrors>({});
-  const [didSave, setDidSave] = useState(false);
+  const [state, dispatch] = useReducer(libraryPageReducer, initialState);
+  const {
+    url,
+    tags,
+    notes,
+    formErrors,
+    didSave,
+    signInError,
+    isSignInPending,
+  } = state;
+
+  async function handleSignIn(action: () => Promise<void>) {
+    dispatch({ type: "startSignIn" });
+
+    try {
+      await action();
+      dispatch({ type: "finishSignIn" });
+    } catch (error) {
+      dispatch({
+        type: "failSignIn",
+        message:
+          error instanceof Error ? error.message : "Sign in failed. Please try again.",
+      });
+    }
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    setDidSave(false);
+    dispatch({ type: "setDidSave", didSave: false });
 
     const data: PersonalResourceRequest = {
       url: url.trim(),
@@ -63,7 +152,7 @@ export function LibraryPage() {
       notes: notes.trim() || undefined,
     };
     const errors = getFormErrors(data);
-    setFormErrors(errors);
+    dispatch({ type: "setFormErrors", formErrors: errors });
 
     if (Object.keys(errors).length > 0) {
       return;
@@ -71,18 +160,14 @@ export function LibraryPage() {
 
     const saved = await addResource(data);
     if (saved) {
-      setUrl("");
-      setTags([]);
-      setNotes("");
-      setFormErrors({});
-      setDidSave(true);
+      dispatch({ type: "resetFormAfterSave" });
     }
   }
 
   if (authLoading) {
     return (
       <div className="LibraryPage">
-        <p className="body-base">Checking your session...</p>
+        <p className="body-base">Checking your session…</p>
       </div>
     );
   }
@@ -96,14 +181,28 @@ export function LibraryPage() {
             Sign in to save private resources, tags, and notes.
           </p>
         </header>
+        {signInError && (
+          <Alert
+            variant="error"
+            dismissible
+            onDismiss={() => dispatch({ type: "dismissSignInError" })}
+          >
+            <strong>Sign in failed.</strong> {signInError}
+          </Alert>
+        )}
         <div className="LibraryPage-authActions">
-          <Button type="button" onClick={() => void signInWithGoogle()}>
+          <Button
+            type="button"
+            disabled={isSignInPending}
+            onClick={() => void handleSignIn(signInWithGoogle)}
+          >
             Continue with Google
           </Button>
           <Button
             type="button"
             variant="secondary"
-            onClick={() => void signInWithGitHub()}
+            disabled={isSignInPending}
+            onClick={() => void handleSignIn(signInWithGitHub)}
           >
             Continue with GitHub
           </Button>
@@ -122,7 +221,11 @@ export function LibraryPage() {
       </header>
 
       {didSave && (
-        <Alert variant="success" dismissible onDismiss={() => setDidSave(false)}>
+        <Alert
+          variant="success"
+          dismissible
+          onDismiss={() => dispatch({ type: "setDidSave", didSave: false })}
+        >
           Resource saved to your library.
         </Alert>
       )}
@@ -141,7 +244,9 @@ export function LibraryPage() {
             label="Resource URL"
             type="url"
             value={url}
-            onChange={(event) => setUrl(event.target.value)}
+            onChange={(event) =>
+              dispatch({ type: "setUrl", url: event.target.value })
+            }
             placeholder="https://example.com/resource"
             required
             error={formErrors.url}
@@ -150,7 +255,9 @@ export function LibraryPage() {
             id="library-tags"
             label="Tags"
             tags={tags}
-            onTagsChange={setTags}
+            onTagsChange={(nextTags) =>
+              dispatch({ type: "setTags", tags: nextTags })
+            }
             maxTags={10}
             required
             error={formErrors.tags}
@@ -161,7 +268,9 @@ export function LibraryPage() {
               id="library-notes"
               className="LibraryPage-notesField"
               value={notes}
-              onChange={(event) => setNotes(event.target.value)}
+              onChange={(event) =>
+                dispatch({ type: "setNotes", notes: event.target.value })
+              }
               rows={5}
               aria-invalid={formErrors.notes ? true : undefined}
               aria-describedby={formErrors.notes ? "library-notes-error" : undefined}
@@ -178,7 +287,7 @@ export function LibraryPage() {
           </label>
         </fieldset>
         <Button type="submit" isLoading={isSaving}>
-          {isSaving ? "Saving..." : "Save Resource"}
+          {isSaving ? "Saving…" : "Save Resource"}
         </Button>
       </form>
 
@@ -187,7 +296,7 @@ export function LibraryPage() {
           Saved Resources
         </h2>
         {isLoading ? (
-          <p className="body-base">Loading your library...</p>
+          <p className="body-base">Loading your library…</p>
         ) : resources.length === 0 ? (
           <p className="body-base">Your library is empty.</p>
         ) : (

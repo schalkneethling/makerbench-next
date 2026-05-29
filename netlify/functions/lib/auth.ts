@@ -9,7 +9,7 @@ function getEnv(key: string): string | undefined {
     return Netlify.env.get(key) ?? undefined;
   }
 
-  return process.env[key];
+  return undefined;
 }
 
 function getBearerToken(req: Request): string | null {
@@ -68,6 +68,6 @@ export async function verifyAuthenticatedUser(
 
   return {
     user: data.user,
-    isAdmin: Boolean(role),
+    isAdmin: role?.role === "admin",
   };
 }

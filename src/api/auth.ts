@@ -29,7 +29,10 @@ export type AuthUser = v.InferOutput<typeof authUserSchema>;
 export type AuthenticatedIdentity = v.InferOutput<typeof authenticatedIdentitySchema>;
 
 function throwApiError(json: unknown, status: number): never {
+  // Parse API error bodies to preserve structured details from known failures.
   const parsed = v.safeParse(errorResponseSchema, json);
+  // BookmarkApiError intentionally propagates so hooks/components decide how to
+  // present auth failures; invalid error bodies fall back to a generic message.
   throw new BookmarkApiError(
     parsed.success ? parsed.output.error : "An unexpected error occurred",
     status,
@@ -37,15 +40,33 @@ function throwApiError(json: unknown, status: number): never {
   );
 }
 
+async function parseJsonResponse(response: Response): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch {
+    return { success: false, error: "Invalid response from server" };
+  }
+}
+
 export async function getAuthenticatedIdentity(
   accessToken: string,
 ): Promise<AuthenticatedIdentity> {
-  const response = await fetch("/api/auth/whoami", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-  const json = await response.json();
+  let response: Response;
+
+  try {
+    response = await fetch("/api/auth/whoami", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+  } catch (error) {
+    throw new BookmarkApiError(
+      error instanceof Error ? error.message : "Authentication request failed",
+      500,
+    );
+  }
+
+  const json = await parseJsonResponse(response);
 
   if (!response.ok) {
     throwApiError(json, response.status);

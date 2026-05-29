@@ -55,50 +55,75 @@ function throwApiError(json: unknown, status: number): never {
   );
 }
 
+async function parseJsonResponse(response: Response): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch {
+    return { success: false, error: "Invalid response from server" };
+  }
+}
+
+function toBookmarkApiError(error: unknown, fallbackMessage: string): BookmarkApiError {
+  return error instanceof BookmarkApiError
+    ? error
+    : new BookmarkApiError(
+        error instanceof Error ? error.message : fallbackMessage,
+        500,
+      );
+}
+
 export async function getLibraryResources(
   accessToken: string,
 ): Promise<LibraryResponse> {
-  const response = await fetch("/api/library", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-  const json = await response.json();
+  try {
+    const response = await fetch("/api/library", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    const json = await parseJsonResponse(response);
 
-  if (!response.ok) {
-    throwApiError(json, response.status);
+    if (!response.ok) {
+      throwApiError(json, response.status);
+    }
+
+    const result = v.safeParse(libraryResponseSchema, json);
+    if (!result.success) {
+      throw new BookmarkApiError("Invalid response from server", 500);
+    }
+
+    return result.output.data;
+  } catch (error) {
+    throw toBookmarkApiError(error, "Failed to fetch your library");
   }
-
-  const result = v.safeParse(libraryResponseSchema, json);
-  if (!result.success) {
-    throw new BookmarkApiError("Invalid response from server", 500);
-  }
-
-  return result.output.data;
 }
 
 export async function addLibraryResource(
   input: PersonalResourceRequest,
   accessToken: string,
 ): Promise<AddLibraryResourceResponse> {
-  const response = await fetch("/api/library", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(input),
-  });
-  const json = await response.json();
+  try {
+    const response = await fetch("/api/library", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    });
+    const json = await parseJsonResponse(response);
 
-  if (!response.ok) {
-    throwApiError(json, response.status);
+    if (!response.ok) {
+      throwApiError(json, response.status);
+    }
+
+    const result = v.safeParse(addLibraryResourceResponseSchema, json);
+    if (!result.success) {
+      throw new BookmarkApiError("Invalid response from server", 500);
+    }
+
+    return result.output.data;
+  } catch (error) {
+    throw toBookmarkApiError(error, "Failed to save this resource");
   }
-
-  const result = v.safeParse(addLibraryResourceResponseSchema, json);
-  if (!result.success) {
-    throw new BookmarkApiError("Invalid response from server", 500);
-  }
-
-  return result.output.data;
 }

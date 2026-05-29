@@ -65,8 +65,8 @@ export default async (req: Request, _context: Context) => {
       resources: rows.map((row) => ({
         id: row.id,
         url: row.url,
-        title: row.title || row.resourceTitle || row.url,
-        description: row.description || row.resourceDescription || null,
+        title: row.title ?? row.resourceTitle ?? row.url,
+        description: row.description ?? row.resourceDescription ?? null,
         notes: row.notes,
         tags: mapTags(row.tags),
         createdAt: serializeDate(row.createdAt),

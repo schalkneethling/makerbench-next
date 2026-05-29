@@ -1,5 +1,6 @@
 import type { Config, Context } from "@netlify/functions";
 import type { BaseIssue } from "valibot";
+import { and, eq } from "drizzle-orm";
 
 import {
   assertRequiredEnv,
@@ -89,27 +90,53 @@ export default async (req: Request, _context: Context) => {
 
   try {
     const db = getDb();
-    const metadata = await extractMetadata(normalizedUrl);
+    const [existingResource] = await db
+      .select({ id: resourcesTable.id })
+      .from(resourcesTable)
+      .where(eq(resourcesTable.normalizedUrl, normalizedUrl))
+      .limit(1);
 
-    const [resource] = await db
-      .insert(resourcesTable)
-      .values({
-        normalizedUrl,
-        canonicalUrl: normalizeUrl(validation.output.url),
-        pageTitle: metadata.title || normalizedUrl,
-        metaDescription: metadata.description || "",
-      })
-      .onConflictDoUpdate({
-        target: resourcesTable.normalizedUrl,
-        set: { normalizedUrl },
-      })
-      .returning({ id: resourcesTable.id });
+    let resourceId = existingResource?.id;
+
+    if (resourceId) {
+      const [existingBookmark] = await db
+        .select({ id: bookmarksTable.id })
+        .from(bookmarksTable)
+        .where(
+          and(
+            eq(bookmarksTable.userId, authenticated.user.id),
+            eq(bookmarksTable.resourceId, resourceId),
+          ),
+        )
+        .limit(1);
+
+      if (existingBookmark) {
+        return conflict("This resource is already in your library");
+      }
+    } else {
+      const metadata = await extractMetadata(normalizedUrl);
+      const [resource] = await db
+        .insert(resourcesTable)
+        .values({
+          normalizedUrl,
+          canonicalUrl: normalizeUrl(validation.output.url),
+          pageTitle: metadata.title || normalizedUrl,
+          metaDescription: metadata.description || "",
+        })
+        .onConflictDoUpdate({
+          target: resourcesTable.normalizedUrl,
+          set: { normalizedUrl },
+        })
+        .returning({ id: resourcesTable.id });
+
+      resourceId = resource.id;
+    }
 
     const [bookmark] = await db
       .insert(bookmarksTable)
       .values({
         userId: authenticated.user.id,
-        resourceId: resource.id,
+        resourceId,
         notes: validation.output.notes ?? "",
         tags,
       })

@@ -3,9 +3,9 @@ import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 
 import { Header } from "../Header";
-import { useAuth } from "../../../hooks";
+import { useAuth } from "../../../hooks/useAuth";
 
-vi.mock("../../../hooks", () => ({
+vi.mock("../../../hooks/useAuth", () => ({
   useAuth: vi.fn(),
 }));
 

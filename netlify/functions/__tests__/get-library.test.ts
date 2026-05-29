@@ -87,4 +87,37 @@ describe("get-library", () => {
       },
     ]);
   });
+
+  it("preserves explicit empty string overrides", async () => {
+    vi.mocked(verifyAuthenticatedUser).mockResolvedValue({
+      user: { id: "user-1" },
+      isAdmin: false,
+    } as never);
+    const mockDb = createMockDb();
+    mockDb.orderBy.mockResolvedValue([
+      {
+        id: "bookmark-1",
+        url: "https://example.com",
+        title: "",
+        resourceTitle: "Example",
+        description: "",
+        resourceDescription: "Description",
+        notes: "",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        tags: [],
+      },
+    ]);
+    vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
+
+    const res = await getLibrary(
+      new Request("https://test.com/api/library"),
+      createMockContext(),
+    );
+
+    const body = await res.json() as LibraryBody;
+    expect(body.data.resources[0]).toMatchObject({
+      title: "",
+      description: "",
+    });
+  });
 });

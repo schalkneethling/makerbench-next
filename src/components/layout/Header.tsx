@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { LinkButton } from "../ui/LinkButton";
 import { Logo } from "../ui/Logo";
 import { useAuth } from "../../hooks/useAuth";
@@ -13,7 +15,26 @@ export function Header() {
     signInWithGoogle,
     signOut,
   } = useAuth();
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isAuthPending, setIsAuthPending] = useState(false);
   const displayName = identity?.user.displayName ?? identity?.user.email ?? "Maker";
+
+  async function handleAuthAction(action: () => Promise<void>) {
+    setAuthError(null);
+    setIsAuthPending(true);
+
+    try {
+      await action();
+      setIsAuthPending(false);
+    } catch (error) {
+      setAuthError(
+        error instanceof Error
+          ? error.message
+          : "Authentication failed. Please try again.",
+      );
+      setIsAuthPending(false);
+    }
+  }
 
   return (
     <header className="Header">
@@ -35,6 +56,11 @@ export function Header() {
                 {isAdmin && <span className="Header-adminBadge">Admin</span>}
               </summary>
               <div className="Header-profileMenu">
+                {authError && (
+                  <p className="Header-authError ui-caption" role="alert">
+                    {authError}
+                  </p>
+                )}
                 {identity?.user.email && (
                   <p className="Header-profileEmail ui-caption">
                     {identity.user.email}
@@ -43,29 +69,37 @@ export function Header() {
                 <button
                   type="button"
                   className="Header-profileAction"
-                  onClick={() => void signOut()}
+                  disabled={isAuthPending}
+                  onClick={() => void handleAuthAction(signOut)}
                 >
-                  Sign out
+                  {isAuthPending ? "Signing out…" : "Sign out"}
                 </button>
               </div>
             </details>
           ) : (
             <details className="Header-profile">
               <summary className="Header-profileTrigger">
-                {isLoading ? "Checking..." : "Sign in"}
+                {isLoading ? "Checking…" : "Sign in"}
               </summary>
               <div className="Header-profileMenu">
+                {authError && (
+                  <p className="Header-authError ui-caption" role="alert">
+                    {authError}
+                  </p>
+                )}
                 <button
                   type="button"
                   className="Header-profileAction"
-                  onClick={() => void signInWithGoogle()}
+                  disabled={isAuthPending}
+                  onClick={() => void handleAuthAction(signInWithGoogle)}
                 >
                   Continue with Google
                 </button>
                 <button
                   type="button"
                   className="Header-profileAction"
-                  onClick={() => void signInWithGitHub()}
+                  disabled={isAuthPending}
+                  onClick={() => void handleAuthAction(signInWithGitHub)}
                 >
                   Continue with GitHub
                 </button>

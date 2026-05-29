@@ -78,6 +78,11 @@
   overflow-wrap: anywhere;
 }
 
+.Header-authError {
+  color: var(--color-error);
+  margin: 0;
+}
+
 .Header-adminBadge {
   background-color: var(--color-primary);
   border-radius: var(--radius-sm);
@@ -101,6 +106,11 @@
 
 .Header-profileAction:hover {
   background-color: var(--color-surface);
+}
+
+.Header-profileAction:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 @media (width < 48rem) {

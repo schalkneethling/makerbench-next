@@ -83,4 +83,34 @@ describe("auth-whoami", () => {
       isAdmin: true,
     });
   });
+
+  it("does not grant admin for non-admin role rows", async () => {
+    const mockDb = createMockDb();
+    mockDb.limit.mockResolvedValue([{ role: "viewer" }]);
+    vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
+    vi.mocked(createClient).mockReturnValue({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: {
+            user: {
+              id: "user-1",
+              email: "test@example.com",
+              user_metadata: {},
+            },
+          },
+          error: null,
+        }),
+      },
+    } as never);
+
+    const res = await authWhoami(
+      new Request("https://test.com/api/auth/whoami", {
+        headers: { Authorization: "Bearer token-1" },
+      }),
+      createMockContext(),
+    );
+
+    const body = await res.json() as WhoamiBody;
+    expect(body.data.isAdmin).toBe(false);
+  });
 });

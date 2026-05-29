@@ -4,6 +4,35 @@ import { isValidGithubProfileUrl } from "./github";
 const urlSchema = v.pipe(v.string(), v.url("Please enter a valid URL"));
 const MAX_URL_LENGTH = 2000;
 
+function isHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+const resourceUrlSchema = v.pipe(
+  v.string(),
+  v.minLength(1, "URL is required"),
+  v.maxLength(MAX_URL_LENGTH, `URL must be ${MAX_URL_LENGTH} characters or less`),
+  v.url("Please enter a valid URL"),
+  v.check(isHttpUrl, "Please enter a valid HTTP/HTTPS URL"),
+);
+
+const resourceTagValueSchema = v.pipe(
+  v.string(),
+  v.minLength(1, "Tag cannot be empty"),
+  v.maxLength(50, "Tag must be 50 characters or less"),
+);
+
+const resourceTagsSchema = v.pipe(
+  v.array(resourceTagValueSchema),
+  v.minLength(1, "At least one tag is required"),
+  v.maxLength(10, "Maximum 10 tags allowed"),
+);
+
 const githubProfileUrlSchema = v.pipe(
   v.string(),
   v.url("Please enter a valid GitHub URL"),
@@ -50,23 +79,8 @@ export const toolSubmissionSchema = v.object({
 });
 
 export const bookmarkRequestSchema = v.object({
-  url: v.pipe(
-    v.string(),
-    v.minLength(1, "URL is required"),
-    v.maxLength(MAX_URL_LENGTH, `URL must be ${MAX_URL_LENGTH} characters or less`),
-    v.url("Please enter a valid URL"),
-  ),
-  tags: v.pipe(
-    v.array(
-      v.pipe(
-        v.string(),
-        v.minLength(1, "Tag cannot be empty"),
-        v.maxLength(50, "Tag must be 50 characters or less"),
-      ),
-    ),
-    v.minLength(1, "At least one tag is required"),
-    v.maxLength(10, "Maximum 10 tags allowed"),
-  ),
+  url: resourceUrlSchema,
+  tags: resourceTagsSchema,
   submitterName: v.optional(
     v.pipe(v.string(), v.maxLength(100, "Name must be 100 characters or less")),
   ),
@@ -87,23 +101,8 @@ export const bookmarkRequestSchema = v.object({
 });
 
 export const personalResourceRequestSchema = v.object({
-  url: v.pipe(
-    v.string(),
-    v.minLength(1, "URL is required"),
-    v.maxLength(MAX_URL_LENGTH, `URL must be ${MAX_URL_LENGTH} characters or less`),
-    v.url("Please enter a valid URL"),
-  ),
-  tags: v.pipe(
-    v.array(
-      v.pipe(
-        v.string(),
-        v.minLength(1, "Tag cannot be empty"),
-        v.maxLength(50, "Tag must be 50 characters or less"),
-      ),
-    ),
-    v.minLength(1, "At least one tag is required"),
-    v.maxLength(10, "Maximum 10 tags allowed"),
-  ),
+  url: resourceUrlSchema,
+  tags: resourceTagsSchema,
   notes: v.optional(
     v.pipe(v.string(), v.maxLength(5000, "Notes must be 5000 characters or less")),
   ),

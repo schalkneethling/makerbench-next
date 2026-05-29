@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   addLibraryResource,
@@ -16,6 +16,7 @@ interface UseLibraryResourcesState {
 }
 
 export function useLibraryResources(accessToken: string | null) {
+  const requestIdRef = useRef(0);
   const [state, setState] = useState<UseLibraryResourcesState>({
     resources: [],
     isLoading: false,
@@ -24,6 +25,9 @@ export function useLibraryResources(accessToken: string | null) {
   });
 
   const fetchResources = useCallback(async () => {
+    requestIdRef.current += 1;
+    const requestId = requestIdRef.current;
+
     if (!accessToken) {
       setState({
         resources: [],
@@ -38,6 +42,9 @@ export function useLibraryResources(accessToken: string | null) {
 
     try {
       const data = await getLibraryResources(accessToken);
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
       setState((prev) => ({
         ...prev,
         resources: data.resources,
@@ -45,6 +52,9 @@ export function useLibraryResources(accessToken: string | null) {
         error: null,
       }));
     } catch (err) {
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
       const error =
         err instanceof BookmarkApiError
           ? err
@@ -67,13 +77,21 @@ export function useLibraryResources(accessToken: string | null) {
 
       try {
         await addLibraryResource(input, accessToken);
-        const data = await getLibraryResources(accessToken);
-        setState((prev) => ({
-          ...prev,
-          resources: data.resources,
-          isSaving: false,
-          error: null,
-        }));
+        try {
+          const data = await getLibraryResources(accessToken);
+          setState((prev) => ({
+            ...prev,
+            resources: data.resources,
+            isSaving: false,
+            error: null,
+          }));
+        } catch (refreshError) {
+          const error =
+            refreshError instanceof BookmarkApiError
+              ? refreshError
+              : new BookmarkApiError("Failed to refresh your library", 500);
+          setState((prev) => ({ ...prev, isSaving: false, error }));
+        }
         return true;
       } catch (err) {
         const error =
@@ -91,6 +109,10 @@ export function useLibraryResources(accessToken: string | null) {
     // This effect synchronizes React state with the server-backed library.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchResources();
+
+    return () => {
+      requestIdRef.current += 1;
+    };
   }, [fetchResources]);
 
   return {
