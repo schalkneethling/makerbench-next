@@ -27,3 +27,18 @@ export {
   type GetResourcesParams,
   type SearchResourcesParams,
 } from "./resources";
+
+export {
+  getAuthenticatedIdentity,
+  type AuthUser,
+  type AuthenticatedIdentity,
+} from "./auth";
+
+export {
+  addLibraryResource,
+  getLibraryResources,
+  type AddLibraryResourceResponse,
+  type LibraryResource,
+  type LibraryResponse,
+  type LibraryTag,
+} from "./library";

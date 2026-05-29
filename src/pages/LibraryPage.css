@@ -1,0 +1,116 @@
+.LibraryPage {
+  display: grid;
+  gap: var(--size-32);
+  margin-inline: auto;
+  max-inline-size: 75rem;
+  padding-block: var(--size-32);
+  padding-inline: var(--size-16);
+}
+
+.LibraryPage-header {
+  display: grid;
+  gap: var(--size-8);
+}
+
+.LibraryPage-title,
+.LibraryPage-description,
+.LibraryPage-listTitle,
+.LibraryPage-cardTitle,
+.LibraryPage-cardDescription,
+.LibraryPage-cardNotes {
+  margin: 0;
+}
+
+.LibraryPage-description {
+  color: var(--color-text-muted);
+}
+
+.LibraryPage-authActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-12);
+}
+
+.LibraryPage-form {
+  display: grid;
+  gap: var(--size-20);
+  max-inline-size: 44rem;
+}
+
+.LibraryPage-fieldset {
+  border: 0;
+  display: grid;
+  gap: var(--size-20);
+  margin: 0;
+  padding: 0;
+}
+
+.LibraryPage-notes {
+  display: grid;
+  gap: var(--size-8);
+}
+
+.LibraryPage-notesLabel {
+  color: var(--color-text);
+  font: var(--typography-label);
+}
+
+.LibraryPage-notesField {
+  background-color: var(--color-surface);
+  border: var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font: inherit;
+  min-block-size: 8rem;
+  padding: var(--size-12);
+  resize: vertical;
+}
+
+.LibraryPage-notesError {
+  color: var(--color-error);
+  font: var(--typography-caption);
+}
+
+.LibraryPage-list {
+  display: grid;
+  gap: var(--size-16);
+}
+
+.LibraryPage-grid {
+  display: grid;
+  gap: var(--size-16);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+}
+
+.LibraryPage-card {
+  background-color: var(--color-surface-raised);
+  border: var(--border-default);
+  border-radius: var(--radius-md);
+  display: grid;
+  gap: var(--size-12);
+  padding: var(--size-20);
+}
+
+.LibraryPage-cardDescription {
+  color: var(--color-text-muted);
+}
+
+.LibraryPage-cardNotes {
+  border-inline-start: var(--size-2) solid var(--color-primary);
+  padding-inline-start: var(--size-12);
+}
+
+.LibraryPage-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-8);
+}
+
+.LibraryPage-tag {
+  background-color: var(--color-surface);
+  border: var(--border-default);
+  border-radius: var(--radius-sm);
+  font: var(--typography-caption);
+  padding-block: var(--size-4);
+  padding-inline: var(--size-8);
+}

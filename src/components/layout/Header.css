@@ -11,6 +11,7 @@
 .Header-inner {
   align-items: center;
   display: flex;
+  gap: var(--size-16);
   justify-content: space-between;
   margin-inline: auto;
   max-inline-size: 75rem; /* 1200px */
@@ -18,12 +19,112 @@
 
 .Header-nav {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--size-12);
+}
+
+.Header-auth {
+  position: relative;
+}
+
+.Header-profile {
+  position: relative;
+}
+
+.Header-profileTrigger {
+  align-items: center;
+  background-color: var(--color-surface-raised);
+  border: var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  cursor: pointer;
+  display: inline-flex;
+  font: var(--typography-button);
+  gap: var(--size-8);
+  list-style: none;
+  padding-block: var(--size-12);
+  padding-inline: var(--size-16);
+}
+
+.Header-profileTrigger::marker {
+  content: "";
+}
+
+.Header-profileMenu {
+  background-color: var(--color-surface-raised);
+  border: var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: 0 var(--size-8) var(--size-24) oklch(0% 0 0deg / 12%);
+  display: grid;
+  gap: var(--size-8);
+  inset-block-start: calc(100% + var(--size-8));
+  inset-inline-end: 0;
+  min-inline-size: 14rem;
+  padding: var(--size-12);
+  position: absolute;
+  z-index: 10;
+}
+
+.Header-profileName {
+  max-inline-size: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.Header-profileEmail {
+  color: var(--color-text-muted);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.Header-authError {
+  color: var(--color-error);
+  margin: 0;
+}
+
+.Header-adminBadge {
+  background-color: var(--color-primary);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-inverted);
+  font: var(--typography-caption);
+  padding-block: var(--size-2);
+  padding-inline: var(--size-6);
+}
+
+.Header-profileAction {
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  cursor: pointer;
+  font: var(--typography-button);
+  padding-block: var(--size-8);
+  padding-inline: var(--size-8);
+  text-align: start;
+}
+
+.Header-profileAction:hover {
+  background-color: var(--color-surface);
+}
+
+.Header-profileAction:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 @media (width < 48rem) {
   .Header-inner {
     flex-direction: column;
     gap: var(--size-16);
+  }
+
+  .Header-nav {
+    justify-content: center;
+  }
+
+  .Header-profileMenu {
+    inset-inline: 50% auto;
+    transform: translateX(-50%);
   }
 }

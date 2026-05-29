@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   validateToolSubmission,
+  validatePersonalResourceRequest,
   validateUrl,
   validateTags,
   parseTagsFromString,
@@ -59,6 +60,32 @@ describe("Validation Schemas", () => {
       };
 
       const result = validateToolSubmission(invalidSubmission);
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe("validatePersonalResourceRequest", () => {
+    it("should accept HTTP and HTTPS resource URLs", () => {
+      expect(
+        validatePersonalResourceRequest({
+          url: "https://example.com/resource",
+          tags: ["react"],
+        }).success,
+      ).toBe(true);
+      expect(
+        validatePersonalResourceRequest({
+          url: "http://example.com/resource",
+          tags: ["react"],
+        }).success,
+      ).toBe(true);
+    });
+
+    it("should reject URL schemes the server will not normalize", () => {
+      const result = validatePersonalResourceRequest({
+        url: "mailto:test@example.com",
+        tags: ["react"],
+      });
+
       expect(result.success).toBe(false);
     });
   });
