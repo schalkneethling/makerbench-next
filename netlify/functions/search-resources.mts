@@ -253,7 +253,10 @@ async function hydrateStackChildren(
               public_stack_items.status
             from public_stack_items
             inner join resources on public_stack_items.resource_id = resources.id
-            where public_stack_items.public_stack_id = any(${stackIds}::uuid[])
+            where public_stack_items.public_stack_id in (${sql.join(
+              stackIds.map((stackId) => sql`${stackId}`),
+              sql`, `,
+            )})
               and public_stack_items.status = 'approved'
             order by public_stack_items.public_stack_id asc,
               public_stack_items.display_order asc
