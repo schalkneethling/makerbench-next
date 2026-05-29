@@ -22,6 +22,13 @@
       "when": 1778354380430,
       "tag": "0002_foamy_patch",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1779955200000,
+      "tag": "0003_auth_library_policies",
+      "breakpoints": true
     }
   ]
 }

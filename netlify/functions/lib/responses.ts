@@ -49,6 +49,20 @@ export function badRequest(error: string): Response {
 }
 
 /**
+ * Unauthorized error (401)
+ */
+export function unauthorized(error = "Authentication required"): Response {
+  return jsonResponse({ success: false, error }, 401);
+}
+
+/**
+ * Forbidden error (403)
+ */
+export function forbidden(error = "Forbidden"): Response {
+  return jsonResponse({ success: false, error }, 403);
+}
+
+/**
  * Validation error (422)
  */
 export function validationError(

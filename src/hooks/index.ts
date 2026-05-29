@@ -4,3 +4,5 @@ export { useSubmitBookmark } from "./useSubmitBookmark";
 export { useTags } from "./useTags";
 export { useResources } from "./useResources";
 export { useResourceSearch } from "./useResourceSearch";
+export { AuthProvider, useAuth } from "./useAuth";
+export { useLibraryResources } from "./useLibraryResources";
