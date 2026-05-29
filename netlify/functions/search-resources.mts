@@ -107,7 +107,7 @@ function searchPredicate(
           (
             ${sql.raw(tableName)}.page_title || ' ' ||
             ${sql.raw(tableName)}.meta_description || ' ' ||
-            array_to_string(${sql.raw(tableName)}.tags, ' ')
+            public.immutable_array_to_string(${sql.raw(tableName)}.tags, ' ')
           ) ilike ${queryPattern}
           or resources.canonical_url ilike ${queryPattern}
           ${
@@ -124,7 +124,7 @@ function searchPredicate(
                       (
                         public_stack_items.page_title || ' ' ||
                         public_stack_items.meta_description || ' ' ||
-                        array_to_string(public_stack_items.tags, ' ')
+                        public.immutable_array_to_string(public_stack_items.tags, ' ')
                       ) ilike ${queryPattern}
                       or stack_item_resources.canonical_url ilike ${queryPattern}
                     )

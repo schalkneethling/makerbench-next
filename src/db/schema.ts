@@ -141,7 +141,7 @@ export const publicListingsTable = pgTable(
     index("idx_public_listings_search").using(
       "gin",
       sql`(
-        page_title || ' ' || meta_description || ' ' || array_to_string(tags, ' ')
+        page_title || ' ' || meta_description || ' ' || public.immutable_array_to_string(tags, ' ')
       ) gin_trgm_ops`,
     ),
     index("idx_public_listings_resource").on(table.resourceId),
@@ -186,7 +186,7 @@ export const publicStacksTable = pgTable(
     index("idx_public_stacks_search").using(
       "gin",
       sql`(
-        page_title || ' ' || meta_description || ' ' || array_to_string(tags, ' ')
+        page_title || ' ' || meta_description || ' ' || public.immutable_array_to_string(tags, ' ')
       ) gin_trgm_ops`,
     ),
     index("idx_public_stacks_owner").on(table.ownerUserId, table.createdAt),
@@ -249,7 +249,7 @@ export const publicStackItemsTable = pgTable(
     index("idx_public_stack_items_search").using(
       "gin",
       sql`(
-        page_title || ' ' || meta_description || ' ' || array_to_string(tags, ' ')
+        page_title || ' ' || meta_description || ' ' || public.immutable_array_to_string(tags, ' ')
       ) gin_trgm_ops`,
     ),
     index("idx_public_stack_items_resource").on(table.resourceId),

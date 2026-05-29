@@ -40,8 +40,13 @@ CREATE POLICY "tool listings are service-role write only"
 ALTER TABLE public.bookmarks
   DROP CONSTRAINT IF EXISTS bookmarks_parent_id_fkey;
 
-ALTER TABLE public.bookmarks
-  ADD CONSTRAINT bookmarks_parent_id_fkey
-  FOREIGN KEY (parent_id)
-  REFERENCES public.bookmarks(id)
-  ON DELETE CASCADE;
+DO $$
+BEGIN
+  ALTER TABLE public.bookmarks
+    ADD CONSTRAINT bookmarks_parent_id_fkey
+    FOREIGN KEY (parent_id)
+    REFERENCES public.bookmarks(id)
+    ON DELETE CASCADE;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;

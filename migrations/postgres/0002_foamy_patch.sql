@@ -1,6 +1,16 @@
 -- https://www.postgresql.org/docs/current/pgtrgm.html
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 --> statement-breakpoint
+CREATE OR REPLACE FUNCTION public.immutable_array_to_string(text[], text)
+RETURNS text
+LANGUAGE sql
+IMMUTABLE
+PARALLEL SAFE
+STRICT
+AS $$
+  SELECT coalesce(array_to_string($1, $2), '');
+$$;
+--> statement-breakpoint
 DROP INDEX IF EXISTS public.idx_public_listings_status;
 --> statement-breakpoint
 DROP INDEX IF EXISTS public.idx_public_stacks_status;
@@ -33,12 +43,12 @@ CREATE INDEX idx_public_stack_items_tags
 --> statement-breakpoint
 CREATE INDEX idx_public_listings_search
   ON public.public_listings
-  USING gin ((page_title || ' ' || meta_description || ' ' || array_to_string(tags, ' ')) gin_trgm_ops);
+  USING gin ((page_title || ' ' || meta_description || ' ' || public.immutable_array_to_string(tags, ' ')) gin_trgm_ops);
 --> statement-breakpoint
 CREATE INDEX idx_public_stacks_search
   ON public.public_stacks
-  USING gin ((page_title || ' ' || meta_description || ' ' || array_to_string(tags, ' ')) gin_trgm_ops);
+  USING gin ((page_title || ' ' || meta_description || ' ' || public.immutable_array_to_string(tags, ' ')) gin_trgm_ops);
 --> statement-breakpoint
 CREATE INDEX idx_public_stack_items_search
   ON public.public_stack_items
-  USING gin ((page_title || ' ' || meta_description || ' ' || array_to_string(tags, ' ')) gin_trgm_ops);
+  USING gin ((page_title || ' ' || meta_description || ' ' || public.immutable_array_to_string(tags, ' ')) gin_trgm_ops);
