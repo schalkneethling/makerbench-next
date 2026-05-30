@@ -4,75 +4,36 @@
 
 MakerBench is a moderated, community-driven directory of useful tools and resources for makers and developers.
 
-## Current Implementation Snapshot (February 26, 2026)
+## Current Implementation Snapshot (May 2026)
 
-## Implemented
+See [architecture.md](./architecture.md) for the full technical reference.
 
-- Frontend app with React Router and shared layout
-- Pages: Home, Submit, About, Privacy, Not Found
+### Implemented
+
+- Frontend app with React Router, shared layout, and Supabase OAuth
+- Pages: Home/Tools, Resources, Library, Submit, About, Privacy, Not Found
 - UI components for cards, alerts, forms, search, tags, pagination/loading
-- API client + hooks for bookmarks, search, and submission
-- Netlify Functions for submit/list/search flows
-- Metadata extraction service (Cheerio)
-- Screenshot service (Browserless) with Cloudinary upload
-- Turso schema + migrations + query layer
-- Zod validation on client and server boundaries
-- Unit/component/function/e2e test suites in repo
+- API clients + hooks for tools, resources, library, search, and submission
+- Netlify Functions for submit/list/search/library/auth flows
+- Metadata extraction (Cheerio), screenshot fallback (Browserless), Cloudinary upload
+- Supabase Postgres schema + Drizzle migrations
+- Valibot validation on client and server boundaries
+- Unit, component, function, and e2e test suites
 
-## Not Yet Implemented
+### Not Yet Implemented
 
-- Admin moderation API/UI for approving/rejecting pending submissions
-- Authentication/authorization for admin workflows
-- Algolia integration (still optional/planned)
-
-## Architecture
-
-## Frontend
-
-- React 19, TypeScript, Vite
-- CSS design token and utility layers
-- `src/pages`, `src/components`, `src/hooks`, `src/api`
-
-## Backend
-
-- Netlify Functions under `netlify/functions`
-- Shared function helpers in `netlify/functions/lib`
-- Database access through Drizzle + Turso
-
-## Data Model
-
-- `bookmarks` (status: `pending | approved | rejected`, metadata/image fields)
-- `tags`
-- `bookmark_tags` (many-to-many, unique bookmark/tag pair)
-
-## Runtime Flow
-
-1. User submits URL + tags via `/submit`
-2. `POST /api/bookmarks` validates and normalizes input
-3. Metadata is extracted from target URL
-4. If no OG image exists, Browserless screenshot is captured and uploaded to Cloudinary
-5. Bookmark is stored as `pending`
-6. Public listing/search endpoints return only `approved` bookmarks
-
-## Environment Variables
-
-Server-side variables expected by functions:
-
-- `TURSO_DATABASE_URL`
-- `TURSO_AUTH_TOKEN`
-- `BROWSERLESS_API_KEY`
-- `CLOUDINARY_CLOUD_NAME`
-- `CLOUDINARY_API_KEY`
-- `CLOUDINARY_API_SECRET`
-- `SENTRY_DSN` (optional)
+- Unified admin moderation queue (tools, public resources, stacks, stack items) — see [#105](https://github.com/schalkneethling/makerbench-next/issues/105)
+- Pagination totals on tool list/search endpoints — see [#106](https://github.com/schalkneethling/makerbench-next/issues/106)
+- Full personal library parity (edit/delete, stacks, read status) — see [#64–#67](https://github.com/schalkneethling/makerbench-next/issues/64)
 
 ## Known Operational Notes
 
-- Because submissions default to `pending`, moderation capability is the main missing piece for fully closed-loop publishing.
-- GitHub Issues is now the canonical tracker.
+- Submissions default to `pending`; unified moderation is the main missing piece for closed-loop publishing across tools and public resources/stacks.
+- GitHub Issues is the canonical tracker: [issues](https://github.com/schalkneethling/makerbench-next/issues)
 
 ## References
 
+- [architecture.md](./architecture.md)
 - [README.md](./README.md)
 - [ROADMAP.md](./ROADMAP.md)
 - [DATABASE_SETUP.md](./DATABASE_SETUP.md)

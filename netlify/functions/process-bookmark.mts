@@ -23,7 +23,7 @@ import { captureScreenshot } from "../../src/lib/services/screenshot";
 import { uploadScreenshot } from "../../src/lib/services/cloudinary";
 import { validateBookmarkRequest } from "../../src/lib/validation";
 
-const FALLBACK_IMAGE = "/images/fallback-screenshot.png";
+const FALLBACK_IMAGE = "/makerbench-fallback.png";
 
 function getIssueField(issue: BaseIssue<unknown>): string {
   const path = issue.path

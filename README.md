@@ -1,6 +1,6 @@
 # MakerBench
 
-MakerBench is a curated bookmarking platform for developer and maker tools.
+MakerBench is a curated bookmarking platform for developer and maker tools, resources, and articles.
 
 ## Requirements
 
@@ -11,25 +11,27 @@ Runtime/package manager decision:
 
 - Netlify Functions run on Node.js, so Bun is intentionally not part of this deployment workflow.
 
-## Current Status (February 26, 2026)
+## Current Status (May 2026)
 
-Core MVP functionality is implemented:
+Core functionality is implemented:
 
-- Submit a tool URL with tags
+- Submit a tool URL with tags (stored as `pending` until moderation exists)
 - Extract metadata (title/description/OG image)
 - Capture screenshot fallback with Browserless when OG image is missing
 - Store fallback screenshots in Cloudinary
-- Persist tools and resources in Supabase Postgres (Drizzle ORM)
-- Browse approved tools and public resources
-- Search approved tools and resources by title and tags
+- Persist data in Supabase Postgres (Drizzle ORM)
+- Browse and search approved tools (`/`, `/tools`)
+- Browse and search public resources and stacks (`/resources`)
+- Personal bookmark library with Google/GitHub sign-in (`/library`)
 - Filter by tags with URL-synced state
-- Responsive React UI with routing (`/`, `/submit`, `/about`, `/privacy`)
+- Responsive React UI with routing (`/submit`, `/about`, `/privacy`)
 
 ## Tech Stack
 
 - React 19 + TypeScript + Vite
+- React Compiler
 - Netlify Functions
-- Supabase Postgres + Drizzle ORM
+- Supabase (Postgres + Auth) + Drizzle ORM
 - Valibot validation
 - Browserless (screenshots)
 - Cloudinary (image storage)
@@ -51,10 +53,13 @@ For full local setup (including Netlify Functions + env configuration), use:
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and fill values:
+Environment variables are defined in [`.env.schema`](./.env.schema) (Varlock). See [docs/local-development.md](./docs/local-development.md) for setup.
 
-- `TURSO_DATABASE_URL`
-- `TURSO_AUTH_TOKEN`
+Required for full local functionality:
+
+- `SUPABASE_DATABASE_URL` — server-only Postgres connection string
+- `VITE_SUPABASE_URL` — Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` — Supabase anon key (client auth + server JWT verification)
 - `CLOUDINARY_CLOUD_NAME`
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
@@ -65,9 +70,22 @@ Package manager note: this repository pins pnpm via `packageManager` in `package
 
 ## API Endpoints
 
-- `POST /api/bookmarks` - submit bookmark (stored as `pending`)
-- `GET /api/bookmarks` - list approved bookmarks (paginated)
-- `GET /api/bookmarks/search` - search/filter approved bookmarks
+Public:
+
+- `POST /api/tools` — submit a tool (stored as `pending`)
+- `GET /api/tools` — list approved tools (paginated)
+- `GET /api/tools/search` — search/filter approved tools
+- `GET /api/tools/tags` — tag cloud with usage counts
+- `GET /api/resources` — list approved public resources and stacks
+- `GET /api/resources/search` — search public resources and stacks
+
+Authenticated (Bearer token):
+
+- `GET /api/auth/whoami` — current user and admin flag
+- `GET /api/library` — list personal bookmarks
+- `POST /api/library` — add a URL to personal library
+
+See [architecture.md](./architecture.md) for request/response shapes and data flows.
 
 ## Issue Tracking
 
@@ -76,7 +94,7 @@ Open backlog is tracked in GitHub Issues:
 
 ## Documentation
 
-- Architecture: [docs/architecture.md](./docs/architecture.md)
+- Architecture: [architecture.md](./architecture.md)
 - Local setup: [docs/local-development.md](./docs/local-development.md)
 - Production deployment: [docs/production-deployment.md](./docs/production-deployment.md)
 - Database setup: [DATABASE_SETUP.md](./DATABASE_SETUP.md)
