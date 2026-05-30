@@ -35,9 +35,7 @@ export const WithSelection: Story = {
         selectedIds={selectedIds}
         onTagToggle={(tagId) => {
           setSelectedIds((current) =>
-            current.includes(tagId)
-              ? current.filter((id) => id !== tagId)
-              : [...current, tagId],
+            current.includes(tagId) ? current.filter((id) => id !== tagId) : [...current, tagId],
           );
         }}
         onClearAll={() => {
@@ -48,8 +46,9 @@ export const WithSelection: Story = {
   },
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "javascript" }));
-    await expect(
-      canvas.getByRole("button", { name: "javascript" }),
-    ).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas.getByRole("button", { name: "javascript" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
   },
 };

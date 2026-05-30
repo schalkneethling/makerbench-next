@@ -28,11 +28,7 @@ export {
   type SearchResourcesParams,
 } from "./resources";
 
-export {
-  getAuthenticatedIdentity,
-  type AuthUser,
-  type AuthenticatedIdentity,
-} from "./auth";
+export { getAuthenticatedIdentity, type AuthUser, type AuthenticatedIdentity } from "./auth";
 
 export {
   addLibraryResource,

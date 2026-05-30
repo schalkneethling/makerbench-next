@@ -21,21 +21,17 @@ describe("TagBadge", () => {
 
   it("applies selected class when isSelected", () => {
     render(<TagBadge label="CSS" isSelected />);
-    expect(
-      screen.getByRole("button", { name: "CSS" }).parentElement,
-    ).toHaveClass("TagBadge--selected");
+    expect(screen.getByRole("button", { name: "CSS" }).parentElement).toHaveClass(
+      "TagBadge--selected",
+    );
   });
 
   it("renders remove button only when onRemove provided", () => {
     const { rerender } = render(<TagBadge label="HTML" />);
-    expect(
-      screen.queryByRole("button", { name: /remove/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /remove/i })).not.toBeInTheDocument();
 
     rerender(<TagBadge label="HTML" onRemove={() => {}} />);
-    expect(
-      screen.getByRole("button", { name: "Remove HTML" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove HTML" })).toBeInTheDocument();
   });
 
   it("remove button uses aria-labelledby with visually-hidden text", () => {
@@ -53,8 +49,9 @@ describe("TagBadge", () => {
 
   it("merges custom className", () => {
     render(<TagBadge label="Test" className="custom-class" />);
-    expect(
-      screen.getByRole("button", { name: "Test" }).parentElement,
-    ).toHaveClass("TagBadge", "custom-class");
+    expect(screen.getByRole("button", { name: "Test" }).parentElement).toHaveClass(
+      "TagBadge",
+      "custom-class",
+    );
   });
 });

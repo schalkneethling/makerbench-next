@@ -7,10 +7,7 @@ import { Button } from "../components/ui/Button";
 import { TextInput } from "../components/ui/TextInput";
 import { useAuth } from "../hooks/useAuth";
 import { useLibraryResources } from "../hooks/useLibraryResources";
-import {
-  personalResourceRequestSchema,
-  type PersonalResourceRequest,
-} from "../lib/validation";
+import { personalResourceRequestSchema, type PersonalResourceRequest } from "../lib/validation";
 
 import "./LibraryPage.css";
 
@@ -52,10 +49,7 @@ const initialState: LibraryPageState = {
   isSignInPending: false,
 };
 
-function libraryPageReducer(
-  state: LibraryPageState,
-  action: LibraryPageAction,
-): LibraryPageState {
+function libraryPageReducer(state: LibraryPageState, action: LibraryPageAction): LibraryPageState {
   switch (action.type) {
     case "setUrl":
       return { ...state, url: action.url };
@@ -114,18 +108,9 @@ export function LibraryPage() {
     signInWithGitHub,
     signInWithGoogle,
   } = useAuth();
-  const { resources, isLoading, isSaving, error, addResource } =
-    useLibraryResources(accessToken);
+  const { resources, isLoading, isSaving, error, addResource } = useLibraryResources(accessToken);
   const [state, dispatch] = useReducer(libraryPageReducer, initialState);
-  const {
-    url,
-    tags,
-    notes,
-    formErrors,
-    didSave,
-    signInError,
-    isSignInPending,
-  } = state;
+  const { url, tags, notes, formErrors, didSave, signInError, isSignInPending } = state;
 
   async function handleSignIn(action: () => Promise<void>) {
     dispatch({ type: "startSignIn" });
@@ -136,8 +121,7 @@ export function LibraryPage() {
     } catch (error) {
       dispatch({
         type: "failSignIn",
-        message:
-          error instanceof Error ? error.message : "Sign in failed. Please try again.",
+        message: error instanceof Error ? error.message : "Sign in failed. Please try again.",
       });
     }
   }
@@ -244,9 +228,7 @@ export function LibraryPage() {
             label="Resource URL"
             type="url"
             value={url}
-            onChange={(event) =>
-              dispatch({ type: "setUrl", url: event.target.value })
-            }
+            onChange={(event) => dispatch({ type: "setUrl", url: event.target.value })}
             placeholder="https://example.com/resource"
             required
             error={formErrors.url}
@@ -255,9 +237,7 @@ export function LibraryPage() {
             id="library-tags"
             label="Tags"
             tags={tags}
-            onTagsChange={(nextTags) =>
-              dispatch({ type: "setTags", tags: nextTags })
-            }
+            onTagsChange={(nextTags) => dispatch({ type: "setTags", tags: nextTags })}
             maxTags={10}
             required
             error={formErrors.tags}
@@ -268,19 +248,13 @@ export function LibraryPage() {
               id="library-notes"
               className="LibraryPage-notesField"
               value={notes}
-              onChange={(event) =>
-                dispatch({ type: "setNotes", notes: event.target.value })
-              }
+              onChange={(event) => dispatch({ type: "setNotes", notes: event.target.value })}
               rows={5}
               aria-invalid={formErrors.notes ? true : undefined}
               aria-describedby={formErrors.notes ? "library-notes-error" : undefined}
             />
             {formErrors.notes && (
-              <span
-                id="library-notes-error"
-                className="LibraryPage-notesError"
-                role="alert"
-              >
+              <span id="library-notes-error" className="LibraryPage-notesError" role="alert">
                 {formErrors.notes}
               </span>
             )}
@@ -308,9 +282,7 @@ export function LibraryPage() {
                     <a href={resource.url}>{resource.title}</a>
                   </h3>
                   {resource.description && (
-                    <p className="LibraryPage-cardDescription body-sm">
-                      {resource.description}
-                    </p>
+                    <p className="LibraryPage-cardDescription body-sm">{resource.description}</p>
                   )}
                   {resource.notes && (
                     <p className="LibraryPage-cardNotes body-sm">{resource.notes}</p>

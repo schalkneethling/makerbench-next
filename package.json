@@ -1,11 +1,7 @@
 {
   "name": "makerbench-next",
-  "private": true,
   "version": "0.0.0",
-  "packageManager": "pnpm@11.5.0",
-  "engines": {
-    "node": ">=24"
-  },
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -86,6 +82,10 @@
     "vite": "^8.0.13",
     "vitest": "^3.2.4"
   },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@11.5.0",
   "msw": {
     "workerDirectory": [
       "public"

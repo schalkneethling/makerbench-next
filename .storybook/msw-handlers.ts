@@ -26,10 +26,7 @@ const mockResource = {
 export const mswHandlers = {
   auth: [
     http.get("/api/auth/whoami", () => {
-      return HttpResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 401 },
-      );
+      return HttpResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }),
   ],
   tools: [

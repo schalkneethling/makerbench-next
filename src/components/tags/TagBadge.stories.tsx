@@ -16,9 +16,10 @@ export const Default: Story = {
     label: "javascript",
   },
   play: async ({ canvas }) => {
-    await expect(
-      canvas.getByRole("button", { name: "javascript" }),
-    ).toHaveAttribute("aria-pressed", "false");
+    await expect(canvas.getByRole("button", { name: "javascript" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
   },
 };
 
@@ -35,8 +36,6 @@ export const Removable: Story = {
     onRemove: () => {},
   },
   play: async ({ canvas }) => {
-    await expect(
-      canvas.getByRole("button", { name: /remove typescript/i }),
-    ).toBeVisible();
+    await expect(canvas.getByRole("button", { name: /remove typescript/i })).toBeVisible();
   },
 };

@@ -38,11 +38,11 @@ pkill -9 -f "playwright" 2>/dev/null
 
 Consult current docs (Context7 MCP or official URLs) before implementing. Do not guess at API behavior.
 
-| Service | Purpose | Notes |
-| --- | --- | --- |
-| Browserless | Screenshots | `png`/`jpeg` only; `gotoOptions.waitUntil: "networkidle2"` |
-| Cloudinary | Image delivery | Upload PNG; `f_auto,q_auto` at delivery |
-| Supabase | Postgres + Auth | Server pooler URL for functions; anon key for JWT verify |
+| Service     | Purpose         | Notes                                                      |
+| ----------- | --------------- | ---------------------------------------------------------- |
+| Browserless | Screenshots     | `png`/`jpeg` only; `gotoOptions.waitUntil: "networkidle2"` |
+| Cloudinary  | Image delivery  | Upload PNG; `f_auto,q_auto` at delivery                    |
+| Supabase    | Postgres + Auth | Server pooler URL for functions; anon key for JWT verify   |
 
 Details: [`architecture.md`](./architecture.md) · [Browserless screenshot API](https://docs.browserless.io/rest-apis/screenshot-api) · [Supabase docs](https://supabase.com/docs)
 
@@ -71,8 +71,8 @@ Env: `.env.schema` (Varlock). Local setup: [`docs/local-development.md`](./docs/
 
 **Valibot only** — no hand-rolled validation. Schemas live in `src/lib/validation.ts`; infer types with `v.InferOutput`.
 
-| Use Valibot | Use plain TS types |
-| --- | --- |
+| Use Valibot                      | Use plain TS types    |
+| -------------------------------- | --------------------- |
 | API bodies/responses, forms, env | Internal params/state |
 
 **API clients** (`src/api/bookmarks.ts` is the reference):
@@ -105,11 +105,11 @@ Responsive/CSS patterns: `.cursor/rules/css-coder.mdc`
 
 Test **our logic**, not the platform or React. No coverage-for-coverage tests.
 
-| Layer | Command | Notes |
-| --- | --- | --- |
-| Unit / component / function | `pnpm test` | Vitest; always `--run` in CI |
-| Storybook interactions | `npx vitest --project storybook run` | Browser mode (Playwright); stories in `src/**/*.stories.tsx` |
-| E2e | `npx playwright test --project=chromium` | ARIA snapshots for page structure |
+| Layer                       | Command                                  | Notes                                                        |
+| --------------------------- | ---------------------------------------- | ------------------------------------------------------------ |
+| Unit / component / function | `pnpm test`                              | Vitest; always `--run` in CI                                 |
+| Storybook interactions      | `npx vitest --project storybook run`     | Browser mode (Playwright); stories in `src/**/*.stories.tsx` |
+| E2e                         | `npx playwright test --project=chromium` | ARIA snapshots for page structure                            |
 
 **Playwright e2e:** use **`toMatchAriaSnapshot()`** for page/component structure — one assertion on the accessibility tree. Update snapshots when DOM structure changes; never ignore failing ARIA tests.
 
@@ -123,11 +123,11 @@ React 19 · Vite SPA (not Next.js RSC). React Compiler enabled — avoid manual 
 
 **Before `useEffect`:** read [You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect). Effects are for external sync (network, subscriptions, DOM listeners), not derived state or event-driven work.
 
-| Instead of effect | Prefer |
-| --- | --- |
-| Derived display data | Compute in render |
-| User actions | Event handlers |
-| Prop-driven reset | `key` or render-time derivation |
+| Instead of effect    | Prefer                          |
+| -------------------- | ------------------------------- |
+| Derived display data | Compute in render               |
+| User actions         | Event handlers                  |
+| Prop-driven reset    | `key` or render-time derivation |
 
 **React 19:** prefer Actions/`useActionState` for forms, `use()` where appropriate, refs as regular props (no `forwardRef`). Skip Server Components guidance — not applicable here.
 

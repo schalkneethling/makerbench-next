@@ -28,9 +28,7 @@ export class MissingEnvironmentError extends Error {
 export function assertRequiredEnv(requiredKeys: readonly string[]): void {
   const missingKeys = requiredKeys.filter((key) => {
     const value =
-      typeof Netlify !== "undefined" && Netlify?.env
-        ? Netlify.env.get(key)
-        : process.env[key];
+      typeof Netlify !== "undefined" && Netlify?.env ? Netlify.env.get(key) : process.env[key];
 
     return !value || value.trim() === "";
   });
@@ -43,9 +41,7 @@ export function assertRequiredEnv(requiredKeys: readonly string[]): void {
 /**
  * Type guard for missing environment errors.
  */
-export function isMissingEnvironmentError(
-  error: unknown,
-): error is MissingEnvironmentError {
+export function isMissingEnvironmentError(error: unknown): error is MissingEnvironmentError {
   return error instanceof MissingEnvironmentError;
 }
 

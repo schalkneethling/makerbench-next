@@ -9,9 +9,7 @@ export function Footer() {
   return (
     <footer className="Footer">
       <div className="Footer-inner">
-        <p className="Footer-copyright">
-          © {currentYear} MakerBench. All rights reserved.
-        </p>
+        <p className="Footer-copyright">© {currentYear} MakerBench. All rights reserved.</p>
         <nav className="Footer-nav" aria-label="Footer">
           <ul className="Footer-links reset-list">
             <li>

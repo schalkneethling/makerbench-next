@@ -24,16 +24,12 @@ import { validatePersonalResourceRequest } from "../../src/lib/validation";
 function getIssueField(issue: BaseIssue<unknown>): string {
   const path = issue.path
     ?.map((pathItem) => pathItem.key)
-    .filter((key): key is string | number => (
-      typeof key === "string" || typeof key === "number"
-    ));
+    .filter((key): key is string | number => typeof key === "string" || typeof key === "number");
 
   return path && path.length > 0 ? path.join(".") : "form";
 }
 
-function getValidationDetails(
-  issues: readonly BaseIssue<unknown>[],
-): Record<string, string[]> {
+function getValidationDetails(issues: readonly BaseIssue<unknown>[]): Record<string, string[]> {
   return issues.reduce<Record<string, string[]>>((details, issue) => {
     const field = getIssueField(issue);
     details[field] ??= [];
@@ -48,11 +44,7 @@ export default async (req: Request, _context: Context) => {
   }
 
   try {
-    assertRequiredEnv([
-      "SUPABASE_DATABASE_URL",
-      "VITE_SUPABASE_URL",
-      "VITE_SUPABASE_ANON_KEY",
-    ]);
+    assertRequiredEnv(["SUPABASE_DATABASE_URL", "VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY"]);
   } catch (error) {
     return handleMissingEnvironmentError(error, "add-library");
   }
@@ -71,10 +63,7 @@ export default async (req: Request, _context: Context) => {
 
   const validation = validatePersonalResourceRequest(body);
   if (!validation.success) {
-    return validationError(
-      "Validation failed",
-      getValidationDetails(validation.issues),
-    );
+    return validationError("Validation failed", getValidationDetails(validation.issues));
   }
 
   const normalizedUrl = parseAndNormalizeUrl(validation.output.url);
@@ -84,9 +73,7 @@ export default async (req: Request, _context: Context) => {
     });
   }
 
-  const tags = [
-    ...new Set(validation.output.tags.map((tag) => tag.trim().toLowerCase())),
-  ];
+  const tags = [...new Set(validation.output.tags.map((tag) => tag.trim().toLowerCase()))];
 
   try {
     const db = getDb();

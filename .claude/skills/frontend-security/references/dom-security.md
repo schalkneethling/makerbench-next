@@ -8,13 +8,13 @@ Untrusted data in HTML element content:
 
 ```javascript
 // UNSAFE
-element.innerHTML = '<div>' + userInput + '</div>';
+element.innerHTML = "<div>" + userInput + "</div>";
 
 // SAFE - use textContent
 element.textContent = userInput;
 
 // SAFE - create elements programmatically
-const div = document.createElement('div');
+const div = document.createElement("div");
 div.textContent = userInput;
 parent.appendChild(div);
 ```
@@ -39,14 +39,14 @@ const value = element.dataset.value;
 
 ```javascript
 // UNSAFE - event handlers
-element.setAttribute('onclick', userInput);
+element.setAttribute("onclick", userInput);
 
 // UNSAFE - dangerous attributes
-element.setAttribute('href', userInput);  // javascript: URLs
-element.setAttribute('src', userInput);   // script injection
+element.setAttribute("href", userInput); // javascript: URLs
+element.setAttribute("src", userInput); // script injection
 
 // SAFE - safe attributes only
-const safeAttributes = ['title', 'alt', 'class', 'id', 'name'];
+const safeAttributes = ["title", "alt", "class", "id", "name"];
 if (safeAttributes.includes(attributeName)) {
   element.setAttribute(attributeName, userInput);
 }
@@ -57,7 +57,7 @@ if (safeAttributes.includes(attributeName)) {
 ```javascript
 // UNSAFE - expression injection
 element.style.cssText = userInput;
-element.setAttribute('style', userInput);
+element.setAttribute("style", userInput);
 
 // SAFE - set specific properties
 element.style.backgroundColor = sanitizeColor(userInput);
@@ -65,7 +65,7 @@ element.style.backgroundColor = sanitizeColor(userInput);
 function sanitizeColor(input) {
   // Only allow safe color values
   const colorRegex = /^#[0-9A-Fa-f]{6}$|^#[0-9A-Fa-f]{3}$|^rgb\(\d{1,3},\s*\d{1,3},\s*\d{1,3}\)$/;
-  return colorRegex.test(input) ? input : 'inherit';
+  return colorRegex.test(input) ? input : "inherit";
 }
 ```
 
@@ -75,13 +75,13 @@ function sanitizeColor(input) {
 // UNSAFE - unvalidated URLs
 location.href = userInput;
 window.open(userInput);
-element.setAttribute('href', userInput);
+element.setAttribute("href", userInput);
 
 // SAFE - validate URL protocol
 function validateUrl(input) {
   try {
     const url = new URL(input, window.location.origin);
-    const allowedProtocols = ['http:', 'https:', 'mailto:'];
+    const allowedProtocols = ["http:", "https:", "mailto:"];
     if (!allowedProtocols.includes(url.protocol)) {
       return null;
     }
@@ -105,7 +105,7 @@ Named elements (id, name attributes) create global variables:
 
 ```html
 <!-- This creates window.config -->
-<img id="config" src="x">
+<img id="config" src="x" />
 
 <!-- JavaScript that assumes config is an object will break -->
 <script>
@@ -117,12 +117,12 @@ Named elements (id, name attributes) create global variables:
 
 ```javascript
 // 1. Use Object.hasOwn() or hasOwnProperty()
-if (Object.hasOwn(window, 'config') && typeof config === 'object') {
+if (Object.hasOwn(window, "config") && typeof config === "object") {
   // Safe to use config
 }
 
 // 2. Access through document methods
-const element = document.getElementById('config');
+const element = document.getElementById("config");
 
 // 3. Use Map instead of objects for user-controlled keys
 const userConfig = new Map();
@@ -133,7 +133,7 @@ Object.freeze(window.config);
 
 // 5. Use nullish coalescing with type checking
 const config = window.config ?? {};
-if (typeof config.apiKey === 'string') {
+if (typeof config.apiKey === "string") {
   // Safe to use
 }
 ```
@@ -143,8 +143,8 @@ if (typeof config.apiKey === 'string') {
 ```javascript
 // DOMPurify with clobbering protection
 const clean = DOMPurify.sanitize(dirty, {
-  SANITIZE_DOM: true,  // Remove clobbering vectors
-  SANITIZE_NAMED_PROPS: true
+  SANITIZE_DOM: true, // Remove clobbering vectors
+  SANITIZE_NAMED_PROPS: true,
 });
 ```
 
@@ -158,7 +158,7 @@ element.textContent = userInput;
 document.createTextNode(userInput);
 
 // Attribute manipulation (for safe attributes)
-element.setAttribute('data-value', userInput);
+element.setAttribute("data-value", userInput);
 element.classList.add(sanitizedClass);
 
 // Query selectors (read-only)
@@ -173,11 +173,11 @@ document.querySelectorAll(selector);
 element.innerHTML = sanitized;
 element.outerHTML = sanitized;
 element.insertAdjacentHTML(position, sanitized);
-document.write(sanitized);  // Avoid entirely
+document.write(sanitized); // Avoid entirely
 
 // Script execution
-eval();           // Never use with user input
-new Function();   // Never use with user input
+eval(); // Never use with user input
+new Function(); // Never use with user input
 setTimeout(string); // Never pass strings
 setInterval(string); // Never pass strings
 ```
@@ -186,17 +186,17 @@ setInterval(string); // Never pass strings
 
 ```javascript
 // Sender - specify exact origin
-targetWindow.postMessage(data, 'https://trusted-domain.com');
+targetWindow.postMessage(data, "https://trusted-domain.com");
 
 // Receiver - always validate origin
-window.addEventListener('message', (event) => {
+window.addEventListener("message", (event) => {
   // Validate origin
-  if (event.origin !== 'https://trusted-domain.com') {
+  if (event.origin !== "https://trusted-domain.com") {
     return;
   }
 
   // Validate data structure
-  if (typeof event.data !== 'object' || !event.data.type) {
+  if (typeof event.data !== "object" || !event.data.type) {
     return;
   }
 
@@ -212,14 +212,16 @@ window.addEventListener('message', (event) => {
 // Content-Security-Policy: require-trusted-types-for 'script'
 
 // Create a policy
-const policy = trustedTypes.createPolicy('default', {
+const policy = trustedTypes.createPolicy("default", {
   createHTML: (input) => DOMPurify.sanitize(input),
-  createScript: () => { throw new Error('Scripts not allowed'); },
+  createScript: () => {
+    throw new Error("Scripts not allowed");
+  },
   createScriptURL: (input) => {
     const url = new URL(input, location.origin);
     if (url.origin === location.origin) return input;
-    throw new Error('Invalid script URL');
-  }
+    throw new Error("Invalid script URL");
+  },
 });
 
 // Usage

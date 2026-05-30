@@ -37,39 +37,42 @@ export function useResources(): UseResourcesReturn {
     abortRef.current = null;
   }, []);
 
-  const fetch = useCallback(async (params?: GetResourcesParams) => {
-    cancelActiveRequest();
-    const controller = new AbortController();
-    abortRef.current = controller;
-    activeRequestIdRef.current += 1;
-    const requestId = activeRequestIdRef.current;
+  const fetch = useCallback(
+    async (params?: GetResourcesParams) => {
+      cancelActiveRequest();
+      const controller = new AbortController();
+      abortRef.current = controller;
+      activeRequestIdRef.current += 1;
+      const requestId = activeRequestIdRef.current;
 
-    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-    try {
-      const data = await getResources(params, { signal: controller.signal });
-      if (controller.signal.aborted || requestId !== activeRequestIdRef.current) {
-        return;
+      try {
+        const data = await getResources(params, { signal: controller.signal });
+        if (controller.signal.aborted || requestId !== activeRequestIdRef.current) {
+          return;
+        }
+
+        setState({
+          resources: data.resources,
+          pagination: data.pagination,
+          isLoading: false,
+          error: null,
+        });
+      } catch (err) {
+        if (controller.signal.aborted || requestId !== activeRequestIdRef.current) {
+          return;
+        }
+
+        const error =
+          err instanceof BookmarkApiError
+            ? err
+            : new BookmarkApiError("Failed to fetch resources", 500);
+        setState((prev) => ({ ...prev, isLoading: false, error }));
       }
-
-      setState({
-        resources: data.resources,
-        pagination: data.pagination,
-        isLoading: false,
-        error: null,
-      });
-    } catch (err) {
-      if (controller.signal.aborted || requestId !== activeRequestIdRef.current) {
-        return;
-      }
-
-      const error =
-        err instanceof BookmarkApiError
-          ? err
-          : new BookmarkApiError("Failed to fetch resources", 500);
-      setState((prev) => ({ ...prev, isLoading: false, error }));
-    }
-  }, [cancelActiveRequest]);
+    },
+    [cancelActiveRequest],
+  );
 
   const loadMore = useCallback(async () => {
     if (!state.pagination?.hasMore || state.isLoading) {

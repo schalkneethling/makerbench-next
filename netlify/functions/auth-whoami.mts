@@ -20,7 +20,7 @@ function getDisplayName(user: User): string | null {
     ? fullName
     : typeof name === "string" && name.trim().length > 0
       ? name
-      : user.email ?? null;
+      : (user.email ?? null);
 }
 
 export default async (req: Request, _context: Context) => {
@@ -29,11 +29,7 @@ export default async (req: Request, _context: Context) => {
   }
 
   try {
-    assertRequiredEnv([
-      "SUPABASE_DATABASE_URL",
-      "VITE_SUPABASE_URL",
-      "VITE_SUPABASE_ANON_KEY",
-    ]);
+    assertRequiredEnv(["SUPABASE_DATABASE_URL", "VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY"]);
   } catch (error) {
     return handleMissingEnvironmentError(error, "auth-whoami");
   }
@@ -52,9 +48,7 @@ export default async (req: Request, _context: Context) => {
         email: user.email ?? null,
         displayName: getDisplayName(user),
         avatarUrl:
-          typeof user.user_metadata?.avatar_url === "string"
-            ? user.user_metadata.avatar_url
-            : null,
+          typeof user.user_metadata?.avatar_url === "string" ? user.user_metadata.avatar_url : null,
       },
       isAdmin,
     });

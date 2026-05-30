@@ -15,12 +15,13 @@ Implementation:
 
 ```javascript
 // Generate unique nonce per request
-const crypto = require('crypto');
-const nonce = crypto.randomBytes(16).toString('base64');
+const crypto = require("crypto");
+const nonce = crypto.randomBytes(16).toString("base64");
 
 // Set header
-res.setHeader('Content-Security-Policy',
-  `script-src 'nonce-${nonce}' 'strict-dynamic'; object-src 'none'; base-uri 'none';`
+res.setHeader(
+  "Content-Security-Policy",
+  `script-src 'nonce-${nonce}' 'strict-dynamic'; object-src 'none'; base-uri 'none';`,
 );
 
 // Include nonce in script tags
@@ -44,43 +45,45 @@ echo -n 'console.log("hello");' | openssl sha256 -binary | openssl base64
 
 ## Essential Directives
 
-| Directive | Purpose | Recommended Value |
-|-----------|---------|-------------------|
-| `default-src` | Fallback for other directives | `'self'` |
-| `script-src` | JavaScript sources | `'nonce-{random}' 'strict-dynamic'` |
-| `style-src` | CSS sources | `'self' 'unsafe-inline'` (or nonces) |
-| `img-src` | Image sources | `'self' data: https:` |
-| `font-src` | Font sources | `'self'` |
-| `connect-src` | AJAX/WebSocket/Fetch | `'self' https://api.example.com` |
-| `frame-src` | iframe sources | `'none'` or specific origins |
-| `object-src` | Plugin content | `'none'` |
-| `base-uri` | Base URL restrictions | `'none'` |
-| `form-action` | Form submission targets | `'self'` |
-| `frame-ancestors` | Who can embed page | `'self'` or `'none'` |
+| Directive         | Purpose                       | Recommended Value                    |
+| ----------------- | ----------------------------- | ------------------------------------ |
+| `default-src`     | Fallback for other directives | `'self'`                             |
+| `script-src`      | JavaScript sources            | `'nonce-{random}' 'strict-dynamic'`  |
+| `style-src`       | CSS sources                   | `'self' 'unsafe-inline'` (or nonces) |
+| `img-src`         | Image sources                 | `'self' data: https:`                |
+| `font-src`        | Font sources                  | `'self'`                             |
+| `connect-src`     | AJAX/WebSocket/Fetch          | `'self' https://api.example.com`     |
+| `frame-src`       | iframe sources                | `'none'` or specific origins         |
+| `object-src`      | Plugin content                | `'none'`                             |
+| `base-uri`        | Base URL restrictions         | `'none'`                             |
+| `form-action`     | Form submission targets       | `'self'`                             |
+| `frame-ancestors` | Who can embed page            | `'self'` or `'none'`                 |
 
 ## Framework Integration
 
 ### Express.js
 
 ```javascript
-const helmet = require('helmet');
+const helmet = require("helmet");
 
-app.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    scriptSrc: [(req, res) => `'nonce-${res.locals.nonce}'`, "'strict-dynamic'"],
-    styleSrc: ["'self'", "'unsafe-inline'"],
-    imgSrc: ["'self'", "data:", "https:"],
-    objectSrc: ["'none'"],
-    baseUri: ["'none'"],
-    formAction: ["'self'"],
-    frameAncestors: ["'self'"]
-  }
-}));
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [(req, res) => `'nonce-${res.locals.nonce}'`, "'strict-dynamic'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      objectSrc: ["'none'"],
+      baseUri: ["'none'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'self'"],
+    },
+  }),
+);
 
 // Nonce middleware
 app.use((req, res, next) => {
-  res.locals.nonce = crypto.randomBytes(16).toString('base64');
+  res.locals.nonce = crypto.randomBytes(16).toString("base64");
   next();
 });
 ```
@@ -91,26 +94,31 @@ app.use((req, res, next) => {
 // astro.config.mjs
 export default defineConfig({
   vite: {
-    plugins: [{
-      name: 'csp-plugin',
-      configureServer(server) {
-        server.middlewares.use((req, res, next) => {
-          res.setHeader('Content-Security-Policy',
-            "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"
-          );
-          next();
-        });
-      }
-    }]
-  }
+    plugins: [
+      {
+        name: "csp-plugin",
+        configureServer(server) {
+          server.middlewares.use((req, res, next) => {
+            res.setHeader(
+              "Content-Security-Policy",
+              "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';",
+            );
+            next();
+          });
+        },
+      },
+    ],
+  },
 });
 ```
 
 ### Meta Tag (Fallback)
 
 ```html
-<meta http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'nonce-abc123';">
+<meta
+  http-equiv="Content-Security-Policy"
+  content="default-src 'self'; script-src 'self' 'nonce-abc123';"
+/>
 ```
 
 **Note**: Meta tag CSP cannot set `frame-ancestors`, `report-uri`, or `sandbox`.
@@ -129,8 +137,8 @@ Content-Security-Policy-Report-Only:
 Report endpoint:
 
 ```javascript
-app.post('/csp-report', express.json({ type: 'application/csp-report' }), (req, res) => {
-  console.log('CSP Violation:', req.body);
+app.post("/csp-report", express.json({ type: "application/csp-report" }), (req, res) => {
+  console.log("CSP Violation:", req.body);
   res.status(204).end();
 });
 ```
@@ -141,10 +149,14 @@ app.post('/csp-report', express.json({ type: 'application/csp-report' }), (req, 
 
 ```html
 <!-- Violation: inline script -->
-<script>alert('hello');</script>
+<script>
+  alert("hello");
+</script>
 
 <!-- Fix: add nonce -->
-<script nonce="abc123">alert('hello');</script>
+<script nonce="abc123">
+  alert("hello");
+</script>
 
 <!-- Or: move to external file -->
 <script src="/js/app.js"></script>
@@ -159,7 +171,7 @@ app.post('/csp-report', express.json({ type: 'application/csp-report' }), (req, 
 <!-- Fix: use addEventListener -->
 <button id="myBtn">Click</button>
 <script nonce="abc123">
-  document.getElementById('myBtn').addEventListener('click', handleClick);
+  document.getElementById("myBtn").addEventListener("click", handleClick);
 </script>
 ```
 
@@ -173,7 +185,11 @@ app.post('/csp-report', express.json({ type: 'application/csp-report' }), (req, 
 <div class="text-red">Text</div>
 
 <!-- Or: add nonce to style tags -->
-<style nonce="abc123">.text-red { color: red; }</style>
+<style nonce="abc123">
+  .text-red {
+    color: red;
+  }
+</style>
 ```
 
 ## Security Headers Companion

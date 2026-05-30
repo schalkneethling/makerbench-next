@@ -59,10 +59,7 @@ describe("Header", () => {
       isAuthenticated: true,
     });
 
-    expect(screen.getByRole("link", { name: "Library" })).toHaveAttribute(
-      "href",
-      "/library",
-    );
+    expect(screen.getByRole("link", { name: "Library" })).toHaveAttribute("href", "/library");
     expect(screen.getByText("Test User")).toBeInTheDocument();
     expect(screen.getByText("Admin")).toBeInTheDocument();
   });

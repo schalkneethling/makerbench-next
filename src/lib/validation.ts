@@ -42,9 +42,7 @@ const githubProfileUrlSchema = v.pipe(
   ),
 );
 
-const optionalGithubProfileUrlSchema = v.optional(
-  v.union([githubProfileUrlSchema, v.literal("")]),
-);
+const optionalGithubProfileUrlSchema = v.optional(v.union([githubProfileUrlSchema, v.literal("")]));
 
 export const tagSchema = v.object({
   id: v.pipe(v.string(), v.uuid()),
@@ -103,9 +101,7 @@ export const bookmarkRequestSchema = v.object({
 export const personalResourceRequestSchema = v.object({
   url: resourceUrlSchema,
   tags: resourceTagsSchema,
-  notes: v.optional(
-    v.pipe(v.string(), v.maxLength(5000, "Notes must be 5000 characters or less")),
-  ),
+  notes: v.optional(v.pipe(v.string(), v.maxLength(5000, "Notes must be 5000 characters or less"))),
 });
 
 export const toolMetadataSchema = v.object({

@@ -140,8 +140,7 @@ For mock data patterns, see [references/schema-and-mocks.md](references/schema-a
 ### 6. CSS Entry Point: `src/css/<component-name>.css`
 
 ```css
-@import url("../components/<tier>/<component-name>/<component-name>.css")
-layer(components);
+@import url("../components/<tier>/<component-name>/<component-name>.css") layer(components);
 ```
 
 > Note: If the component is an element, you can use the `elements.css` entry point instead.

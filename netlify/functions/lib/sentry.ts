@@ -17,8 +17,7 @@ export function initSentry(): void {
     return;
   }
 
-  const dsn =
-    typeof Netlify !== "undefined" ? Netlify.env.get("SENTRY_DSN") : undefined;
+  const dsn = typeof Netlify !== "undefined" ? Netlify.env.get("SENTRY_DSN") : undefined;
 
   if (!dsn) {
     // Skip initialization if DSN not configured (local dev without env vars)
@@ -44,10 +43,7 @@ export function initSentry(): void {
  * @param error - The error to capture
  * @param context - Optional additional context
  */
-export function captureError(
-  error: unknown,
-  context?: Record<string, unknown>,
-): void {
+export function captureError(error: unknown, context?: Record<string, unknown>): void {
   // Only log to console in non-production for local debugging
   if (!isProduction) {
     console.error(error);

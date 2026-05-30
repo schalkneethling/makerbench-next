@@ -10,11 +10,7 @@ interface ResourceGridProps {
   onTagClick?: (tagName: string) => void;
 }
 
-export function ResourceGrid({
-  resources,
-  isLoading = false,
-  onTagClick,
-}: ResourceGridProps) {
+export function ResourceGrid({ resources, isLoading = false, onTagClick }: ResourceGridProps) {
   if (isLoading) {
     return (
       <div className="ResourceGrid" aria-live="polite" aria-busy="true">

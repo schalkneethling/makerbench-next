@@ -66,15 +66,10 @@ async function parseJsonResponse(response: Response): Promise<unknown> {
 function toBookmarkApiError(error: unknown, fallbackMessage: string): BookmarkApiError {
   return error instanceof BookmarkApiError
     ? error
-    : new BookmarkApiError(
-        error instanceof Error ? error.message : fallbackMessage,
-        500,
-      );
+    : new BookmarkApiError(error instanceof Error ? error.message : fallbackMessage, 500);
 }
 
-export async function getLibraryResources(
-  accessToken: string,
-): Promise<LibraryResponse> {
+export async function getLibraryResources(accessToken: string): Promise<LibraryResponse> {
   try {
     const response = await fetch("/api/library", {
       headers: {

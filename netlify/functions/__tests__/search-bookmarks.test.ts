@@ -71,9 +71,7 @@ describe("search-bookmarks", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockDb = createMockDb();
-    vi.mocked(getDb).mockReturnValue(
-      mockDb as unknown as ReturnType<typeof getDb>,
-    );
+    vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
     mockContext = createMockContext();
   });
 
@@ -89,9 +87,7 @@ describe("search-bookmarks", () => {
     });
 
     it("returns 400 for invalid limit", async () => {
-      const req = new Request(
-        "https://test.com/api/tools/search?limit=abc",
-      );
+      const req = new Request("https://test.com/api/tools/search?limit=abc");
 
       const res = await searchBookmarks(req, mockContext);
 
@@ -161,9 +157,7 @@ describe("search-bookmarks", () => {
         },
       ]);
 
-      const req = new Request(
-        "https://test.com/api/tools/search?q=react&limit=1",
-      );
+      const req = new Request("https://test.com/api/tools/search?q=react&limit=1");
 
       const res = await searchBookmarks(req, mockContext);
 
@@ -192,9 +186,7 @@ describe("search-bookmarks", () => {
           tags: [],
         },
       ]);
-      const req = new Request(
-        "https://test.com/api/tools/search?tags=javascript,react",
-      );
+      const req = new Request("https://test.com/api/tools/search?tags=javascript,react");
 
       const res = await searchBookmarks(req, mockContext);
 

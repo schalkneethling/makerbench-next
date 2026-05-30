@@ -34,8 +34,7 @@
 .SearchInput-field:focus-visible {
   box-shadow:
     var(--focus-ring-shadow),
-    var(--size-8) var(--size-8) 0
-      color-mix(in oklch, var(--color-primary) 18%, transparent);
+    var(--size-8) var(--size-8) 0 color-mix(in oklch, var(--color-primary) 18%, transparent);
 }
 
 /* Remove default search input styling (clear button, etc.) */

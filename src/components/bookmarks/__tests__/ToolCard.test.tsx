@@ -26,23 +26,21 @@ describe("ToolCard", () => {
 
   it("uses provided imageUrl", () => {
     const { container } = render(
-      <ToolCard {...defaultProps} imageUrl="https://cdn.example.com/image.jpg" />
+      <ToolCard {...defaultProps} imageUrl="https://cdn.example.com/image.jpg" />,
     );
     const img = container.querySelector("img");
     expect(img).toHaveAttribute("src", "https://cdn.example.com/image.jpg");
   });
 
   it("maps the legacy social media tile path to the shipped fallback image", () => {
-    const { container } = render(
-      <ToolCard {...defaultProps} imageUrl="/social-media-tile.png" />
-    );
+    const { container } = render(<ToolCard {...defaultProps} imageUrl="/social-media-tile.png" />);
     const img = container.querySelector("img");
     expect(img).toHaveAttribute("src", "/makerbench-fallback.png");
   });
 
   it("falls back to the MakerBench image when the provided image fails to load", () => {
     const { container } = render(
-      <ToolCard {...defaultProps} imageUrl="https://cdn.example.com/broken.jpg" />
+      <ToolCard {...defaultProps} imageUrl="https://cdn.example.com/broken.jpg" />,
     );
     const img = container.querySelector("img");
 
@@ -62,7 +60,7 @@ describe("ToolCard", () => {
         {...defaultProps}
         tags={[{ id: "t-react", name: "react" }]}
         onTagClick={handleTagClick}
-      />
+      />,
     );
 
     await user.click(screen.getByRole("button", { name: "react" }));
@@ -76,16 +74,12 @@ describe("ToolCard", () => {
   });
 
   it("renders submitter GitHub username extracted from URL", () => {
-    render(
-      <ToolCard
-        {...defaultProps}
-        submitterGithubUrl="https://github.com/octocat"
-      />
-    );
+    render(<ToolCard {...defaultProps} submitterGithubUrl="https://github.com/octocat" />);
     expect(screen.getByText(/^Submitted by$/)).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "@octocat" }),
-    ).toHaveAttribute("href", "https://github.com/octocat");
+    expect(screen.getByRole("link", { name: "@octocat" })).toHaveAttribute(
+      "href",
+      "https://github.com/octocat",
+    );
   });
 
   it("links submitter name to GitHub profile when URL is valid", () => {
@@ -94,7 +88,7 @@ describe("ToolCard", () => {
         {...defaultProps}
         submitterName="Octo Cat"
         submitterGithubUrl="https://github.com/octocat"
-      />
+      />,
     );
 
     expect(screen.getByRole("link", { name: "Octo Cat" })).toHaveAttribute(
@@ -104,12 +98,7 @@ describe("ToolCard", () => {
   });
 
   it("does not render a profile link for invalid GitHub URLs", () => {
-    render(
-      <ToolCard
-        {...defaultProps}
-        submitterGithubUrl="https://bit.ly/octocat"
-      />
-    );
+    render(<ToolCard {...defaultProps} submitterGithubUrl="https://bit.ly/octocat" />);
 
     expect(screen.queryByText("Submitted by")).not.toBeInTheDocument();
   });

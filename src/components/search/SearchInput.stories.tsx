@@ -39,13 +39,7 @@ export const WithValue: Story = {
   render: () => {
     const [value, setValue] = useState("vite");
 
-    return (
-      <SearchInput
-        label="Search tools"
-        value={value}
-        onSearchChange={setValue}
-      />
-    );
+    return <SearchInput label="Search tools" value={value} onSearchChange={setValue} />;
   },
   play: async ({ canvas, userEvent }) => {
     await expect(canvas.getByRole("searchbox")).toHaveValue("vite");

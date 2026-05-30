@@ -12,16 +12,6 @@ export interface IconProps extends SVGProps<SVGSVGElement> {
 /**
  * Shared SVG icon wrapper to standardize sizing/display across components.
  */
-export function Icon({
-  icon: SvgIcon,
-  size = "md",
-  className = "",
-  ...props
-}: IconProps) {
-  return (
-    <SvgIcon
-      className={`Icon Icon--${size} ${className}`.trim()}
-      {...props}
-    />
-  );
+export function Icon({ icon: SvgIcon, size = "md", className = "", ...props }: IconProps) {
+  return <SvgIcon className={`Icon Icon--${size} ${className}`.trim()} {...props} />;
 }

@@ -112,8 +112,7 @@ export function SubmitPage() {
 
       {response && (
         <Alert variant="success" dismissible onDismiss={handleReset}>
-          <strong>Tool submitted successfully!</strong> It will appear on the
-          site after review.
+          <strong>Tool submitted successfully!</strong> It will appear on the site after review.
         </Alert>
       )}
 

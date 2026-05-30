@@ -8,19 +8,19 @@ Generate unique per-session tokens and validate on state-changing requests:
 
 ```javascript
 // Server-side token generation (Node.js)
-const crypto = require('crypto');
+const crypto = require("crypto");
 
 function generateCSRFToken(session) {
-  const token = crypto.randomBytes(32).toString('hex');
+  const token = crypto.randomBytes(32).toString("hex");
   session.csrfToken = token;
   return token;
 }
 
 // Middleware validation
 function validateCSRF(req, res, next) {
-  const token = req.headers['x-csrf-token'] || req.body._csrf;
+  const token = req.headers["x-csrf-token"] || req.body._csrf;
   if (!token || token !== req.session.csrfToken) {
-    return res.status(403).json({ error: 'Invalid CSRF token' });
+    return res.status(403).json({ error: "Invalid CSRF token" });
   }
   next();
 }
@@ -30,24 +30,24 @@ function validateCSRF(req, res, next) {
 
 ```javascript
 // Set CSRF cookie
-res.cookie('csrf_token', token, {
-  httpOnly: false,  // Must be readable by JavaScript
+res.cookie("csrf_token", token, {
+  httpOnly: false, // Must be readable by JavaScript
   secure: true,
-  sameSite: 'Strict'
+  sameSite: "Strict",
 });
 
 // Client sends token in header
-fetch('/api/action', {
-  method: 'POST',
+fetch("/api/action", {
+  method: "POST",
   headers: {
-    'X-CSRF-Token': getCookie('csrf_token')
-  }
+    "X-CSRF-Token": getCookie("csrf_token"),
+  },
 });
 
 // Server validates cookie matches header
 function validateDoubleSubmit(req) {
   const cookieToken = req.cookies.csrf_token;
-  const headerToken = req.headers['x-csrf-token'];
+  const headerToken = req.headers["x-csrf-token"];
   return cookieToken && cookieToken === headerToken;
 }
 ```
@@ -56,40 +56,40 @@ function validateDoubleSubmit(req) {
 
 ```javascript
 // Strict - never sent cross-site
-res.cookie('session', value, { sameSite: 'Strict', secure: true, httpOnly: true });
+res.cookie("session", value, { sameSite: "Strict", secure: true, httpOnly: true });
 
 // Lax - sent for top-level GET navigations (default in modern browsers)
-res.cookie('session', value, { sameSite: 'Lax', secure: true, httpOnly: true });
+res.cookie("session", value, { sameSite: "Lax", secure: true, httpOnly: true });
 
 // None - requires Secure flag, sent cross-site
-res.cookie('session', value, { sameSite: 'None', secure: true, httpOnly: true });
+res.cookie("session", value, { sameSite: "None", secure: true, httpOnly: true });
 ```
 
 **Recommendation**: Use `SameSite=Strict` for session cookies when possible, `Lax` as minimum.
 
 ## Fetch Metadata Headers
 
-Validate request origin using Sec-Fetch-* headers:
+Validate request origin using Sec-Fetch-\* headers:
 
 ```javascript
 function validateFetchMetadata(req, res, next) {
-  const site = req.headers['sec-fetch-site'];
-  const mode = req.headers['sec-fetch-mode'];
-  const dest = req.headers['sec-fetch-dest'];
+  const site = req.headers["sec-fetch-site"];
+  const mode = req.headers["sec-fetch-mode"];
+  const dest = req.headers["sec-fetch-dest"];
 
   // Allow same-origin requests
-  if (site === 'same-origin') return next();
+  if (site === "same-origin") return next();
 
   // Allow browser navigation requests
-  if (site === 'none') return next();
+  if (site === "none") return next();
 
   // Block cross-origin requests to sensitive endpoints
-  if (site === 'cross-site') {
-    return res.status(403).json({ error: 'Cross-site request blocked' });
+  if (site === "cross-site") {
+    return res.status(403).json({ error: "Cross-site request blocked" });
   }
 
   // Allow same-site requests for non-sensitive operations
-  if (site === 'same-site' && mode === 'navigate') return next();
+  if (site === "same-site" && mode === "navigate") return next();
 
   next();
 }
@@ -100,13 +100,13 @@ function validateFetchMetadata(req, res, next) {
 ### Express.js with csurf
 
 ```javascript
-const csrf = require('csurf');
+const csrf = require("csurf");
 const csrfProtection = csrf({ cookie: true });
 
 app.use(csrfProtection);
 
-app.get('/form', (req, res) => {
-  res.render('form', { csrfToken: req.csrfToken() });
+app.get("/form", (req, res) => {
+  res.render("form", { csrfToken: req.csrfToken() });
 });
 ```
 
@@ -116,13 +116,13 @@ app.get('/form', (req, res) => {
 function Form({ csrfToken }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await fetch('/api/submit', {
-      method: 'POST',
+    await fetch("/api/submit", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': csrfToken
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken,
       },
-      body: JSON.stringify(formData)
+      body: JSON.stringify(formData),
     });
   };
 
@@ -150,10 +150,10 @@ Protect against CSRF in single-page applications:
 
 ```javascript
 // Set up axios defaults
-import axios from 'axios';
+import axios from "axios";
 
-axios.defaults.xsrfCookieName = 'csrf_token';
-axios.defaults.xsrfHeaderName = 'X-CSRF-Token';
+axios.defaults.xsrfCookieName = "csrf_token";
+axios.defaults.xsrfHeaderName = "X-CSRF-Token";
 axios.defaults.withCredentials = true;
 
 // Or with fetch
@@ -162,11 +162,11 @@ async function secureFetch(url, options = {}) {
 
   return fetch(url, {
     ...options,
-    credentials: 'same-origin',
+    credentials: "same-origin",
     headers: {
       ...options.headers,
-      'X-CSRF-Token': csrfToken
-    }
+      "X-CSRF-Token": csrfToken,
+    },
   });
 }
 ```

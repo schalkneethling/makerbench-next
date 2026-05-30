@@ -17,10 +17,7 @@ async function main() {
     throw new Error("SUPABASE_DATABASE_URL or DATABASE_URL is not configured");
   }
 
-  const migrationPath = join(
-    process.cwd(),
-    "migrations/postgres/0001_review_followups.sql",
-  );
+  const migrationPath = join(process.cwd(), "migrations/postgres/0001_review_followups.sql");
   const migrationSql = readFileSync(migrationPath, "utf8");
   const migrationHash = createHash("sha256").update(migrationSql).digest("hex");
   const migrationCreatedAt = 1778265600000;

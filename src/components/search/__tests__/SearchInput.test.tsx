@@ -34,13 +34,7 @@ function ControlledSearchInput({
 describe("SearchInput", () => {
   it("renders with label and search icon", () => {
     const handleSearchChange = vi.fn();
-    render(
-      <SearchInput
-        label="Search tools"
-        value=""
-        onSearchChange={handleSearchChange}
-      />,
-    );
+    render(<SearchInput label="Search tools" value="" onSearchChange={handleSearchChange} />);
 
     const input = screen.getByRole("searchbox", { name: /search tools/i });
     expect(input).toBeInTheDocument();
@@ -62,28 +56,14 @@ describe("SearchInput", () => {
   it("shows clear button when value is present", () => {
     const handleSearchChange = vi.fn();
     const { rerender } = render(
-      <SearchInput
-        label="Search"
-        value=""
-        onSearchChange={handleSearchChange}
-      />,
+      <SearchInput label="Search" value="" onSearchChange={handleSearchChange} />,
     );
 
-    expect(
-      screen.queryByRole("button", { name: /clear search/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /clear search/i })).not.toBeInTheDocument();
 
-    rerender(
-      <SearchInput
-        label="Search"
-        value="test"
-        onSearchChange={handleSearchChange}
-      />,
-    );
+    rerender(<SearchInput label="Search" value="test" onSearchChange={handleSearchChange} />);
 
-    expect(
-      screen.getByRole("button", { name: /clear search/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /clear search/i })).toBeInTheDocument();
   });
 
   it("calls onSearchChange with empty string when clear clicked", async () => {
@@ -101,23 +81,13 @@ describe("SearchInput", () => {
   it("displays value prop in input", () => {
     const handleSearchChange = vi.fn();
     const { rerender } = render(
-      <SearchInput
-        label="Search"
-        value="initial"
-        onSearchChange={handleSearchChange}
-      />,
+      <SearchInput label="Search" value="initial" onSearchChange={handleSearchChange} />,
     );
 
     const input = screen.getByRole("searchbox");
     expect(input).toHaveValue("initial");
 
-    rerender(
-      <SearchInput
-        label="Search"
-        value="updated"
-        onSearchChange={handleSearchChange}
-      />,
-    );
+    rerender(<SearchInput label="Search" value="updated" onSearchChange={handleSearchChange} />);
 
     expect(input).toHaveValue("updated");
   });
@@ -137,4 +107,3 @@ describe("SearchInput", () => {
     expect(input).toHaveAttribute("placeholder", "Type to search...");
   });
 });
-

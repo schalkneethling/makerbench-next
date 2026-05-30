@@ -1,10 +1,6 @@
 import { useState, useCallback } from "react";
 
-import {
-  submitBookmark,
-  type SubmitBookmarkResponse,
-  BookmarkApiError,
-} from "../api";
+import { submitBookmark, type SubmitBookmarkResponse, BookmarkApiError } from "../api";
 import type { BookmarkRequest } from "../lib/validation";
 
 interface UseSubmitBookmarkState {
@@ -44,9 +40,7 @@ export function useSubmitBookmark(): UseSubmitBookmarkReturn {
         return response;
       } catch (err) {
         const error =
-          err instanceof BookmarkApiError
-            ? err
-            : new BookmarkApiError("Submission failed", 500);
+          err instanceof BookmarkApiError ? err : new BookmarkApiError("Submission failed", 500);
         setState({
           isSubmitting: false,
           error,
@@ -72,4 +66,3 @@ export function useSubmitBookmark(): UseSubmitBookmarkReturn {
     reset,
   };
 }
-

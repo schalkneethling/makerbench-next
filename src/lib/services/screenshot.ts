@@ -32,10 +32,7 @@ interface BrowserlessPayload {
  * @param apiKey - Browserless API key (defaults to env var)
  * @returns Screenshot buffer or error
  */
-export async function captureScreenshot(
-  url: string,
-  apiKey?: string,
-): Promise<ScreenshotResult> {
+export async function captureScreenshot(url: string, apiKey?: string): Promise<ScreenshotResult> {
   const key = apiKey ?? getApiKey();
 
   if (!key) {
@@ -62,17 +59,14 @@ export async function captureScreenshot(
   };
 
   try {
-    const response = await fetch(
-      `https://chrome.browserless.io/screenshot?token=${key}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(30000), // 30s timeout
+    const response = await fetch(`https://chrome.browserless.io/screenshot?token=${key}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(30000), // 30s timeout
+    });
 
     if (!response.ok) {
       const errorText = await response.text();

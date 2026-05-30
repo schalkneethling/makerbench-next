@@ -18,9 +18,9 @@
 
 ```javascript
 const ALLOWED_EXTENSIONS = {
-  images: ['.jpg', '.jpeg', '.png', '.gif', '.webp'],
-  documents: ['.pdf', '.docx', '.xlsx'],
-  data: ['.csv', '.json']
+  images: [".jpg", ".jpeg", ".png", ".gif", ".webp"],
+  documents: [".pdf", ".docx", ".xlsx"],
+  data: [".csv", ".json"],
 };
 
 function validateExtension(filename, category) {
@@ -34,22 +34,50 @@ function validateExtension(filename, category) {
 ```javascript
 const DANGEROUS_EXTENSIONS = [
   // Server-side execution
-  '.php', '.php3', '.php4', '.php5', '.phtml',
-  '.asp', '.aspx', '.ascx', '.ashx',
-  '.jsp', '.jspx', '.jspa',
-  '.cgi', '.pl', '.py', '.rb',
+  ".php",
+  ".php3",
+  ".php4",
+  ".php5",
+  ".phtml",
+  ".asp",
+  ".aspx",
+  ".ascx",
+  ".ashx",
+  ".jsp",
+  ".jspx",
+  ".jspa",
+  ".cgi",
+  ".pl",
+  ".py",
+  ".rb",
 
   // Windows executable
-  '.exe', '.dll', '.bat', '.cmd', '.com', '.msi', '.ps1',
+  ".exe",
+  ".dll",
+  ".bat",
+  ".cmd",
+  ".com",
+  ".msi",
+  ".ps1",
 
   // Script files
-  '.js', '.vbs', '.wsf', '.hta',
+  ".js",
+  ".vbs",
+  ".wsf",
+  ".hta",
 
   // Config files
-  '.htaccess', '.htpasswd', '.config', '.ini',
+  ".htaccess",
+  ".htpasswd",
+  ".config",
+  ".ini",
 
   // Archive (can contain malicious files)
-  '.zip', '.tar', '.gz', '.rar', '.7z'
+  ".zip",
+  ".tar",
+  ".gz",
+  ".rar",
+  ".7z",
 ];
 ```
 
@@ -58,7 +86,7 @@ const DANGEROUS_EXTENSIONS = [
 ```javascript
 function sanitizeFilename(filename) {
   // Remove all extensions except the last
-  const parts = filename.split('.');
+  const parts = filename.split(".");
   if (parts.length > 2) {
     return `${parts[0]}.${parts[parts.length - 1]}`;
   }
@@ -74,13 +102,13 @@ function sanitizeFilename(filename) {
 
 ```javascript
 const ALLOWED_MIME_TYPES = {
-  '.jpg': ['image/jpeg'],
-  '.jpeg': ['image/jpeg'],
-  '.png': ['image/png'],
-  '.gif': ['image/gif'],
-  '.webp': ['image/webp'],
-  '.pdf': ['application/pdf'],
-  '.docx': ['application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+  ".jpg": ["image/jpeg"],
+  ".jpeg": ["image/jpeg"],
+  ".png": ["image/png"],
+  ".gif": ["image/gif"],
+  ".webp": ["image/webp"],
+  ".pdf": ["application/pdf"],
+  ".docx": ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
 };
 
 function validateMimeType(file) {
@@ -96,16 +124,16 @@ function validateMimeType(file) {
 
 ```javascript
 const FILE_SIGNATURES = {
-  jpg: Buffer.from([0xFF, 0xD8, 0xFF]),
-  png: Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
+  jpg: Buffer.from([0xff, 0xd8, 0xff]),
+  png: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
   gif: Buffer.from([0x47, 0x49, 0x46, 0x38]),
   pdf: Buffer.from([0x25, 0x50, 0x44, 0x46]),
-  zip: Buffer.from([0x50, 0x4B, 0x03, 0x04])
+  zip: Buffer.from([0x50, 0x4b, 0x03, 0x04]),
 };
 
 async function validateFileSignature(filePath, expectedType) {
   const buffer = Buffer.alloc(8);
-  const fd = await fs.open(filePath, 'r');
+  const fd = await fs.open(filePath, "r");
   await fd.read(buffer, 0, 8, 0);
   await fd.close();
 
@@ -119,17 +147,17 @@ async function validateFileSignature(filePath, expectedType) {
 ## Safe Storage
 
 ```javascript
-const multer = require('multer');
-const path = require('path');
-const crypto = require('crypto');
+const multer = require("multer");
+const path = require("path");
+const crypto = require("crypto");
 
 // Store OUTSIDE webroot
-const UPLOAD_DIR = '/var/app/uploads';  // Not in /public/
+const UPLOAD_DIR = "/var/app/uploads"; // Not in /public/
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // Organize by date
-    const date = new Date().toISOString().split('T')[0];
+    const date = new Date().toISOString().split("T")[0];
     const dir = path.join(UPLOAD_DIR, date);
     fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
@@ -137,24 +165,24 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     // Generate random filename
     const ext = path.extname(file.originalname).toLowerCase();
-    const name = crypto.randomBytes(16).toString('hex');
+    const name = crypto.randomBytes(16).toString("hex");
     cb(null, `${name}${ext}`);
-  }
+  },
 });
 
 const upload = multer({
   storage,
   limits: {
-    fileSize: 5 * 1024 * 1024,  // 5MB
-    files: 1
+    fileSize: 5 * 1024 * 1024, // 5MB
+    files: 1,
   },
   fileFilter: (req, file, cb) => {
     if (!validateMimeType(file)) {
-      cb(new Error('Invalid file type'));
+      cb(new Error("Invalid file type"));
       return;
     }
     cb(null, true);
-  }
+  },
 });
 ```
 
@@ -162,20 +190,20 @@ const upload = multer({
 
 ```javascript
 // Serve files through application, not directly
-app.get('/files/:id', async (req, res) => {
+app.get("/files/:id", async (req, res) => {
   // Verify user authorization
   if (!req.user || !canAccessFile(req.user, req.params.id)) {
-    return res.status(403).send('Forbidden');
+    return res.status(403).send("Forbidden");
   }
 
   // Get file from database (not from user input)
   const fileRecord = await db.getFile(req.params.id);
-  if (!fileRecord) return res.status(404).send('Not found');
+  if (!fileRecord) return res.status(404).send("Not found");
 
   // Set safe headers
-  res.setHeader('Content-Type', fileRecord.mimeType);
-  res.setHeader('Content-Disposition', `attachment; filename="${fileRecord.safeName}"`);
-  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader("Content-Type", fileRecord.mimeType);
+  res.setHeader("Content-Disposition", `attachment; filename="${fileRecord.safeName}"`);
+  res.setHeader("X-Content-Type-Options", "nosniff");
 
   // Stream file
   const stream = fs.createReadStream(fileRecord.path);
@@ -188,12 +216,12 @@ app.get('/files/:id', async (req, res) => {
 Destroy potential malicious content by re-encoding images:
 
 ```javascript
-const sharp = require('sharp');
+const sharp = require("sharp");
 
 async function sanitizeImage(inputPath, outputPath) {
   await sharp(inputPath)
-    .rotate()  // Apply EXIF orientation
-    .toFormat('jpeg', { quality: 90 })  // Re-encode
+    .rotate() // Apply EXIF orientation
+    .toFormat("jpeg", { quality: 90 }) // Re-encode
     .toFile(outputPath);
 }
 ```
@@ -201,8 +229,8 @@ async function sanitizeImage(inputPath, outputPath) {
 ## ZIP File Handling
 
 ```javascript
-const AdmZip = require('adm-zip');
-const path = require('path');
+const AdmZip = require("adm-zip");
+const path = require("path");
 
 function safeExtractZip(zipPath, destDir, maxSize = 100 * 1024 * 1024) {
   const zip = new AdmZip(zipPath);
@@ -214,19 +242,19 @@ function safeExtractZip(zipPath, destDir, maxSize = 100 * 1024 * 1024) {
     // Check for path traversal
     const entryPath = path.join(destDir, entry.entryName);
     if (!entryPath.startsWith(path.resolve(destDir))) {
-      throw new Error('Path traversal detected');
+      throw new Error("Path traversal detected");
     }
 
     // Check for zip bomb
     totalSize += entry.header.size;
     if (totalSize > maxSize) {
-      throw new Error('Extracted size exceeds limit');
+      throw new Error("Extracted size exceeds limit");
     }
 
     // Check compression ratio (zip bomb indicator)
     const ratio = entry.header.size / entry.header.compressedSize;
     if (ratio > 100) {
-      throw new Error('Suspicious compression ratio');
+      throw new Error("Suspicious compression ratio");
     }
   }
 
@@ -237,18 +265,18 @@ function safeExtractZip(zipPath, destDir, maxSize = 100 * 1024 * 1024) {
 ## Express.js Complete Example
 
 ```javascript
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const crypto = require('crypto');
-const fs = require('fs').promises;
+const express = require("express");
+const multer = require("multer");
+const path = require("path");
+const crypto = require("crypto");
+const fs = require("fs").promises;
 
 const app = express();
 
 // Configuration
-const UPLOAD_DIR = '/var/app/uploads';
+const UPLOAD_DIR = "/var/app/uploads";
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif"];
 
 // Multer setup
 const upload = multer({
@@ -256,26 +284,27 @@ const upload = multer({
   limits: { fileSize: MAX_FILE_SIZE },
   fileFilter: (req, file, cb) => {
     if (!ALLOWED_TYPES.includes(file.mimetype)) {
-      cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE'));
+      cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE"));
       return;
     }
     cb(null, true);
-  }
+  },
 });
 
 // Upload endpoint
-app.post('/upload',
-  requireAuth,           // Authentication
-  csrfProtection,        // CSRF token
-  upload.single('file'), // File handling
+app.post(
+  "/upload",
+  requireAuth, // Authentication
+  csrfProtection, // CSRF token
+  upload.single("file"), // File handling
   async (req, res) => {
     try {
       const file = req.file;
-      if (!file) return res.status(400).json({ error: 'No file' });
+      if (!file) return res.status(400).json({ error: "No file" });
 
       // Validate magic bytes
       if (!validateMagicBytes(file.buffer, file.mimetype)) {
-        return res.status(400).json({ error: 'Invalid file' });
+        return res.status(400).json({ error: "Invalid file" });
       }
 
       // Generate safe filename
@@ -292,15 +321,15 @@ app.post('/upload',
         filename,
         originalName: file.originalname,
         mimeType: file.mimetype,
-        size: file.size
+        size: file.size,
       });
 
       res.json({ id: fileRecord.id });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: 'Upload failed' });
+      res.status(500).json({ error: "Upload failed" });
     }
-  }
+  },
 );
 ```
 

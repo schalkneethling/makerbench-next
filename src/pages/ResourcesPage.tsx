@@ -12,18 +12,11 @@ import "./ResourcesPage.css";
 
 type ResourceSort = "newest" | "oldest" | "alpha-asc" | "alpha-desc";
 
-const RESOURCE_SORTS = new Set<ResourceSort>([
-  "newest",
-  "oldest",
-  "alpha-asc",
-  "alpha-desc",
-]);
+const RESOURCE_SORTS = new Set<ResourceSort>(["newest", "oldest", "alpha-asc", "alpha-desc"]);
 const TAG_PARAM_PATTERN = /^[a-z0-9][a-z0-9+.#-]{0,49}$/i;
 
 function parseResourceSort(value: string | null): ResourceSort {
-  return value && RESOURCE_SORTS.has(value as ResourceSort)
-    ? value as ResourceSort
-    : "newest";
+  return value && RESOURCE_SORTS.has(value as ResourceSort) ? (value as ResourceSort) : "newest";
 }
 
 function parseTagParam(value: string | null): string[] {
@@ -37,15 +30,10 @@ function parseTagParam(value: string | null): string[] {
     .filter((tagName) => TAG_PARAM_PATTERN.test(tagName));
 }
 
-function getSortedResources(
-  resources: Resource[],
-  sortBy: ResourceSort,
-): Resource[] {
+function getSortedResources(resources: Resource[], sortBy: ResourceSort): Resource[] {
   return [...resources].sort((left, right) => {
     if (sortBy === "oldest") {
-      return (
-        new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime()
-      );
+      return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
     }
 
     if (sortBy === "alpha-asc") {
@@ -56,9 +44,7 @@ function getSortedResources(
       return right.title.localeCompare(left.title);
     }
 
-    return (
-      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
-    );
+    return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
   });
 }
 
@@ -85,11 +71,9 @@ function getResourceTags(resources: Resource[]): Tag[] {
 
 export function ResourcesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState(
-    () => searchParams.get("q") ?? "",
-  );
-  const [sortBy, setSortBy] = useState<ResourceSort>(
-    () => parseResourceSort(searchParams.get("sort")),
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get("q") ?? "");
+  const [sortBy, setSortBy] = useState<ResourceSort>(() =>
+    parseResourceSort(searchParams.get("sort")),
   );
   const [selectedTagNames, setSelectedTagNames] = useState<string[]>(() => {
     return parseTagParam(searchParams.get("tags"));
@@ -114,12 +98,9 @@ export function ResourcesPage() {
     reset: resetSearch,
   } = useResourceSearch();
 
-  const isFiltering =
-    searchQuery.trim() !== "" || selectedTagNames.length > 0;
+  const isFiltering = searchQuery.trim() !== "" || selectedTagNames.length > 0;
   const currentResources = isFiltering ? results : resources;
-  const currentPagination = isFiltering
-    ? searchPagination
-    : resourcesPagination;
+  const currentPagination = isFiltering ? searchPagination : resourcesPagination;
   const isLoading = isFiltering ? searchLoading : resourcesLoading;
   const error = searchError ?? resourcesError;
   const availableTags = useMemo(
@@ -127,10 +108,7 @@ export function ResourcesPage() {
     [currentResources, resources],
   );
   const selectedTags = useMemo(
-    () =>
-      selectedTagNames.filter((tagName) =>
-        availableTags.some((tag) => tag.id === tagName),
-      ),
+    () => selectedTagNames.filter((tagName) => availableTags.some((tag) => tag.id === tagName)),
     [availableTags, selectedTagNames],
   );
   const sortedResources = useMemo(
@@ -160,11 +138,7 @@ export function ResourcesPage() {
   );
 
   const runSearch = useCallback(
-    (
-      query: string,
-      tagNames: string[],
-      options: { immediate?: boolean } = {},
-    ) => {
+    (query: string, tagNames: string[], options: { immediate?: boolean } = {}) => {
       const trimmed = query.trim();
 
       if (!trimmed && tagNames.length === 0) {
@@ -249,8 +223,7 @@ export function ResourcesPage() {
       <header className="ResourcesPage-hero">
         <h1 className="ResourcesPage-title heading-3xl">Resources</h1>
         <p className="ResourcesPage-subtitle body-lg">
-          Browse articles, references, and public stacks from the MakerBench
-          collection.
+          Browse articles, references, and public stacks from the MakerBench collection.
         </p>
       </header>
 
@@ -265,11 +238,7 @@ export function ResourcesPage() {
 
         <label className="ResourcesPage-sort">
           <span className="ResourcesPage-sortLabel ui-caption">Sort</span>
-          <select
-            className="ResourcesPage-sortSelect"
-            value={sortBy}
-            onChange={handleSortChange}
-          >
+          <select className="ResourcesPage-sortSelect" value={sortBy} onChange={handleSortChange}>
             <option value="newest">Newest</option>
             <option value="oldest">Oldest</option>
             <option value="alpha-asc">A-Z</option>
@@ -296,10 +265,7 @@ export function ResourcesPage() {
       )}
 
       <div className="ResourcesPage-results">
-        <ResultCount
-          count={sortedResources.length}
-          total={currentPagination?.total}
-        />
+        <ResultCount count={sortedResources.length} total={currentPagination?.total} />
       </div>
 
       <ResourceGrid

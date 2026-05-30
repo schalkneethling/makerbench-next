@@ -51,17 +51,9 @@ describe("TagCloud", () => {
   it("shows clear all button when tags are selected", () => {
     const handleClear = vi.fn();
 
-    render(
-      <TagCloud
-        tags={mockTags}
-        selectedIds={["1"]}
-        onClearAll={handleClear}
-      />
-    );
+    render(<TagCloud tags={mockTags} selectedIds={["1"]} onClearAll={handleClear} />);
 
-    expect(
-      screen.getByRole("button", { name: /clear all/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /clear all/i })).toBeInTheDocument();
   });
 
   it("hides clear all when no tags selected", () => {
@@ -76,13 +68,7 @@ describe("TagCloud", () => {
     const user = userEvent.setup();
     const handleClear = vi.fn();
 
-    render(
-      <TagCloud
-        tags={mockTags}
-        selectedIds={["1", "2"]}
-        onClearAll={handleClear}
-      />
-    );
+    render(<TagCloud tags={mockTags} selectedIds={["1", "2"]} onClearAll={handleClear} />);
 
     await user.click(screen.getByRole("button", { name: /clear all/i }));
 

@@ -28,9 +28,7 @@ function getHostname(url: string): string {
   }
 
   const parsedUrl = new URL(safeUrl);
-  return parsedUrl.protocol === "mailto:"
-    ? ""
-    : parsedUrl.hostname.replace(/^www\./, "");
+  return parsedUrl.protocol === "mailto:" ? "" : parsedUrl.hostname.replace(/^www\./, "");
 }
 
 export function ResourceCard({ resource, onTagClick }: ResourceCardProps) {
@@ -43,30 +41,20 @@ export function ResourceCard({ resource, onTagClick }: ResourceCardProps) {
       <div className="ResourceCard-main">
         {/* TODO: Rework the card-click pattern so the full card is clickable without wrapping all content in one anchor. */}
         <a href={resourceHref} className="ResourceCard-link" aria-labelledby={titleId}>
-          <span className="ResourceCard-kind ui-caption">
-            {isStack ? "Stack" : "Resource"}
-          </span>
+          <span className="ResourceCard-kind ui-caption">{isStack ? "Stack" : "Resource"}</span>
           <h3 id={titleId} className="ResourceCard-title heading-base">
             {resource.title}
           </h3>
-          <p className="ResourceCard-hostname ui-caption">
-            {getHostname(resource.url)}
-          </p>
+          <p className="ResourceCard-hostname ui-caption">{getHostname(resource.url)}</p>
           {resource.description && (
-            <p className="ResourceCard-description body-sm">
-              {resource.description}
-            </p>
+            <p className="ResourceCard-description body-sm">{resource.description}</p>
           )}
         </a>
 
         {resource.tags.length > 0 && (
           <div className="ResourceCard-tags">
             {resource.tags.map((tag) => (
-              <TagBadge
-                key={tag.id}
-                label={tag.name}
-                onClick={() => onTagClick?.(tag.name)}
-              />
+              <TagBadge key={tag.id} label={tag.name} onClick={() => onTagClick?.(tag.name)} />
             ))}
           </div>
         )}

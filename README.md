@@ -65,6 +65,7 @@ npx vitest --project storybook run
 Current coverage (May 2026): core UI primitives and form/search/tag components — Button, Alert, LoadMoreButton, ResultCount, TagBadge, TagCloud, SearchInput, TagInput, ToolCard, ToolCardSkeleton. Page-level and layout stories are not yet written.
 
 For full local setup (including Netlify Functions + env configuration), use:
+
 - [docs/local-development.md](./docs/local-development.md)
 
 ## Environment Variables

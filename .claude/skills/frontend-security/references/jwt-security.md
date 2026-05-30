@@ -12,7 +12,7 @@ const decoded = jwt.verify(token, secret);
 
 // SECURE - explicitly specify allowed algorithms
 const decoded = jwt.verify(token, secret, {
-  algorithms: ['HS256']  // Only accept HS256
+  algorithms: ["HS256"], // Only accept HS256
 });
 ```
 
@@ -26,7 +26,7 @@ const decoded = jwt.verify(token, publicKey);
 
 // SECURE - specify expected algorithm
 const decoded = jwt.verify(token, publicKey, {
-  algorithms: ['RS256']  // Only accept RS256
+  algorithms: ["RS256"], // Only accept RS256
 });
 ```
 
@@ -36,16 +36,16 @@ Attack: Brute-force weak HMAC secrets.
 
 ```javascript
 // VULNERABLE - weak secret
-const token = jwt.sign(payload, 'password123');
+const token = jwt.sign(payload, "password123");
 
 // SECURE - strong random secret (256+ bits)
-const crypto = require('crypto');
-const secret = crypto.randomBytes(32);  // 256 bits
+const crypto = require("crypto");
+const secret = crypto.randomBytes(32); // 256 bits
 const token = jwt.sign(payload, secret);
 
 // Or use RSA keys
-const privateKey = fs.readFileSync('private.pem');
-const token = jwt.sign(payload, privateKey, { algorithm: 'RS256' });
+const privateKey = fs.readFileSync("private.pem");
+const token = jwt.sign(payload, privateKey, { algorithm: "RS256" });
 ```
 
 ## Token Sidejacking Prevention
@@ -53,46 +53,36 @@ const token = jwt.sign(payload, privateKey, { algorithm: 'RS256' });
 Add fingerprint to prevent stolen token reuse:
 
 ```javascript
-const crypto = require('crypto');
+const crypto = require("crypto");
 
 // Generate fingerprint on login
 function generateFingerprint() {
-  return crypto.randomBytes(32).toString('hex');
+  return crypto.randomBytes(32).toString("hex");
 }
 
 // Create token with fingerprint hash
 function createToken(userId, fingerprint) {
-  const fingerprintHash = crypto
-    .createHash('sha256')
-    .update(fingerprint)
-    .digest('hex');
+  const fingerprintHash = crypto.createHash("sha256").update(fingerprint).digest("hex");
 
-  return jwt.sign(
-    { sub: userId, fph: fingerprintHash },
-    secret,
-    { expiresIn: '15m' }
-  );
+  return jwt.sign({ sub: userId, fph: fingerprintHash }, secret, { expiresIn: "15m" });
 }
 
 // Set fingerprint as httpOnly cookie
-res.cookie('__Secure-Fgp', fingerprint, {
+res.cookie("__Secure-Fgp", fingerprint, {
   httpOnly: true,
   secure: true,
-  sameSite: 'Strict',
-  maxAge: 15 * 60 * 1000  // Match token expiry
+  sameSite: "Strict",
+  maxAge: 15 * 60 * 1000, // Match token expiry
 });
 
 // Validate both token and fingerprint
 function validateToken(token, fingerprintCookie) {
-  const decoded = jwt.verify(token, secret, { algorithms: ['HS256'] });
+  const decoded = jwt.verify(token, secret, { algorithms: ["HS256"] });
 
-  const fingerprintHash = crypto
-    .createHash('sha256')
-    .update(fingerprintCookie)
-    .digest('hex');
+  const fingerprintHash = crypto.createHash("sha256").update(fingerprintCookie).digest("hex");
 
   if (decoded.fph !== fingerprintHash) {
-    throw new Error('Invalid fingerprint');
+    throw new Error("Invalid fingerprint");
   }
 
   return decoded;
@@ -105,16 +95,16 @@ function validateToken(token, fingerprintCookie) {
 
 ```javascript
 // Store token in sessionStorage
-sessionStorage.setItem('token', jwt);
+sessionStorage.setItem("token", jwt);
 
 // Clear on logout
-sessionStorage.removeItem('token');
+sessionStorage.removeItem("token");
 
 // Send in Authorization header
-fetch('/api/data', {
+fetch("/api/data", {
   headers: {
-    'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-  }
+    Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+  },
 });
 ```
 
@@ -122,11 +112,11 @@ fetch('/api/data', {
 
 ```javascript
 // Server sets cookie
-res.cookie('token', jwt, {
-  httpOnly: true,     // Not accessible via JavaScript
-  secure: true,       // HTTPS only
-  sameSite: 'Strict', // CSRF protection
-  maxAge: 15 * 60 * 1000
+res.cookie("token", jwt, {
+  httpOnly: true, // Not accessible via JavaScript
+  secure: true, // HTTPS only
+  sameSite: "Strict", // CSRF protection
+  maxAge: 15 * 60 * 1000,
 });
 
 // Need CSRF protection with cookie-based auth
@@ -136,50 +126,42 @@ res.cookie('token', jwt, {
 
 ```javascript
 // VULNERABLE - persists after browser close, accessible to XSS
-localStorage.setItem('token', jwt);  // Not recommended
+localStorage.setItem("token", jwt); // Not recommended
 ```
 
 ## Token Expiration
 
 ```javascript
 // Short-lived access tokens (15-60 minutes)
-const accessToken = jwt.sign(payload, secret, { expiresIn: '15m' });
+const accessToken = jwt.sign(payload, secret, { expiresIn: "15m" });
 
 // Longer refresh tokens (days/weeks)
-const refreshToken = jwt.sign(
-  { sub: userId, type: 'refresh' },
-  refreshSecret,
-  { expiresIn: '7d' }
-);
+const refreshToken = jwt.sign({ sub: userId, type: "refresh" }, refreshSecret, { expiresIn: "7d" });
 
 // Refresh endpoint
-app.post('/refresh', async (req, res) => {
+app.post("/refresh", async (req, res) => {
   const { refreshToken } = req.body;
 
   try {
     const decoded = jwt.verify(refreshToken, refreshSecret, {
-      algorithms: ['HS256']
+      algorithms: ["HS256"],
     });
 
-    if (decoded.type !== 'refresh') {
-      throw new Error('Invalid token type');
+    if (decoded.type !== "refresh") {
+      throw new Error("Invalid token type");
     }
 
     // Check if refresh token is revoked
     if (await isTokenRevoked(refreshToken)) {
-      throw new Error('Token revoked');
+      throw new Error("Token revoked");
     }
 
     // Issue new access token
-    const newAccessToken = jwt.sign(
-      { sub: decoded.sub },
-      secret,
-      { expiresIn: '15m' }
-    );
+    const newAccessToken = jwt.sign({ sub: decoded.sub }, secret, { expiresIn: "15m" });
 
     res.json({ accessToken: newAccessToken });
   } catch (error) {
-    res.status(401).json({ error: 'Invalid refresh token' });
+    res.status(401).json({ error: "Invalid refresh token" });
   }
 });
 ```
@@ -190,7 +172,7 @@ JWTs are stateless, so revocation requires additional mechanisms:
 
 ```javascript
 // Denylist approach
-const revokedTokens = new Map();  // Use Redis in production
+const revokedTokens = new Map(); // Use Redis in production
 
 function revokeToken(token) {
   const decoded = jwt.decode(token);
@@ -210,11 +192,7 @@ function isTokenRevoked(token) {
 }
 
 // Include jti (JWT ID) in tokens
-const token = jwt.sign(
-  { sub: userId, jti: crypto.randomUUID() },
-  secret,
-  { expiresIn: '15m' }
-);
+const token = jwt.sign({ sub: userId, jti: crypto.randomUUID() }, secret, { expiresIn: "15m" });
 ```
 
 ## Token Information Disclosure
@@ -223,17 +201,23 @@ JWTs are base64-encoded, not encrypted. Sensitive data is visible.
 
 ```javascript
 // VULNERABLE - sensitive data in payload
-const token = jwt.sign({
-  sub: userId,
-  ssn: '123-45-6789',  // Visible to anyone!
-  salary: 100000
-}, secret);
+const token = jwt.sign(
+  {
+    sub: userId,
+    ssn: "123-45-6789", // Visible to anyone!
+    salary: 100000,
+  },
+  secret,
+);
 
 // SECURE - minimal claims
-const token = jwt.sign({
-  sub: userId,
-  role: 'user'
-}, secret);
+const token = jwt.sign(
+  {
+    sub: userId,
+    role: "user",
+  },
+  secret,
+);
 
 // If sensitive data required, encrypt the token
 const encryptedToken = encrypt(token, encryptionKey);
@@ -245,38 +229,38 @@ const encryptedToken = encrypt(token, encryptionKey);
 function authenticateToken(req, res, next) {
   // Get token from header
   const authHeader = req.headers.authorization;
-  const token = authHeader?.split(' ')[1];  // "Bearer TOKEN"
+  const token = authHeader?.split(" ")[1]; // "Bearer TOKEN"
 
   if (!token) {
-    return res.status(401).json({ error: 'Token required' });
+    return res.status(401).json({ error: "Token required" });
   }
 
   try {
     // Verify with explicit algorithm
     const decoded = jwt.verify(token, secret, {
-      algorithms: ['HS256'],
-      issuer: 'myapp',
-      audience: 'myapp-users'
+      algorithms: ["HS256"],
+      issuer: "myapp",
+      audience: "myapp-users",
     });
 
     // Validate fingerprint if using sidejacking protection
-    const fingerprint = req.cookies['__Secure-Fgp'];
+    const fingerprint = req.cookies["__Secure-Fgp"];
     if (!validateFingerprint(decoded, fingerprint)) {
-      throw new Error('Invalid fingerprint');
+      throw new Error("Invalid fingerprint");
     }
 
     // Check revocation
     if (isTokenRevoked(token)) {
-      throw new Error('Token revoked');
+      throw new Error("Token revoked");
     }
 
     req.user = decoded;
     next();
   } catch (error) {
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: 'Token expired' });
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ error: "Token expired" });
     }
-    return res.status(403).json({ error: 'Invalid token' });
+    return res.status(403).json({ error: "Invalid token" });
   }
 }
 ```

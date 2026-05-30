@@ -28,9 +28,7 @@ interface WhoamiBody {
 describe("auth-whoami", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getDb).mockReturnValue(
-      createMockDb() as unknown as ReturnType<typeof getDb>,
-    );
+    vi.mocked(getDb).mockReturnValue(createMockDb() as unknown as ReturnType<typeof getDb>);
   });
 
   it("returns 401 without a bearer token", async () => {
@@ -72,7 +70,7 @@ describe("auth-whoami", () => {
     );
 
     expect(res.status).toBe(200);
-    const body = await res.json() as WhoamiBody;
+    const body = (await res.json()) as WhoamiBody;
     expect(body.data).toEqual({
       user: {
         id: "user-1",
@@ -110,7 +108,7 @@ describe("auth-whoami", () => {
       createMockContext(),
     );
 
-    const body = await res.json() as WhoamiBody;
+    const body = (await res.json()) as WhoamiBody;
     expect(body.data.isAdmin).toBe(false);
   });
 });

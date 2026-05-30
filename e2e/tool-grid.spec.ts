@@ -58,7 +58,4 @@ test.describe("ToolGrid", () => {
       - paragraph: /Try adjusting/
     `);
   });
-
 });
-
-

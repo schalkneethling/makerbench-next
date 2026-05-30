@@ -17,9 +17,7 @@ export const HasMore: Story = {
     loadCount: 12,
   },
   play: async ({ canvas }) => {
-    await expect(
-      canvas.getByRole("button", { name: /load 12 more/i }),
-    ).toBeEnabled();
+    await expect(canvas.getByRole("button", { name: /load 12 more/i })).toBeEnabled();
   },
 };
 

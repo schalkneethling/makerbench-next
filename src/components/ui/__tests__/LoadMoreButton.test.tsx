@@ -8,9 +8,7 @@ describe("LoadMoreButton", () => {
   it("renders when hasMore is true", () => {
     render(<LoadMoreButton hasMore={true} />);
 
-    expect(
-      screen.getByRole("button", { name: /load more/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /load more/i })).toBeInTheDocument();
   });
 
   it("is hidden when hasMore is false and not loading", () => {

@@ -38,10 +38,7 @@ function configureCloudinary(): boolean {
  * @param bookmarkId - Bookmark ID for file naming
  * @returns Upload result with URL or error
  */
-export async function uploadScreenshot(
-  buffer: Buffer,
-  bookmarkId: string,
-): Promise<UploadResult> {
+export async function uploadScreenshot(buffer: Buffer, bookmarkId: string): Promise<UploadResult> {
   if (!configureCloudinary()) {
     return {
       success: false,

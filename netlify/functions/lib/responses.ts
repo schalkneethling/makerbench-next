@@ -65,10 +65,7 @@ export function forbidden(error = "Forbidden"): Response {
 /**
  * Validation error (422)
  */
-export function validationError(
-  error: string,
-  details?: Record<string, string[]>,
-): Response {
+export function validationError(error: string, details?: Record<string, string[]>): Response {
   return jsonResponse({ success: false, error, details }, 422);
 }
 

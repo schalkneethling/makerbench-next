@@ -44,9 +44,7 @@ export interface AuthenticatedUser {
   isAdmin: boolean;
 }
 
-export async function verifyAuthenticatedUser(
-  req: Request,
-): Promise<AuthenticatedUser | null> {
+export async function verifyAuthenticatedUser(req: Request): Promise<AuthenticatedUser | null> {
   const token = getBearerToken(req);
   if (!token) {
     return null;

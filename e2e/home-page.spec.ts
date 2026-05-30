@@ -19,15 +19,11 @@ test.describe("HomePage", () => {
   test("clear button appears when search has value", async ({ page }) => {
     const searchInput = page.getByRole("searchbox");
 
-    await expect(
-      page.getByRole("button", { name: /clear search/i })
-    ).not.toBeVisible();
+    await expect(page.getByRole("button", { name: /clear search/i })).not.toBeVisible();
 
     await searchInput.fill("test");
 
-    await expect(
-      page.getByRole("button", { name: /clear search/i })
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /clear search/i })).toBeVisible();
 
     await page.getByRole("button", { name: /clear search/i }).click();
 

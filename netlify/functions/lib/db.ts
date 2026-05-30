@@ -12,8 +12,7 @@ function getEnv(key: string): string | undefined {
 }
 
 function createDbClient() {
-  const connectionString =
-    getEnv("SUPABASE_DATABASE_URL") ?? getEnv("DATABASE_URL");
+  const connectionString = getEnv("SUPABASE_DATABASE_URL") ?? getEnv("DATABASE_URL");
 
   if (!connectionString) {
     throw new Error("SUPABASE_DATABASE_URL or DATABASE_URL is not configured");

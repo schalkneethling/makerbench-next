@@ -13,12 +13,7 @@ export interface LinkButtonProps {
 }
 
 /** Link styled as a button for navigation actions. */
-export function LinkButton({
-  to,
-  variant = "primary",
-  children,
-  className = "",
-}: LinkButtonProps) {
+export function LinkButton({ to, variant = "primary", children, className = "" }: LinkButtonProps) {
   const variantClass = `Button--${variant}`;
 
   return (
@@ -27,4 +22,3 @@ export function LinkButton({
     </Link>
   );
 }
-

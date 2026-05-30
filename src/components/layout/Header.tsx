@@ -28,9 +28,7 @@ export function Header() {
       setIsAuthPending(false);
     } catch (error) {
       setAuthError(
-        error instanceof Error
-          ? error.message
-          : "Authentication failed. Please try again.",
+        error instanceof Error ? error.message : "Authentication failed. Please try again.",
       );
       setIsAuthPending(false);
     }
@@ -41,10 +39,16 @@ export function Header() {
       <div className="Header-inner">
         <Logo href="/" />
         <nav className="Header-nav" aria-label="Primary">
-          <LinkButton to="/tools" variant="secondary">Tools</LinkButton>
-          <LinkButton to="/resources" variant="secondary">Resources</LinkButton>
+          <LinkButton to="/tools" variant="secondary">
+            Tools
+          </LinkButton>
+          <LinkButton to="/resources" variant="secondary">
+            Resources
+          </LinkButton>
           {isAuthenticated && (
-            <LinkButton to="/library" variant="secondary">Library</LinkButton>
+            <LinkButton to="/library" variant="secondary">
+              Library
+            </LinkButton>
           )}
           <LinkButton to="/submit">Submit Tool</LinkButton>
         </nav>
@@ -62,9 +66,7 @@ export function Header() {
                   </p>
                 )}
                 {identity?.user.email && (
-                  <p className="Header-profileEmail ui-caption">
-                    {identity.user.email}
-                  </p>
+                  <p className="Header-profileEmail ui-caption">{identity.user.email}</p>
                 )}
                 <button
                   type="button"

@@ -164,8 +164,5 @@ export function searchResources(
   params: SearchResourcesParams = {},
   options: RequestOptions = {},
 ): Promise<ResourcesResponse> {
-  return fetchResourcesResponse(
-    buildPath("/api/resources/search", params),
-    options,
-  );
+  return fetchResourcesResponse(buildPath("/api/resources/search", params), options);
 }
