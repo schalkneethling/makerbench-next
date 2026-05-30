@@ -33,7 +33,7 @@
     "@supabase/supabase-js": "^2.106.2",
     "@varlock/1password-plugin": "^0.3.5",
     "cheerio": "^1.1.2",
-    "cloudinary": "^2.8.0",
+    "cloudinary": "^2.10.0",
     "drizzle-orm": "^0.45.2",
     "pg": "^8.21.0",
     "react": "^19.2.6",
