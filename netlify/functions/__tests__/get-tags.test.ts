@@ -53,9 +53,7 @@ describe("get-tags", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockDb = createMockDb();
-    vi.mocked(getDb).mockReturnValue(
-      mockDb as unknown as ReturnType<typeof getDb>,
-    );
+    vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
     mockContext = createMockContext();
   });
 
@@ -113,9 +111,7 @@ describe("get-tags", () => {
 
     expect(res.status).toBe(200);
     const body = (await res.json()) as SuccessResponse<TagsResponseData>;
-    expect(body.data.tags).toEqual([
-      { id: "react", name: "react", usageCount: 2 },
-    ]);
+    expect(body.data.tags).toEqual([{ id: "react", name: "react", usageCount: 2 }]);
   });
 
   it("returns 400 for an invalid limit", async () => {

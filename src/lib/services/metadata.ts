@@ -10,10 +10,7 @@ export interface MetadataResult {
   error?: string;
 }
 
-function resolveMetadataUrl(
-  candidateUrl: string | undefined,
-  pageUrl: string,
-): string | null {
+function resolveMetadataUrl(candidateUrl: string | undefined, pageUrl: string): string | null {
   if (!candidateUrl) {
     return null;
   }
@@ -62,10 +59,7 @@ export async function extractMetadata(url: string): Promise<MetadataResult> {
     const description = ogDescription || metaDescription || null;
 
     // Extract OG image
-    const ogImage = resolveMetadataUrl(
-      $('meta[property="og:image"]').attr("content"),
-      url,
-    );
+    const ogImage = resolveMetadataUrl($('meta[property="og:image"]').attr("content"), url);
 
     return { title, description, ogImage };
   } catch (error) {

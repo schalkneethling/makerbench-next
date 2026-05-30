@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 
-import {
-  getTags,
-  type BookmarkApiError,
-  type GetTagsParams,
-  type Tag,
-} from "../api";
+import { getTags, type BookmarkApiError, type GetTagsParams, type Tag } from "../api";
 
 interface UseTagsState {
   tags: Tag[];

@@ -204,14 +204,8 @@ const urlSchema = z.string().url("Please enter a valid URL");
 // Tool submission validation
 export const toolSubmissionSchema = z.object({
   url: urlSchema,
-  githubUrl: z
-    .string()
-    .url("Please enter a valid GitHub URL")
-    .optional()
-    .or(z.literal("")),
-  tags: z
-    .array(z.string().min(1, "Tag cannot be empty"))
-    .min(1, "At least one tag is required"),
+  githubUrl: z.string().url("Please enter a valid GitHub URL").optional().or(z.literal("")),
+  tags: z.array(z.string().min(1, "Tag cannot be empty")).min(1, "At least one tag is required"),
   submitterName: z.string().optional(),
   submitterGithubUrl: z
     .string()

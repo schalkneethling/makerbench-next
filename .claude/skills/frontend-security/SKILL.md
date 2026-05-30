@@ -95,6 +95,7 @@ Load these references based on findings:
 ## Security Audit Report
 
 ### Summary
+
 - Critical: X findings
 - High: X findings
 - Medium: X findings
@@ -103,6 +104,7 @@ Load these references based on findings:
 ### Critical Findings
 
 #### [CRITICAL-001] Title
+
 - **Location**: file:line
 - **Pattern**: Code snippet
 - **Risk**: Description of the vulnerability
@@ -110,6 +112,7 @@ Load these references based on findings:
 - **Reference**: OWASP link
 
 ### High Findings
+
 [...]
 ```
 

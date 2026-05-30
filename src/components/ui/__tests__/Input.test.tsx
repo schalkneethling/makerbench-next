@@ -28,12 +28,7 @@ describe("Input", () => {
     render(
       <>
         <label htmlFor="email-input">Email</label>
-        <Input
-          id="email-input"
-          type="email"
-          placeholder="name@example.com"
-          disabled
-        />
+        <Input id="email-input" type="email" placeholder="name@example.com" disabled />
       </>,
     );
 

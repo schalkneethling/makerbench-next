@@ -58,9 +58,7 @@ interface CountRow extends Record<string, unknown> {
   total: number;
 }
 
-function parsePagination(
-  url: URL,
-): { limit: number; offset: number } | Response {
+function parsePagination(url: URL): { limit: number; offset: number } | Response {
   const limitParam = url.searchParams.get("limit");
   const offsetParam = url.searchParams.get("offset");
   let limit = DEFAULT_LIMIT;
@@ -146,9 +144,7 @@ async function getApprovedResourcesPage(
   };
 }
 
-async function hydrateStackChildren(
-  resources: PublicResourceRow[],
-): Promise<PublicResource[]> {
+async function hydrateStackChildren(resources: PublicResourceRow[]): Promise<PublicResource[]> {
   const db = getDb();
   const stackIds = resources
     .filter((resource) => resource.kind === "stack")
@@ -207,9 +203,7 @@ async function hydrateStackChildren(
     tags: mapTags(resource.tags),
     createdAt: serializeDate(resource.created_at),
     kind: resource.kind,
-    ...(resource.kind === "stack"
-      ? { children: childrenByStackId.get(resource.id) ?? [] }
-      : {}),
+    ...(resource.kind === "stack" ? { children: childrenByStackId.get(resource.id) ?? [] } : {}),
   }));
 }
 

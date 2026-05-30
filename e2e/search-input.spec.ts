@@ -28,17 +28,12 @@ test.describe("SearchInput", () => {
     const searchInput = page.getByRole("searchbox", { name: /search/i }).first();
 
     // Initially no clear button
-    await expect(
-      page.getByRole("button", { name: /clear search/i }),
-    ).not.toBeVisible();
+    await expect(page.getByRole("button", { name: /clear search/i })).not.toBeVisible();
 
     // Type in search
     await searchInput.fill("test query");
 
     // Clear button should appear
-    await expect(
-      page.getByRole("button", { name: /clear search/i }),
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /clear search/i })).toBeVisible();
   });
-
 });

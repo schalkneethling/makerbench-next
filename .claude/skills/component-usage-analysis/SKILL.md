@@ -135,12 +135,10 @@ Ensure comprehensive coverage before reporting:
    ```
 
 2. **Verify search found expected files:**
-
    - Spot-check known usages
    - Confirm count matches expectations
 
 3. **Check for alternative patterns:**
-
    - Embedded includes: `{% include "@elements/image/image.twig" %}`
    - Variable includes: `{% include image_template %}`
    - Embed blocks: `{% embed "@elements/image/image.twig" %}`

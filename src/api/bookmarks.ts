@@ -114,11 +114,7 @@ export class BookmarkApiError extends Error {
   status: number;
   details?: Record<string, string[]>;
 
-  constructor(
-    message: string,
-    status: number,
-    details?: Record<string, string[]>,
-  ) {
+  constructor(message: string, status: number, details?: Record<string, string[]>) {
     super(message);
     this.name = "BookmarkApiError";
     this.status = status;
@@ -185,18 +181,14 @@ async function fetchValidatedResponse<T>(
     return result.output.data;
   } catch (error) {
     const durationMs = Math.round(getNow() - startTime);
-    const aborted =
-      error instanceof DOMException && error.name === "AbortError";
+    const aborted = error instanceof DOMException && error.name === "AbortError";
 
     console.info("[perf] client-request", {
       requestId,
       path,
       durationMs,
       aborted,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Unexpected request failure",
+      error: error instanceof Error ? error.message : "Unexpected request failure",
     });
 
     throw error;
@@ -226,13 +218,8 @@ function appendListParams(
   return `${path}${queryString ? `?${queryString}` : ""}`;
 }
 
-export async function getBookmarks(
-  params: GetBookmarksParams = {},
-): Promise<BookmarksResponse> {
-  return fetchValidatedResponse(
-    appendListParams("/api/tools", params),
-    bookmarksResponseSchema,
-  );
+export async function getBookmarks(params: GetBookmarksParams = {}): Promise<BookmarksResponse> {
+  return fetchValidatedResponse(appendListParams("/api/tools", params), bookmarksResponseSchema);
 }
 
 export async function searchBookmarks(
@@ -250,16 +237,12 @@ export async function getTags(
   params: GetTagsParams = {},
   options: RequestOptions = {},
 ): Promise<TagsResponse> {
-  return fetchValidatedResponse(
-    appendListParams("/api/tools/tags", params),
-    tagsResponseSchema,
-    { signal: options.signal },
-  );
+  return fetchValidatedResponse(appendListParams("/api/tools/tags", params), tagsResponseSchema, {
+    signal: options.signal,
+  });
 }
 
-export async function submitBookmark(
-  data: BookmarkRequest,
-): Promise<SubmitBookmarkResponse> {
+export async function submitBookmark(data: BookmarkRequest): Promise<SubmitBookmarkResponse> {
   const { submitterGithubUsername, submitterGithubUrl, ...rest } = data;
   const payload = {
     ...rest,

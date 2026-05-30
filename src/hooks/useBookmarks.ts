@@ -35,9 +35,7 @@ interface UseBookmarksOptions {
  * Hook for fetching paginated bookmarks.
  * By default fetches on mount; set fetchOnMount: false for manual control.
  */
-export function useBookmarks(
-  options: UseBookmarksOptions = {},
-): UseBookmarksReturn {
+export function useBookmarks(options: UseBookmarksOptions = {}): UseBookmarksReturn {
   const { fetchOnMount = true, initialParams } = options;
   const hasFetched = useRef(false);
 
@@ -121,4 +119,3 @@ export function useBookmarks(
     reset,
   };
 }
-

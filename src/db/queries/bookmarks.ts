@@ -12,10 +12,7 @@ export async function createBookmark(data: InsertToolListing) {
 }
 
 export async function getBookmarkById(id: string) {
-  return await db
-    .select()
-    .from(toolListingsTable)
-    .where(eq(toolListingsTable.id, id));
+  return await db.select().from(toolListingsTable).where(eq(toolListingsTable.id, id));
 }
 
 export async function getApprovedBookmarks(limit = 50, offset = 0) {
@@ -76,19 +73,12 @@ export async function getBookmarksWithTags(limit = 50, offset = 0) {
     .offset(offset);
 }
 
-export async function searchBookmarksByTags(
-  tagNames: string[],
-  limit = 50,
-  offset = 0,
-) {
+export async function searchBookmarksByTags(tagNames: string[], limit = 50, offset = 0) {
   return await db
     .select()
     .from(toolListingsTable)
     .where(
-      and(
-        eq(toolListingsTable.status, "approved"),
-        sql`${toolListingsTable.tags} && ${tagNames}`,
-      ),
+      and(eq(toolListingsTable.status, "approved"), sql`${toolListingsTable.tags} && ${tagNames}`),
     )
     .orderBy(desc(toolListingsTable.createdAt))
     .limit(limit)

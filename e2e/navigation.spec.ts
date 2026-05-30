@@ -16,9 +16,7 @@ test.describe("Navigation", () => {
   test("unknown route shows 404 page", async ({ page }) => {
     await page.goto("/nonexistent-page");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("404");
-    await expect(
-      page.getByText("The page you're looking for doesn't exist.")
-    ).toBeVisible();
+    await expect(page.getByText("The page you're looking for doesn't exist.")).toBeVisible();
   });
 
   test("404 page has link back to home", async ({ page }) => {
@@ -31,16 +29,11 @@ test.describe("Navigation", () => {
 test.describe("Route content", () => {
   test("homepage has correct heading", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Discover Tools"
-    );
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Discover Tools");
   });
 
   test("submit page has correct heading", async ({ page }) => {
     await page.goto("/submit");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Submit a Tool"
-    );
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Submit a Tool");
   });
 });
-

@@ -20,18 +20,18 @@ import DOMPurify from 'dompurify';
 
 ```jsx
 // DANGEROUS - javascript: URLs in href
-<a href={userInput}>Link</a>
+<a href={userInput}>Link</a>;
 
 // SAFE - validate URL protocol
 function SafeLink({ href, children }) {
   const safeHref = useMemo(() => {
     try {
       const url = new URL(href, window.location.origin);
-      if (['http:', 'https:', 'mailto:'].includes(url.protocol)) {
+      if (["http:", "https:", "mailto:"].includes(url.protocol)) {
         return href;
       }
     } catch {}
-    return '#';
+    return "#";
   }, [href]);
 
   return <a href={safeHref}>{children}</a>;
@@ -55,17 +55,15 @@ function SafeLink({ href, children }) {
 
 ```jsx
 // DANGEROUS - injecting user data into SSR without escaping
-<script>
-  window.__INITIAL_STATE__ = {JSON.stringify(userControlledData)}
-</script>
+<script>window.__INITIAL_STATE__ = {JSON.stringify(userControlledData)}</script>;
 
 // SAFE - serialize with escaping
-import serialize from 'serialize-javascript';
+import serialize from "serialize-javascript";
 <script
   dangerouslySetInnerHTML={{
-    __html: `window.__INITIAL_STATE__ = ${serialize(data, { isJSON: true })}`
+    __html: `window.__INITIAL_STATE__ = ${serialize(data, { isJSON: true })}`,
   }}
-/>
+/>;
 ```
 
 ## Astro Security
@@ -116,20 +114,20 @@ const Component = await loadComponent();
 // src/pages/api/data.js
 export async function POST({ request }) {
   // Validate Content-Type
-  const contentType = request.headers.get('content-type');
-  if (!contentType?.includes('application/json')) {
-    return new Response('Invalid content type', { status: 415 });
+  const contentType = request.headers.get("content-type");
+  if (!contentType?.includes("application/json")) {
+    return new Response("Invalid content type", { status: 415 });
   }
 
   // Validate and sanitize input
   const body = await request.json();
   if (!validateInput(body)) {
-    return new Response('Invalid input', { status: 400 });
+    return new Response("Invalid input", { status: 400 });
   }
 
   // Process request
   return new Response(JSON.stringify(result), {
-    headers: { 'Content-Type': 'application/json' }
+    headers: { "Content-Type": "application/json" },
   });
 }
 ```
@@ -177,12 +175,12 @@ export async function POST({ request }) {
 twig:
   sandbox:
     policy:
-      tags: ['if', 'for', 'set']
-      filters: ['escape', 'upper', 'lower']
+      tags: ["if", "for", "set"]
+      filters: ["escape", "upper", "lower"]
       methods:
-        Symfony\Component\Routing\Generator\UrlGeneratorInterface: ['generate']
+        Symfony\Component\Routing\Generator\UrlGeneratorInterface: ["generate"]
       properties: []
-      functions: ['path', 'url']
+      functions: ["path", "url"]
 ```
 
 ### CSRF in Forms
@@ -207,18 +205,18 @@ Bun.serve({
     const url = new URL(req.url);
 
     // Validate origin for CORS
-    const origin = req.headers.get('origin');
+    const origin = req.headers.get("origin");
     if (origin && !isAllowedOrigin(origin)) {
-      return new Response('Forbidden', { status: 403 });
+      return new Response("Forbidden", { status: 403 });
     }
 
     // Rate limiting
     if (isRateLimited(req)) {
-      return new Response('Too Many Requests', { status: 429 });
+      return new Response("Too Many Requests", { status: 429 });
     }
 
     return handleRequest(req);
-  }
+  },
 });
 ```
 
@@ -227,11 +225,11 @@ Bun.serve({
 ```javascript
 // Validate file paths
 function safeReadFile(userPath) {
-  const baseDir = '/app/public';
+  const baseDir = "/app/public";
   const resolved = Bun.resolveSync(userPath, baseDir);
 
   if (!resolved.startsWith(baseDir)) {
-    throw new Error('Path traversal detected');
+    throw new Error("Path traversal detected");
   }
 
   return Bun.file(resolved).text();
@@ -244,34 +242,34 @@ function safeReadFile(userPath) {
 
 ```javascript
 // NEVER store sensitive data in localStorage
-localStorage.setItem('token', jwt);  // DANGEROUS
+localStorage.setItem("token", jwt); // DANGEROUS
 
 // Use httpOnly cookies for tokens instead
 // Or store in memory with short expiration
 
 // If localStorage is necessary, encrypt
-import { encrypt, decrypt } from './crypto';
-localStorage.setItem('data', encrypt(sensitiveData, key));
+import { encrypt, decrypt } from "./crypto";
+localStorage.setItem("data", encrypt(sensitiveData, key));
 ```
 
 ### postMessage
 
 ```javascript
 // Always validate origin and data
-window.addEventListener('message', (event) => {
+window.addEventListener("message", (event) => {
   // Validate origin
-  const allowedOrigins = ['https://trusted.com'];
+  const allowedOrigins = ["https://trusted.com"];
   if (!allowedOrigins.includes(event.origin)) return;
 
   // Validate data structure
-  if (typeof event.data !== 'object') return;
-  if (!['action1', 'action2'].includes(event.data.type)) return;
+  if (typeof event.data !== "object") return;
+  if (!["action1", "action2"].includes(event.data.type)) return;
 
   handleMessage(event.data);
 });
 
 // Always specify target origin when sending
-iframe.contentWindow.postMessage(data, 'https://specific-origin.com');
+iframe.contentWindow.postMessage(data, "https://specific-origin.com");
 // NEVER use '*' for sensitive data
 ```
 
@@ -282,23 +280,23 @@ iframe.contentWindow.postMessage(data, 'https://specific-origin.com');
 const wss = new WebSocket.Server({
   server,
   verifyClient: ({ origin, req }, callback) => {
-    const allowed = ['https://myapp.com'];
+    const allowed = ["https://myapp.com"];
     callback(allowed.includes(origin));
-  }
+  },
 });
 
 // Validate messages
-wss.on('connection', (ws) => {
-  ws.on('message', (data) => {
+wss.on("connection", (ws) => {
+  ws.on("message", (data) => {
     try {
       const msg = JSON.parse(data);
       if (!isValidMessage(msg)) {
-        ws.close(1008, 'Invalid message');
+        ws.close(1008, "Invalid message");
         return;
       }
       handleMessage(msg);
     } catch {
-      ws.close(1008, 'Invalid JSON');
+      ws.close(1008, "Invalid JSON");
     }
   });
 });

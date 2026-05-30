@@ -11,10 +11,7 @@ export interface ToolCardSkeletonProps {
  */
 export function ToolCardSkeleton({ className = "" }: ToolCardSkeletonProps) {
   return (
-    <div
-      className={`ToolCardSkeleton ${className}`.trim()}
-      aria-hidden="true"
-    >
+    <div className={`ToolCardSkeleton ${className}`.trim()} aria-hidden="true">
       <div className="ToolCardSkeleton-image" />
 
       <div className="ToolCardSkeleton-content">

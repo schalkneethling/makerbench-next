@@ -15,8 +15,8 @@ function validateUsername(input) {
 
 // AVOID: Denylist (block known bad)
 function validateInput(input) {
-  const blocked = ['<script>', 'javascript:', 'onerror'];
-  return !blocked.some(bad => input.includes(bad)); // Easily bypassed
+  const blocked = ["<script>", "javascript:", "onerror"];
+  return !blocked.some((bad) => input.includes(bad)); // Easily bypassed
 }
 ```
 
@@ -33,8 +33,8 @@ function validateEmail(email) {
 }
 
 // Use built-in browser validation
-const input = document.createElement('input');
-input.type = 'email';
+const input = document.createElement("input");
+input.type = "email";
 input.value = email;
 return input.checkValidity();
 ```
@@ -45,7 +45,7 @@ return input.checkValidity();
 function validateUrl(input) {
   try {
     const url = new URL(input);
-    return ['http:', 'https:'].includes(url.protocol);
+    return ["http:", "https:"].includes(url.protocol);
   } catch {
     return false;
   }
@@ -57,8 +57,8 @@ function validateSafeUrl(input) {
   if (!url) return false;
 
   // Block data: and javascript: schemes
-  const dangerous = ['javascript:', 'data:', 'vbscript:'];
-  return !dangerous.some(scheme => input.toLowerCase().startsWith(scheme));
+  const dangerous = ["javascript:", "data:", "vbscript:"];
+  return !dangerous.some((scheme) => input.toLowerCase().startsWith(scheme));
 }
 ```
 
@@ -77,7 +77,7 @@ function validateDecimal(input, min, max, decimals) {
   if (isNaN(num)) return false;
   if (num < min || num > max) return false;
 
-  const parts = input.split('.');
+  const parts = input.split(".");
   if (parts.length > 2) return false;
   if (parts[1] && parts[1].length > decimals) return false;
 
@@ -107,7 +107,7 @@ function validateDateRange(input, minDate, maxDate) {
 function validatePhone(input) {
   // E.164 format: +[country][number], max 15 digits
   const pattern = /^\+[1-9]\d{1,14}$/;
-  return pattern.test(input.replace(/[\s\-()]/g, ''));
+  return pattern.test(input.replace(/[\s\-()]/g, ""));
 }
 ```
 
@@ -118,14 +118,14 @@ function validatePhone(input) {
 ```javascript
 function escapeHtml(input) {
   const map = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#x27;',
-    '/': '&#x2F;'
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#x27;",
+    "/": "&#x2F;",
   };
-  return String(input).replace(/[&<>"'/]/g, char => map[char]);
+  return String(input).replace(/[&<>"'/]/g, (char) => map[char]);
 }
 ```
 
@@ -136,21 +136,21 @@ function escapeHtml(input) {
 const query = `SELECT * FROM users WHERE name = '${userInput}'`;
 
 // RIGHT - use parameterized queries
-const query = 'SELECT * FROM users WHERE name = ?';
+const query = "SELECT * FROM users WHERE name = ?";
 db.query(query, [userInput]);
 ```
 
 ### Path Traversal Prevention
 
 ```javascript
-const path = require('path');
+const path = require("path");
 
 function validateFilePath(userPath, baseDir) {
   const resolved = path.resolve(baseDir, userPath);
 
   // Ensure resolved path starts with base directory
   if (!resolved.startsWith(path.resolve(baseDir))) {
-    throw new Error('Path traversal detected');
+    throw new Error("Path traversal detected");
   }
 
   return resolved;
@@ -162,13 +162,13 @@ function validateFilePath(userPath, baseDir) {
 ### Node.js with Joi
 
 ```javascript
-const Joi = require('joi');
+const Joi = require("joi");
 
 const userSchema = Joi.object({
   username: Joi.string().alphanum().min(3).max(30).required(),
   email: Joi.string().email().required(),
   age: Joi.number().integer().min(0).max(150),
-  website: Joi.string().uri({ scheme: ['http', 'https'] })
+  website: Joi.string().uri({ scheme: ["http", "https"] }),
 });
 
 function validateUser(data) {
@@ -181,32 +181,37 @@ function validateUser(data) {
 ### Express Validator
 
 ```javascript
-const { body, validationResult } = require('express-validator');
+const { body, validationResult } = require("express-validator");
 
-app.post('/user',
-  body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 8 }),
-  body('age').isInt({ min: 0, max: 150 }),
+app.post(
+  "/user",
+  body("email").isEmail().normalizeEmail(),
+  body("password").isLength({ min: 8 }),
+  body("age").isInt({ min: 0, max: 150 }),
   (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
     // Process valid input
-  }
+  },
 );
 ```
 
 ### Zod (TypeScript)
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 const UserSchema = z.object({
-  username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_]+$/),
+  username: z
+    .string()
+    .min(3)
+    .max(30)
+    .regex(/^[a-zA-Z0-9_]+$/),
   email: z.string().email(),
   age: z.number().int().min(0).max(150).optional(),
-  website: z.string().url().optional()
+  website: z.string().url().optional(),
 });
 
 type User = z.infer<typeof UserSchema>;

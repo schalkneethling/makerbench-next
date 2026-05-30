@@ -28,11 +28,7 @@ export default async (req: Request, _context: Context) => {
   }
 
   try {
-    assertRequiredEnv([
-      "SUPABASE_DATABASE_URL",
-      "VITE_SUPABASE_URL",
-      "VITE_SUPABASE_ANON_KEY",
-    ]);
+    assertRequiredEnv(["SUPABASE_DATABASE_URL", "VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY"]);
   } catch (error) {
     return handleMissingEnvironmentError(error, "get-library");
   }

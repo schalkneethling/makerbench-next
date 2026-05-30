@@ -54,33 +54,35 @@ vm.runInThisContext(userInput);
 require(userInput);
 
 // DANGEROUS - setTimeout/setInterval with strings
-setTimeout(userInput, 1000);  // Executes as code
+setTimeout(userInput, 1000); // Executes as code
 
 // SAFE - pass functions instead
-setTimeout(() => { /* code */ }, 1000);
+setTimeout(() => {
+  /* code */
+}, 1000);
 ```
 
 ### Child Process Injection
 
 ```javascript
 // DANGEROUS - command injection
-const { exec } = require('child_process');
-exec(`ls ${userInput}`);  // Shell injection
+const { exec } = require("child_process");
+exec(`ls ${userInput}`); // Shell injection
 
 // SAFER - use execFile with arguments array
-const { execFile } = require('child_process');
-execFile('ls', [userInput], callback);  // Arguments not interpreted by shell
+const { execFile } = require("child_process");
+execFile("ls", [userInput], callback); // Arguments not interpreted by shell
 
 // SAFEST - use spawn with shell: false
-const { spawn } = require('child_process');
-spawn('ls', [userInput], { shell: false });
+const { spawn } = require("child_process");
+spawn("ls", [userInput], { shell: false });
 ```
 
 ### File System
 
 ```javascript
-const path = require('path');
-const fs = require('fs');
+const path = require("path");
+const fs = require("fs");
 
 // DANGEROUS - path traversal
 const filePath = `/uploads/${userInput}`;
@@ -91,7 +93,7 @@ function safeReadFile(userInput, baseDir) {
 
   // Verify path is within allowed directory
   if (!safePath.startsWith(path.resolve(baseDir))) {
-    throw new Error('Invalid file path');
+    throw new Error("Invalid file path");
   }
 
   return fs.readFileSync(safePath);
@@ -103,14 +105,14 @@ function safeReadFile(userInput, baseDir) {
 ### Rate Limiting
 
 ```javascript
-const rateLimit = require('express-rate-limit');
+const rateLimit = require("express-rate-limit");
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per window
-  message: 'Too many requests',
+  message: "Too many requests",
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
 });
 
 app.use(limiter);
@@ -119,28 +121,28 @@ app.use(limiter);
 const authLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 5, // 5 attempts per hour
-  message: 'Too many login attempts'
+  message: "Too many login attempts",
 });
 
-app.use('/api/login', authLimiter);
+app.use("/api/login", authLimiter);
 ```
 
 ### Request Size Limits
 
 ```javascript
-const express = require('express');
+const express = require("express");
 const app = express();
 
 // Limit JSON body size
-app.use(express.json({ limit: '100kb' }));
+app.use(express.json({ limit: "100kb" }));
 
 // Limit URL-encoded body
-app.use(express.urlencoded({ extended: true, limit: '100kb' }));
+app.use(express.urlencoded({ extended: true, limit: "100kb" }));
 
 // Limit file uploads
-const multer = require('multer');
+const multer = require("multer");
 const upload = multer({
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 });
 ```
 
@@ -158,27 +160,29 @@ server.headersTimeout = 66000;
 ## Secure Headers
 
 ```javascript
-const helmet = require('helmet');
+const helmet = require("helmet");
 
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      objectSrc: ["'none'"],
-      upgradeInsecureRequests: []
-    }
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  },
-  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-  frameguard: { action: 'deny' }
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    frameguard: { action: "deny" },
+  }),
+);
 ```
 
 ## Error Handling
@@ -191,19 +195,22 @@ app.use((err, req, res, next) => {
 
   // Send generic message to client
   res.status(500).json({
-    error: 'An unexpected error occurred'
+    error: "An unexpected error occurred",
   });
 });
 
 // Async error wrapper
-const asyncHandler = fn => (req, res, next) => {
+const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
-app.get('/data', asyncHandler(async (req, res) => {
-  const data = await fetchData();
-  res.json(data);
-}));
+app.get(
+  "/data",
+  asyncHandler(async (req, res) => {
+    const data = await fetchData();
+    res.json(data);
+  }),
+);
 ```
 
 ## Environment Variables
@@ -214,8 +221,8 @@ app.get('/data', asyncHandler(async (req, res) => {
 const apiKey = process.env.API_KEY;
 
 // Validate required env vars at startup
-const required = ['API_KEY', 'DB_URL', 'SESSION_SECRET'];
-required.forEach(varName => {
+const required = ["API_KEY", "DB_URL", "SESSION_SECRET"];
+required.forEach((varName) => {
   if (!process.env[varName]) {
     console.error(`Missing required env var: ${varName}`);
     process.exit(1);
@@ -228,17 +235,17 @@ required.forEach(varName => {
 ```javascript
 // DANGEROUS - evil regex (catastrophic backtracking)
 const evilRegex = /^(a+)+$/;
-evilRegex.test('aaaaaaaaaaaaaaaaaaaaaaaaaaa!'); // Hangs
+evilRegex.test("aaaaaaaaaaaaaaaaaaaaaaaaaaa!"); // Hangs
 
 // Use safe-regex to check patterns
-const safe = require('safe-regex');
+const safe = require("safe-regex");
 if (!safe(userProvidedRegex)) {
-  throw new Error('Unsafe regex pattern');
+  throw new Error("Unsafe regex pattern");
 }
 
 // Or use re2 for guaranteed linear time
-const RE2 = require('re2');
-const pattern = new RE2('^[a-z]+$');
+const RE2 = require("re2");
+const pattern = new RE2("^[a-z]+$");
 ```
 
 ## NPM Security Checklist
@@ -255,5 +262,6 @@ const pattern = new RE2('^[a-z]+$');
 - [ ] Use `npm-shrinkwrap.json` for published packages
 
 OWASP References:
+
 - https://cheatsheetseries.owasp.org/cheatsheets/Nodejs_Security_Cheat_Sheet.html
 - https://cheatsheetseries.owasp.org/cheatsheets/NPM_Security_Cheat_Sheet.html

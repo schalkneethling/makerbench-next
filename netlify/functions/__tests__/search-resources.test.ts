@@ -67,9 +67,7 @@ describe("search-resources", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockDb = createMockDb();
-    vi.mocked(getDb).mockReturnValue(
-      mockDb as unknown as ReturnType<typeof getDb>,
-    );
+    vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
     mockContext = createMockContext();
   });
 
@@ -85,9 +83,7 @@ describe("search-resources", () => {
     });
 
     it("returns 400 for invalid offset", async () => {
-      const req = new Request(
-        "https://test.com/api/resources/search?offset=-1",
-      );
+      const req = new Request("https://test.com/api/resources/search?offset=-1");
 
       const res = await searchResources(req, mockContext);
 
@@ -185,9 +181,7 @@ describe("search-resources", () => {
         ],
       });
 
-    const req = new Request(
-      "https://test.com/api/resources/search?q=automation&limit=1",
-    );
+    const req = new Request("https://test.com/api/resources/search?q=automation&limit=1");
 
     const res = await searchResources(req, mockContext);
 

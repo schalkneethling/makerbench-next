@@ -28,18 +28,19 @@ flowchart LR
     Netlify --> Sentry["Sentry\n(optional error tracking)"]
 ```
 
-| Layer | Technology | Role |
-| --- | --- | --- |
-| Frontend | React 19, TypeScript, Vite | SPA with client-side routing |
-| API | Netlify Functions (Node.js 24) | REST endpoints under `/api/*` |
-| Database | Supabase Postgres | Primary data store |
-| ORM | Drizzle | Schema, migrations, typed queries |
-| Auth | Supabase Auth | OAuth (Google, GitHub); JWT verified server-side |
-| Validation | Valibot | Shared request/response schemas |
-| Screenshots | Browserless | Fallback when OG image is missing |
-| Images | Cloudinary | Hosts generated screenshots |
-| Secrets | Varlock + 1Password plugin | Local env loading; schema in `.env.schema` |
-| Hosting | Netlify | Static build + serverless functions |
+| Layer          | Technology                     | Role                                                     |
+| -------------- | ------------------------------ | -------------------------------------------------------- |
+| Frontend       | React 19, TypeScript, Vite     | SPA with client-side routing                             |
+| API            | Netlify Functions (Node.js 24) | REST endpoints under `/api/*`                            |
+| Database       | Supabase Postgres              | Primary data store                                       |
+| ORM            | Drizzle                        | Schema, migrations, typed queries                        |
+| Auth           | Supabase Auth                  | OAuth (Google, GitHub); JWT verified server-side         |
+| Validation     | Valibot                        | Shared request/response schemas                          |
+| Screenshots    | Browserless                    | Fallback when OG image is missing                        |
+| Images         | Cloudinary                     | Hosts generated screenshots                              |
+| Secrets        | Varlock + 1Password plugin     | Local env loading; schema in `.env.schema`               |
+| Hosting        | Netlify                        | Static build + serverless functions                      |
+| Component docs | Storybook 10                   | Colocated stories, MSW preview, Vitest interaction tests |
 
 ## Repository Structure
 
@@ -48,6 +49,7 @@ makerbench-next/
 ├── src/                      # Frontend application
 │   ├── api/                  # HTTP client layer (fetch + Valibot response validation)
 │   ├── components/           # UI components (bookmarks, forms, layout, resources, search, tags, ui)
+│   │   └── **/*.stories.tsx  # Colocated Storybook stories (where present)
 │   ├── db/                   # Drizzle schema and query helpers (shared with functions)
 │   ├── hooks/                # React hooks and AuthProvider
 │   ├── lib/                  # Validation, services (metadata, screenshot, cloudinary), Supabase client
@@ -59,6 +61,7 @@ makerbench-next/
 │       └── *.mts             # One function per endpoint
 ├── migrations/postgres/      # Drizzle SQL migrations (Supabase Postgres)
 ├── e2e/                      # Playwright end-to-end tests
+├── .storybook/               # Storybook config, preview decorators, MSW handlers
 ├── scripts/                  # One-off maintenance scripts (e.g. Turso import)
 ├── docs/                     # Supplementary guides (local dev, deployment)
 ├── netlify.toml              # Build, publish, SPA redirect config
@@ -76,15 +79,15 @@ makerbench-next/
 - **Routing:** React Router v7 in `src/App.tsx` wraps all pages in `MainLayout` and `AuthProvider`.
 - **Pages:**
 
-| Route | Page | Purpose |
-| --- | --- | --- |
-| `/`, `/tools` | `HomePage` | Browse and search approved tools |
-| `/resources` | `ResourcesPage` | Browse and search public resources/stacks |
-| `/library` | `LibraryPage` | Authenticated personal bookmark library |
-| `/submit` | `SubmitPage` | Submit a tool for moderation |
-| `/about` | `AboutPage` | About the project |
-| `/privacy` | `PrivacyPage` | Privacy policy |
-| `*` | `NotFoundPage` | 404 |
+| Route         | Page            | Purpose                                   |
+| ------------- | --------------- | ----------------------------------------- |
+| `/`, `/tools` | `HomePage`      | Browse and search approved tools          |
+| `/resources`  | `ResourcesPage` | Browse and search public resources/stacks |
+| `/library`    | `LibraryPage`   | Authenticated personal bookmark library   |
+| `/submit`     | `SubmitPage`    | Submit a tool for moderation              |
+| `/about`      | `AboutPage`     | About the project                         |
+| `/privacy`    | `PrivacyPage`   | Privacy policy                            |
+| `*`           | `NotFoundPage`  | 404                                       |
 
 ### Component organization
 
@@ -109,16 +112,16 @@ The project prefers **semantic HTML and web platform primitives**, with React us
 
 ### State and data fetching
 
-| Hook | Data source | Used by |
-| --- | --- | --- |
-| `useBookmarks` | `GET /api/tools` | HomePage |
-| `useSearch` | `GET /api/tools/search` | HomePage |
-| `useTags` | `GET /api/tools/tags` | HomePage |
-| `useResources` | `GET /api/resources` | ResourcesPage |
-| `useResourceSearch` | `GET /api/resources/search` | ResourcesPage |
-| `useLibraryResources` | `GET /api/library` | LibraryPage |
-| `useSubmitBookmark` | `POST /api/tools` | SubmitPage |
-| `useAuth` | Supabase session + `GET /api/auth/whoami` | Header, LibraryPage |
+| Hook                  | Data source                               | Used by             |
+| --------------------- | ----------------------------------------- | ------------------- |
+| `useBookmarks`        | `GET /api/tools`                          | HomePage            |
+| `useSearch`           | `GET /api/tools/search`                   | HomePage            |
+| `useTags`             | `GET /api/tools/tags`                     | HomePage            |
+| `useResources`        | `GET /api/resources`                      | ResourcesPage       |
+| `useResourceSearch`   | `GET /api/resources/search`               | ResourcesPage       |
+| `useLibraryResources` | `GET /api/library`                        | LibraryPage         |
+| `useSubmitBookmark`   | `POST /api/tools`                         | SubmitPage          |
+| `useAuth`             | Supabase session + `GET /api/auth/whoami` | Header, LibraryPage |
 
 Filter state (search query, tags, sort) is synced to URL search params so views are shareable.
 
@@ -168,29 +171,29 @@ Each API endpoint is a standalone `.mts` file exporting:
 
 Shared utilities live in `netlify/functions/lib/`:
 
-| Module | Responsibility |
-| --- | --- |
-| `db.ts` | Drizzle client (pg Pool, max 1 connection per invocation) |
-| `auth.ts` | JWT verification, admin role lookup |
-| `responses.ts` | Standard `{ success, data \| error }` JSON helpers |
-| `env.ts` | Required env assertions, missing-env error handling |
-| `url.ts` | URL parsing and normalization |
-| `sentry.ts` | Optional error capture and flush |
-| `tags.ts` | Tag normalization helpers |
+| Module         | Responsibility                                            |
+| -------------- | --------------------------------------------------------- |
+| `db.ts`        | Drizzle client (pg Pool, max 1 connection per invocation) |
+| `auth.ts`      | JWT verification, admin role lookup                       |
+| `responses.ts` | Standard `{ success, data \| error }` JSON helpers        |
+| `env.ts`       | Required env assertions, missing-env error handling       |
+| `url.ts`       | URL parsing and normalization                             |
+| `sentry.ts`    | Optional error capture and flush                          |
+| `tags.ts`      | Tag normalization helpers                                 |
 
 ### API surface
 
-| Method | Path | Function file | Auth | Description |
-| --- | --- | --- | --- | --- |
-| `POST` | `/api/tools` | `process-bookmark.mts` | No | Submit tool (stored as `pending`) |
-| `GET` | `/api/tools` | `get-bookmarks.mts` | No | List approved tools (paginated) |
-| `GET` | `/api/tools/search` | `search-bookmarks.mts` | No | Search/filter approved tools |
-| `GET` | `/api/tools/tags` | `get-tags.mts` | No | Tag cloud with usage counts |
-| `GET` | `/api/resources` | `get-resources.mts` | No | List approved public resources/stacks |
-| `GET` | `/api/resources/search` | `search-resources.mts` | No | Search public resources/stacks |
-| `GET` | `/api/library` | `get-library.mts` | Yes | List user's personal bookmarks |
-| `POST` | `/api/library` | `add-library.mts` | Yes | Add URL to personal library |
-| `GET` | `/api/auth/whoami` | `auth-whoami.mts` | Yes | Return authenticated identity + admin flag |
+| Method | Path                    | Function file          | Auth | Description                                |
+| ------ | ----------------------- | ---------------------- | ---- | ------------------------------------------ |
+| `POST` | `/api/tools`            | `process-bookmark.mts` | No   | Submit tool (stored as `pending`)          |
+| `GET`  | `/api/tools`            | `get-bookmarks.mts`    | No   | List approved tools (paginated)            |
+| `GET`  | `/api/tools/search`     | `search-bookmarks.mts` | No   | Search/filter approved tools               |
+| `GET`  | `/api/tools/tags`       | `get-tags.mts`         | No   | Tag cloud with usage counts                |
+| `GET`  | `/api/resources`        | `get-resources.mts`    | No   | List approved public resources/stacks      |
+| `GET`  | `/api/resources/search` | `search-resources.mts` | No   | Search public resources/stacks             |
+| `GET`  | `/api/library`          | `get-library.mts`      | Yes  | List user's personal bookmarks             |
+| `POST` | `/api/library`          | `add-library.mts`      | Yes  | Add URL to personal library                |
+| `GET`  | `/api/auth/whoami`      | `auth-whoami.mts`      | Yes  | Return authenticated identity + admin flag |
 
 All responses follow a consistent envelope:
 
@@ -247,7 +250,7 @@ Supabase Postgres is the single source of truth. Drizzle ORM provides:
 
 Apply migrations with `pnpm db:migrate`. Generate new migrations with `pnpm db:generate` after schema changes.
 
-**Important:** Schema changes must be migrated to production *before* deploying code that depends on new columns.
+**Important:** Schema changes must be migrated to production _before_ deploying code that depends on new columns.
 
 ### Entity model
 
@@ -289,17 +292,17 @@ erDiagram
     }
 ```
 
-| Table | Purpose |
-| --- | --- |
-| `resources` | Canonical URL identity shared across all listing types |
-| `tool_listings` | Public tool submissions with moderation status and preview image |
-| `bookmarks` | Per-user personal bookmarks (private library) |
-| `public_listings` | Approved community resources (LinkStack migration) |
-| `public_stacks` | Curated multi-item resource stacks |
-| `public_stack_items` | Items within a public stack |
-| `user_roles` | Admin role assignments |
-| `user_preferences` | User settings (e.g. highlight color) |
-| `auth.users` | Supabase-managed auth users (referenced, not owned) |
+| Table                | Purpose                                                          |
+| -------------------- | ---------------------------------------------------------------- |
+| `resources`          | Canonical URL identity shared across all listing types           |
+| `tool_listings`      | Public tool submissions with moderation status and preview image |
+| `bookmarks`          | Per-user personal bookmarks (private library)                    |
+| `public_listings`    | Approved community resources (LinkStack migration)               |
+| `public_stacks`      | Curated multi-item resource stacks                               |
+| `public_stack_items` | Items within a public stack                                      |
+| `user_roles`         | Admin role assignments                                           |
+| `user_preferences`   | User settings (e.g. highlight color)                             |
+| `auth.users`         | Supabase-managed auth users (referenced, not owned)              |
 
 **Status workflow:** Submissions across `tool_listings`, `public_listings`, `public_stacks`, and `public_stack_items` use `pending | approved | rejected`. Public endpoints return only `approved` rows. A unified admin moderation queue is not yet implemented — see [#105](https://github.com/schalkneethling/makerbench-next/issues/105).
 
@@ -378,15 +381,28 @@ sequenceDiagram
 
 ## Testing Architecture
 
-| Layer | Tool | Location | Focus |
-| --- | --- | --- | --- |
-| Unit / component | Vitest + Testing Library + happy-dom | `src/**/__tests__/` | Hooks, components, validation, API clients |
-| Function | Vitest | `netlify/functions/__tests__/` | Endpoint handlers, shared lib |
-| E2e | Playwright | `e2e/` | Page structure via ARIA snapshots, user flows |
+| Layer            | Tool                                       | Location                              | Focus                                                 |
+| ---------------- | ------------------------------------------ | ------------------------------------- | ----------------------------------------------------- |
+| Unit / component | Vitest + Testing Library + happy-dom       | `src/**/__tests__/`                   | Hooks, components, validation, API clients            |
+| Function         | Vitest                                     | `netlify/functions/__tests__/`        | Endpoint handlers, shared lib                         |
+| Storybook        | Storybook 10 + Vitest browser (Playwright) | `src/**/*.stories.tsx`, `.storybook/` | Isolated component render, play functions, a11y addon |
+| E2e              | Playwright                                 | `e2e/`                                | Page structure via ARIA snapshots, user flows         |
 
-Run `pnpm test` for unit tests (always exits; never watch mode in CI). Run `pnpm test:e2e` for Playwright (starts Vite dev server automatically).
+Run `pnpm test` for unit/component/function tests (always exits; never watch mode in CI). Run `npx vitest --project storybook run` for Storybook interaction tests. Run `pnpm test:e2e` for Playwright (starts Vite dev server automatically). Run `pnpm storybook` for the component workshop UI.
 
-API tests use MSW (`src/test/mocks/`) for frontend client tests. Function tests use direct handler invocation with mocked dependencies.
+API tests use MSW (`src/test/mocks/`) for frontend client tests. Storybook uses MSW via `msw-storybook-addon` (handlers in `.storybook/msw-handlers.ts`; worker in `public/`). The Vitest **storybook** project does not load `src/test/setup.ts` (Node MSW server) — only the unit and components projects do. Function tests use direct handler invocation with mocked dependencies.
+
+### Storybook setup (May 2026)
+
+- **Framework:** `@storybook/react-vite` (Storybook 10.4.x)
+- **Preview:** `.storybook/preview.tsx` imports `src/index.css`, wraps stories in `AuthProvider` + `BrowserRouter`, and registers MSW loaders/handlers
+- **Static assets:** `staticDirs: ['../public']` in `.storybook/main.ts` (includes MSW service worker)
+- **Env:** Varlock Vite plugin merged in `viteFinal` so `VITE_SUPABASE_*` matches the main app
+- **Stories tagged** `ai-generated` in meta; stories with passing Vitest runs should not carry `needs-work`
+
+**Components with stories today:** Button, Alert, LoadMoreButton, ResultCount, TagBadge, TagCloud, SearchInput, TagInput, ToolCard, ToolCardSkeleton.
+
+**Not yet covered:** route pages, Header/Footer/MainLayout, ResourceCard, and other data-fetching views.
 
 ## Build and Deployment
 
@@ -413,48 +429,50 @@ Database migrations are applied separately via `pnpm db:migrate` against the tar
 
 Defined in `.env.schema` (Varlock). Key variables:
 
-| Variable | Scope | Purpose |
-| --- | --- | --- |
-| `SUPABASE_DATABASE_URL` | Server only | Postgres connection (pooler URL recommended) |
-| `VITE_SUPABASE_URL` | Client + server | Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | Client + server | Supabase anon key (JWT verification) |
-| `CLOUDINARY_*` | Server only | Screenshot upload |
-| `BROWSERLESS_API_KEY` | Server only | Screenshot capture |
-| `SENTRY_DSN` | Server only | Optional error tracking |
+| Variable                 | Scope           | Purpose                                      |
+| ------------------------ | --------------- | -------------------------------------------- |
+| `SUPABASE_DATABASE_URL`  | Server only     | Postgres connection (pooler URL recommended) |
+| `VITE_SUPABASE_URL`      | Client + server | Supabase project URL                         |
+| `VITE_SUPABASE_ANON_KEY` | Client + server | Supabase anon key (JWT verification)         |
+| `CLOUDINARY_*`           | Server only     | Screenshot upload                            |
+| `BROWSERLESS_API_KEY`    | Server only     | Screenshot capture                           |
+| `SENTRY_DSN`             | Server only     | Optional error tracking                      |
 
 Server-side functions read secrets via `Netlify.env.get()`. Client-visible vars use the `VITE_` prefix and are bundled by Vite.
 
 ## Current Gaps and Roadmap
 
-| Area | Status |
-| --- | --- |
-| Tool submission pipeline | Implemented (`pending` status) |
-| Public browse/search | Implemented |
-| Personal library (auth) | Implemented |
-| Public resources/stacks | Implemented |
+| Area                      | Status                                                                                                                                                                  |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tool submission pipeline  | Implemented (`pending` status)                                                                                                                                          |
+| Public browse/search      | Implemented                                                                                                                                                             |
+| Personal library (auth)   | Implemented                                                                                                                                                             |
+| Public resources/stacks   | Implemented                                                                                                                                                             |
 | Moderation API + admin UI | **Not implemented** — unified queue needed for tools, public resources, stacks, and stack items ([#105](https://github.com/schalkneethling/makerbench-next/issues/105)) |
-| Algolia search | Planned post-MVP |
+| Algolia search            | Planned post-MVP                                                                                                                                                        |
 
 See [ROADMAP.md](./ROADMAP.md) and [GitHub Issues](https://github.com/schalkneethling/makerbench-next/issues) for active backlog.
 
 ## Source Pointers
 
-| Concern | Location |
-| --- | --- |
-| Routes | `src/App.tsx` |
-| Tool browse/search | `src/pages/HomePage.tsx` |
-| Tool submission | `src/pages/SubmitPage.tsx` |
-| Personal library | `src/pages/LibraryPage.tsx` |
-| Public resources | `src/pages/ResourcesPage.tsx` |
-| API clients | `src/api/` |
-| Validation schemas | `src/lib/validation.ts` |
-| Database schema | `src/db/schema.ts` |
-| Submit handler | `netlify/functions/process-bookmark.mts` |
-| List/search handlers | `netlify/functions/get-bookmarks.mts`, `search-bookmarks.mts` |
-| Auth handler | `netlify/functions/auth-whoami.mts` |
-| Library handlers | `netlify/functions/get-library.mts`, `add-library.mts` |
-| Function shared libs | `netlify/functions/lib/` |
-| Migrations | `migrations/postgres/` |
+| Concern              | Location                                                                     |
+| -------------------- | ---------------------------------------------------------------------------- |
+| Routes               | `src/App.tsx`                                                                |
+| Tool browse/search   | `src/pages/HomePage.tsx`                                                     |
+| Tool submission      | `src/pages/SubmitPage.tsx`                                                   |
+| Personal library     | `src/pages/LibraryPage.tsx`                                                  |
+| Public resources     | `src/pages/ResourcesPage.tsx`                                                |
+| API clients          | `src/api/`                                                                   |
+| Validation schemas   | `src/lib/validation.ts`                                                      |
+| Database schema      | `src/db/schema.ts`                                                           |
+| Submit handler       | `netlify/functions/process-bookmark.mts`                                     |
+| List/search handlers | `netlify/functions/get-bookmarks.mts`, `search-bookmarks.mts`                |
+| Auth handler         | `netlify/functions/auth-whoami.mts`                                          |
+| Library handlers     | `netlify/functions/get-library.mts`, `add-library.mts`                       |
+| Function shared libs | `netlify/functions/lib/`                                                     |
+| Migrations           | `migrations/postgres/`                                                       |
+| Storybook config     | `.storybook/main.ts`, `.storybook/preview.tsx`, `.storybook/msw-handlers.ts` |
+| Component stories    | `src/components/**/*.stories.tsx`                                            |
 
 ## Related Documentation
 

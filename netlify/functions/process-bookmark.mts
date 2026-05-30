@@ -28,16 +28,12 @@ const FALLBACK_IMAGE = "/makerbench-fallback.png";
 function getIssueField(issue: BaseIssue<unknown>): string {
   const path = issue.path
     ?.map((pathItem) => pathItem.key)
-    .filter((key): key is string | number => (
-      typeof key === "string" || typeof key === "number"
-    ));
+    .filter((key): key is string | number => typeof key === "string" || typeof key === "number");
 
   return path && path.length > 0 ? path.join(".") : "form";
 }
 
-function getValidationDetails(
-  issues: readonly BaseIssue<unknown>[],
-): Record<string, string[]> {
+function getValidationDetails(issues: readonly BaseIssue<unknown>[]): Record<string, string[]> {
   return issues.reduce<Record<string, string[]>>((details, issue) => {
     const field = getIssueField(issue);
     details[field] ??= [];
@@ -68,10 +64,7 @@ export default async (req: Request, _context: Context) => {
 
   const validation = validateBookmarkRequest(body);
   if (!validation.success) {
-    return validationError(
-      "Validation failed",
-      getValidationDetails(validation.issues),
-    );
+    return validationError("Validation failed", getValidationDetails(validation.issues));
   }
 
   const {
@@ -110,10 +103,7 @@ export default async (req: Request, _context: Context) => {
     } else {
       const screenshot = await captureScreenshot(normalizedUrl);
       if (screenshot.success && screenshot.buffer) {
-        const upload = await uploadScreenshot(
-          screenshot.buffer,
-          crypto.randomUUID(),
-        );
+        const upload = await uploadScreenshot(screenshot.buffer, crypto.randomUUID());
         if (upload.success && upload.url) {
           imageUrl = upload.url;
           imageSource = "screenshot";

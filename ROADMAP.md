@@ -28,6 +28,16 @@ This roadmap reflects the codebase status as of May 2026.
 - Search and tag filtering with URL-synced state
 - Personal library page (view + add)
 - Core accessibility patterns and e2e coverage
+- Storybook component workshop (colocated stories, shared preview, MSW, Vitest interaction tests)
+
+### Storybook (component layer)
+
+- Storybook 10 + `@storybook/react-vite`
+- Colocated `*.stories.tsx` under `src/components/`
+- Shared preview: app CSS, `AuthProvider`, `BrowserRouter`, MSW handlers
+- Vitest browser project for play-function tests (`npx vitest --project storybook run`)
+- Initial story set: UI primitives, tags, search, forms, tool cards (10 files)
+- Remaining: page-level stories, layout chrome, resource cards, authenticated views
 
 ## In Progress / Next Logical Milestone
 

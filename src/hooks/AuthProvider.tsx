@@ -1,11 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useEffectEvent,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useEffectEvent, useMemo, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 
 import { getAuthenticatedIdentity, type AuthenticatedIdentity } from "../api";

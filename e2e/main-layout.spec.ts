@@ -37,10 +37,7 @@ test.describe("MainLayout", () => {
   // Skip webkit browsers - Safari has different keyboard focus behavior
   // that requires explicit user preference for tab navigation
   test("skip link becomes visible on focus", async ({ page, browserName }) => {
-    test.skip(
-      browserName === "webkit",
-      "Safari requires user preference for tab focus"
-    );
+    test.skip(browserName === "webkit", "Safari requires user preference for tab focus");
 
     const skipLink = page.getByRole("link", { name: "Skip to main content" });
 
@@ -50,4 +47,3 @@ test.describe("MainLayout", () => {
     await expect(skipLink).toBeVisible();
   });
 });
-

@@ -8,10 +8,7 @@ export { normalizeUrl, parseAndNormalizeUrl } from "./url";
 export { initSentry, captureError, flushSentry } from "./sentry";
 export { parseAggregatedTags } from "./tags";
 export { verifyAuthenticatedUser, type AuthenticatedUser } from "./auth";
-export {
-  assertRequiredEnv,
-  handleMissingEnvironmentError,
-} from "./env";
+export { assertRequiredEnv, handleMissingEnvironmentError } from "./env";
 export {
   bookmarksTable,
   resourcesTable,

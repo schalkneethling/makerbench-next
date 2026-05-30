@@ -1,6 +1,6 @@
 # Local Development
 
-Last updated: February 26, 2026
+Last updated: May 30, 2026
 
 ## Prerequisites
 
@@ -88,7 +88,24 @@ pnpm lint:css
 pnpm typecheck
 pnpm test
 pnpm build
+npx vitest --project storybook run   # Storybook interaction tests (requires Playwright Chromium)
 ```
+
+## 7. Storybook (component workshop)
+
+Storybook runs the UI in isolation with the same CSS, auth/router decorators, and MSW handlers as the shared preview.
+
+```bash
+pnpm storybook              # http://localhost:6006
+pnpm build-storybook        # static output in storybook-static/
+npx vitest --project storybook run
+```
+
+Stories are colocated with components (`src/components/**/*.stories.tsx`). Configuration lives in `.storybook/`. MSW mocks API routes used by the preview (`/api/auth/whoami`, `/api/tools`, `/api/resources`).
+
+**Current coverage (May 2026):** Button, Alert, LoadMoreButton, ResultCount, TagBadge, TagCloud, SearchInput, TagInput, ToolCard, ToolCardSkeleton. Page and layout components are not yet storied.
+
+**Playwright for story tests:** if browser tests fail with a missing Chromium executable, run `npx playwright install chromium` once.
 
 ## Troubleshooting
 

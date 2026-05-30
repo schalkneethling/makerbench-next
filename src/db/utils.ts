@@ -20,9 +20,7 @@ export function generateId(): string {
  * @returns Parsed metadata object
  * @throws {MetadataParseError} When metadata is null or JSON parsing fails
  */
-export function parseMetadata(
-  metadata: string | null,
-): Record<string, unknown> {
+export function parseMetadata(metadata: string | null): Record<string, unknown> {
   if (!metadata) {
     throw new MetadataParseError("Metadata is null or undefined");
   }
@@ -39,9 +37,7 @@ export function parseMetadata(
  * @param metadata - JSON string to parse
  * @returns Parsed metadata object or null if parsing fails
  */
-export function parseMetadataSafe(
-  metadata: string | null,
-): Record<string, unknown> | null {
+export function parseMetadataSafe(metadata: string | null): Record<string, unknown> | null {
   if (!metadata) {
     return null;
   }
@@ -59,9 +55,7 @@ export function parseMetadataSafe(
  * @returns JSON string representation
  * @throws {MetadataStringifyError} When metadata is null or stringification fails
  */
-export function stringifyMetadata(
-  metadata: Record<string, unknown> | null,
-): string {
+export function stringifyMetadata(metadata: Record<string, unknown> | null): string {
   if (!metadata) {
     throw new MetadataStringifyError("Metadata object is null or undefined");
   }
@@ -78,9 +72,7 @@ export function stringifyMetadata(
  * @param metadata - Object to stringify
  * @returns JSON string representation or null if stringification fails
  */
-export function stringifyMetadataSafe(
-  metadata: Record<string, unknown> | null,
-): string | null {
+export function stringifyMetadataSafe(metadata: Record<string, unknown> | null): string | null {
   if (!metadata) {
     return null;
   }
@@ -157,9 +149,7 @@ export function normalizeTagName(name: string): string {
   const normalized = name.toLowerCase().trim().replace(/\s+/g, "-");
 
   if (normalized.length === 0) {
-    throw new TagValidationError(
-      "Tag name cannot be empty after normalization",
-    );
+    throw new TagValidationError("Tag name cannot be empty after normalization");
   }
 
   return normalized;

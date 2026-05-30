@@ -1,9 +1,6 @@
 import { useId } from "react";
 import { TagBadge } from "../tags";
-import {
-  getGithubUsernameFromProfileUrl,
-  isValidGithubProfileUrl,
-} from "../../lib/github";
+import { getGithubUsernameFromProfileUrl, isValidGithubProfileUrl } from "../../lib/github";
 
 import "./ToolCard.css";
 
@@ -45,11 +42,12 @@ function getToolImageSrc(imageUrl?: string): string {
  */
 function buildTagFilterUrl(tagName: string): string {
   const params = new URLSearchParams(window.location.search);
-  const currentTagNames = params
-    .get("tags")
-    ?.split(",")
-    .map((name) => name.trim())
-    .filter(Boolean) ?? [];
+  const currentTagNames =
+    params
+      .get("tags")
+      ?.split(",")
+      .map((name) => name.trim())
+      .filter(Boolean) ?? [];
 
   if (!currentTagNames.includes(tagName)) {
     currentTagNames.push(tagName);
@@ -83,8 +81,7 @@ export function ToolCard({
   // Extract hostname for display
   const hostname = new URL(url).hostname.replace(/^www\./, "");
   const hasValidGithubProfile =
-    submitterGithubUrl !== undefined &&
-    isValidGithubProfileUrl(submitterGithubUrl);
+    submitterGithubUrl !== undefined && isValidGithubProfileUrl(submitterGithubUrl);
   const githubUsername =
     hasValidGithubProfile && submitterGithubUrl
       ? getGithubUsernameFromProfileUrl(submitterGithubUrl)
@@ -110,12 +107,12 @@ export function ToolCard({
         </div>
 
         <div className="ToolCard-content">
-          <h3 id={titleId} className="ToolCard-title heading-base">{title}</h3>
+          <h3 id={titleId} className="ToolCard-title heading-base">
+            {title}
+          </h3>
           <p className="ToolCard-hostname ui-caption">{hostname}</p>
 
-          {description && (
-            <p className="ToolCard-description body-sm">{description}</p>
-          )}
+          {description && <p className="ToolCard-description body-sm">{description}</p>}
         </div>
       </a>
 

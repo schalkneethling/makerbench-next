@@ -3,8 +3,7 @@
  */
 
 const GITHUB_HOSTS = new Set(["github.com", "www.github.com"]);
-const GITHUB_USERNAME_PATTERN =
-  /^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/;
+const GITHUB_USERNAME_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/;
 
 /**
  * Returns true when URL is a GitHub profile URL in the form:

@@ -7,9 +7,7 @@ test.describe("SubmitPage", () => {
 
   test("has correct page structure", async ({ page }) => {
     // Page has heading and description
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Submit a Tool",
-    );
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Submit a Tool");
     await expect(page.getByText("Share a useful tool or resource")).toBeVisible();
   });
 
@@ -25,9 +23,7 @@ test.describe("SubmitPage", () => {
     await expect(page.getByText(/tags/i).first()).toBeVisible();
 
     // Submit button is present
-    await expect(
-      page.getByRole("button", { name: /submit tool/i }),
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /submit tool/i })).toBeVisible();
   });
 
   test("has optional submitter fields", async ({ page }) => {
@@ -74,25 +70,19 @@ test.describe("SubmitPage", () => {
     await page.keyboard.press("Enter");
 
     // Tag should appear (use exact match to avoid matching "Remove javascript")
-    await expect(
-      page.locator(".TagInput-tagLabel", { hasText: "javascript" }),
-    ).toBeVisible();
+    await expect(page.locator(".TagInput-tagLabel", { hasText: "javascript" })).toBeVisible();
 
     // Add second tag with comma
     await tagInput.fill("react,");
 
     // Tag should appear
-    await expect(
-      page.locator(".TagInput-tagLabel", { hasText: "react" }),
-    ).toBeVisible();
+    await expect(page.locator(".TagInput-tagLabel", { hasText: "react" })).toBeVisible();
 
     // Tag count should show 2/10
     await expect(page.getByText("2/10 tags")).toBeVisible();
 
     // Remove first tag
-    await page
-      .getByRole("button", { name: /remove javascript/i })
-      .click();
+    await page.getByRole("button", { name: /remove javascript/i }).click();
 
     // Tag count should show 1/10
     await expect(page.getByText("1/10 tags")).toBeVisible();
@@ -121,4 +111,3 @@ test.describe("SubmitPage", () => {
     await expect(submitButton).toBeVisible();
   });
 });
-

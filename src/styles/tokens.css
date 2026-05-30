@@ -19,14 +19,12 @@
   /* ========================================
    * Typography - Font Families
    * ======================================== */
-  --font-family-display:
-    "Avenir Next Condensed", "Arial Narrow", "Source Sans 3", sans-serif;
+  --font-family-display: "Avenir Next Condensed", "Arial Narrow", "Source Sans 3", sans-serif;
   --font-family-base:
-    "Source Sans 3", aptos, -apple-system, blinkmacsystemfont, "Segoe UI",
-    sans-serif;
+    "Source Sans 3", aptos, -apple-system, blinkmacsystemfont, "Segoe UI", sans-serif;
   --font-family-mono:
-    ui-monospace, "SF Mono", "Cascadia Code", "Segoe UI Mono",
-    "Liberation Mono", menlo, monaco, consolas, monospace;
+    ui-monospace, "SF Mono", "Cascadia Code", "Segoe UI Mono", "Liberation Mono", menlo, monaco,
+    consolas, monospace;
 
   /* ========================================
    * Typography - Font Weights
@@ -106,9 +104,7 @@
   /* Text */
   --color-text: oklch(34% 0.015 225deg); /* Charcoal */
   --color-text-muted: oklch(49% 0.012 225deg); /* Soft graphite */
-  --color-text-inverted: oklch(
-    97.5% 0.025 102deg
-  ); /* Light for dark backgrounds */
+  --color-text-inverted: oklch(97.5% 0.025 102deg); /* Light for dark backgrounds */
 
   /* Logo Colors - derived from brand */
   --color-logo-maker: var(--color-text);
@@ -153,9 +149,7 @@
     /* Text */
     --color-text: oklch(95% 0.018 102deg); /* Warm light */
     --color-text-muted: oklch(73% 0.015 102deg); /* Muted paper */
-    --color-text-inverted: oklch(
-      22% 0.012 225deg
-    ); /* Dark for light backgrounds */
+    --color-text-inverted: oklch(22% 0.012 225deg); /* Dark for light backgrounds */
 
     /* Logo Colors - brighter for dark mode */
     --color-logo-maker: var(--color-text);

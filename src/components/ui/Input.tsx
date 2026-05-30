@@ -1,10 +1,9 @@
 import type { InputHTMLAttributes, Ref } from "react";
 
-export interface InputProps
-  extends Omit<
-    InputHTMLAttributes<HTMLInputElement>,
-    "ref" | "aria-label" | "aria-labelledby"
-  > {
+export interface InputProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "ref" | "aria-label" | "aria-labelledby"
+> {
   /** Ref to input element (React 19 style ref prop) */
   ref?: Ref<HTMLInputElement>;
 }
@@ -16,11 +15,5 @@ export interface InputProps
  * If the label should not be visible, apply the visually-hidden utility class.
  */
 export function Input({ className = "", ref, ...props }: InputProps) {
-  return (
-    <input
-      ref={ref}
-      className={`Input ${className}`.trim()}
-      {...props}
-    />
-  );
+  return <input ref={ref} className={`Input ${className}`.trim()} {...props} />;
 }

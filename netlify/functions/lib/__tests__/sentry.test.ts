@@ -86,9 +86,7 @@ describe("sentry", () => {
 
   describe("captureError", () => {
     it("logs error to console", () => {
-      const consoleSpy = vi
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       const error = new Error("Test error");
 
       captureError(error);
@@ -98,8 +96,7 @@ describe("sentry", () => {
     });
 
     it("captures exception with context when provided", async () => {
-      const { initSentry: freshInit, captureError: freshCapture } =
-        await import("../sentry");
+      const { initSentry: freshInit, captureError: freshCapture } = await import("../sentry");
 
       vi.stubGlobal("Netlify", {
         env: {
@@ -115,9 +112,7 @@ describe("sentry", () => {
       // Initialize first
       freshInit();
 
-      const consoleSpy = vi
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       const error = new Error("Test error");
 
       freshCapture(error, { url: "https://example.com", userId: "123" });
@@ -129,9 +124,7 @@ describe("sentry", () => {
 
   describe("flushSentry", () => {
     it("calls Sentry.flush with timeout", async () => {
-      const { initSentry: freshInit, flushSentry: freshFlush } = await import(
-        "../sentry"
-      );
+      const { initSentry: freshInit, flushSentry: freshFlush } = await import("../sentry");
 
       vi.stubGlobal("Netlify", {
         env: {

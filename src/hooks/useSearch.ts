@@ -17,10 +17,7 @@ interface UseSearchState {
 
 interface UseSearchReturn extends UseSearchState {
   /** Execute search with params */
-  search: (
-    params: SearchBookmarksParams,
-    options?: { immediate?: boolean },
-  ) => Promise<void>;
+  search: (params: SearchBookmarksParams, options?: { immediate?: boolean }) => Promise<void>;
   /** Load more search results */
   loadMore: () => Promise<void>;
   /** Reset to initial state */
@@ -52,60 +49,54 @@ export function useSearch(debounceMs = DEBOUNCE_MS): UseSearchReturn {
     }
   }, []);
 
-  const executeSearch = useCallback(async (
-    params: SearchBookmarksParams,
-    requestId: number,
-    signal: AbortSignal,
-  ) => {
-    const startedAt =
-      typeof performance !== "undefined" && typeof performance.now === "function"
-        ? performance.now()
-        : Date.now();
-
-    try {
-      const data = await searchBookmarks(params, { signal });
-
-      if (signal.aborted || requestId !== activeRequestIdRef.current) {
-        return;
-      }
-
-      const durationMs = Math.round(
-        (typeof performance !== "undefined" && typeof performance.now === "function"
+  const executeSearch = useCallback(
+    async (params: SearchBookmarksParams, requestId: number, signal: AbortSignal) => {
+      const startedAt =
+        typeof performance !== "undefined" && typeof performance.now === "function"
           ? performance.now()
-          : Date.now()) - startedAt,
-      );
+          : Date.now();
 
-      console.info("[perf] home-search", {
-        requestId,
-        durationMs,
-        resultCount: data.bookmarks.length,
-        hasMore: data.pagination.hasMore,
-      });
+      try {
+        const data = await searchBookmarks(params, { signal });
 
-      setState({
-        results: data.bookmarks,
-        pagination: data.pagination,
-        isLoading: false,
-        error: null,
-      });
-    } catch (err) {
-      if (signal.aborted || requestId !== activeRequestIdRef.current) {
-        return;
+        if (signal.aborted || requestId !== activeRequestIdRef.current) {
+          return;
+        }
+
+        const durationMs = Math.round(
+          (typeof performance !== "undefined" && typeof performance.now === "function"
+            ? performance.now()
+            : Date.now()) - startedAt,
+        );
+
+        console.info("[perf] home-search", {
+          requestId,
+          durationMs,
+          resultCount: data.bookmarks.length,
+          hasMore: data.pagination.hasMore,
+        });
+
+        setState({
+          results: data.bookmarks,
+          pagination: data.pagination,
+          isLoading: false,
+          error: null,
+        });
+      } catch (err) {
+        if (signal.aborted || requestId !== activeRequestIdRef.current) {
+          return;
+        }
+
+        const error =
+          err instanceof BookmarkApiError ? err : new BookmarkApiError("Search failed", 500);
+        setState((prev) => ({ ...prev, isLoading: false, error }));
       }
-
-      const error =
-        err instanceof BookmarkApiError
-          ? err
-          : new BookmarkApiError("Search failed", 500);
-      setState((prev) => ({ ...prev, isLoading: false, error }));
-    }
-  }, []);
+    },
+    [],
+  );
 
   const search = useCallback(
-    async (
-      params: SearchBookmarksParams,
-      options: { immediate?: boolean } = {},
-    ) => {
+    async (params: SearchBookmarksParams, options: { immediate?: boolean } = {}) => {
       // Store params for loadMore
       setSearchParams(params);
 
@@ -151,12 +142,15 @@ export function useSearch(debounceMs = DEBOUNCE_MS): UseSearchReturn {
 
     try {
       const newOffset = state.pagination.offset + state.pagination.limit;
-      const data = await searchBookmarks({
-        ...searchParams,
-        offset: newOffset,
-      }, {
-        signal: controller.signal,
-      });
+      const data = await searchBookmarks(
+        {
+          ...searchParams,
+          offset: newOffset,
+        },
+        {
+          signal: controller.signal,
+        },
+      );
 
       if (controller.signal.aborted || requestId !== activeRequestIdRef.current) {
         return;

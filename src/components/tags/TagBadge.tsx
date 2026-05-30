@@ -2,8 +2,7 @@ import { useId, type ButtonHTMLAttributes } from "react";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import { Icon } from "../ui";
 
-export interface TagBadgeProps
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
+export interface TagBadgeProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
   /** Tag label text */
   label: string;
   /** Whether the tag is currently selected/active */
@@ -27,9 +26,7 @@ export function TagBadge({
   const removeLabelId = useId();
 
   return (
-    <span
-      className={`TagBadge ${isSelected ? "TagBadge--selected" : ""} ${className}`.trim()}
-    >
+    <span className={`TagBadge ${isSelected ? "TagBadge--selected" : ""} ${className}`.trim()}>
       <button
         type="button"
         className="TagBadge-label"

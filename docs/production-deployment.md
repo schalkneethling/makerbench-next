@@ -80,8 +80,11 @@ pnpm lint
 pnpm lint:css
 pnpm typecheck
 pnpm test
+npx vitest --project storybook run   # optional; Storybook interaction tests
 pnpm build
 ```
+
+Storybook itself is a dev/CI aid — `pnpm build-storybook` is not part of the Netlify production build unless you add a separate publish step.
 
 ## 5. Deploy
 

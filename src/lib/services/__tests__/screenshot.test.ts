@@ -15,10 +15,7 @@ describe("captureScreenshot", () => {
   it("returns error when Browserless API fails", async () => {
     server.use(
       http.post("https://chrome.browserless.io/screenshot", () => {
-        return HttpResponse.json(
-          { error: "Rate limit exceeded" },
-          { status: 429 },
-        );
+        return HttpResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
       }),
     );
 
@@ -48,15 +45,12 @@ describe("captureScreenshot", () => {
     let capturedBody: unknown;
 
     server.use(
-      http.post(
-        "https://chrome.browserless.io/screenshot",
-        async ({ request }) => {
-          capturedBody = await request.json();
-          return HttpResponse.arrayBuffer(new ArrayBuffer(100), {
-            headers: { "Content-Type": "image/png" },
-          });
-        },
-      ),
+      http.post("https://chrome.browserless.io/screenshot", async ({ request }) => {
+        capturedBody = await request.json();
+        return HttpResponse.arrayBuffer(new ArrayBuffer(100), {
+          headers: { "Content-Type": "image/png" },
+        });
+      }),
     );
 
     await captureScreenshot("https://example.com/test");

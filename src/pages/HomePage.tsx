@@ -78,9 +78,7 @@ function getFilterMode(query: string, tagNames: string[]): FilterMode | undefine
  */
 export function HomePage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState(
-    () => searchParams.get("q") ?? ""
-  );
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get("q") ?? "");
   const [shouldLoadTags, setShouldLoadTags] = useState(false);
   const [selectedTagNames, setSelectedTagNames] = useState<string[]>(() => {
     const tagsParam = searchParams.get("tags");
@@ -89,8 +87,7 @@ export function HomePage() {
 
   // Track if initial URL-based search has been triggered
   const initialSearchTriggered = useRef(false);
-  const hasInitialFilters =
-    searchQuery.trim() !== "" || selectedTagNames.length > 0;
+  const hasInitialFilters = searchQuery.trim() !== "" || selectedTagNames.length > 0;
 
   // Fetch all bookmarks on mount
   const {
@@ -102,10 +99,10 @@ export function HomePage() {
     loadMore: loadMoreBookmarks,
   } = useBookmarks({ fetchOnMount: !hasInitialFilters });
 
-  const {
-    tags: homepageTags,
-    error: tagsError,
-  } = useTags({ enabled: shouldLoadTags, limit: HOMEPAGE_TAG_LIMIT });
+  const { tags: homepageTags, error: tagsError } = useTags({
+    enabled: shouldLoadTags,
+    limit: HOMEPAGE_TAG_LIMIT,
+  });
 
   // Search hook for filtered results
   const {
@@ -119,8 +116,7 @@ export function HomePage() {
   } = useSearch();
 
   // Determine if we're in search/filter mode
-  const isFiltering =
-    searchQuery.trim() !== "" || selectedTagNames.length > 0;
+  const isFiltering = searchQuery.trim() !== "" || selectedTagNames.length > 0;
 
   // Current data depends on mode
   const currentBookmarks = isFiltering ? searchResults : bookmarks;
@@ -145,10 +141,7 @@ export function HomePage() {
   }, [selectedTagNames, availableTags]);
 
   // Convert to ToolCard format
-  const tools = useMemo(
-    () => toToolCardProps(currentBookmarks),
-    [currentBookmarks]
-  );
+  const tools = useMemo(() => toToolCardProps(currentBookmarks), [currentBookmarks]);
 
   /**
    * Updates URL search params. Uses replace to avoid polluting history.
@@ -172,7 +165,7 @@ export function HomePage() {
 
       setSearchParams(params, { replace: true });
     },
-    [setSearchParams]
+    [setSearchParams],
   );
 
   /**
@@ -189,8 +182,7 @@ export function HomePage() {
       return;
     }
 
-    const hasUrlFilters =
-      searchQuery.trim() !== "" || selectedTagNames.length > 0;
+    const hasUrlFilters = searchQuery.trim() !== "" || selectedTagNames.length > 0;
 
     if (!hasUrlFilters) {
       initialSearchTriggered.current = true;
@@ -243,7 +235,15 @@ export function HomePage() {
         tags: hasTags ? selectedTagNames : undefined,
       });
     },
-    [selectedTagNames, search, resetSearch, updateUrlParams, bookmarks.length, bookmarksLoading, fetchBookmarks]
+    [
+      selectedTagNames,
+      search,
+      resetSearch,
+      updateUrlParams,
+      bookmarks.length,
+      bookmarksLoading,
+      fetchBookmarks,
+    ],
   );
 
   /**
@@ -280,7 +280,17 @@ export function HomePage() {
         );
       }
     },
-    [availableTags, selectedTagNames, searchQuery, search, resetSearch, updateUrlParams, bookmarks.length, bookmarksLoading, fetchBookmarks]
+    [
+      availableTags,
+      selectedTagNames,
+      searchQuery,
+      search,
+      resetSearch,
+      updateUrlParams,
+      bookmarks.length,
+      bookmarksLoading,
+      fetchBookmarks,
+    ],
   );
 
   /**
@@ -298,7 +308,15 @@ export function HomePage() {
     } else {
       search({ q: searchQuery.trim() }, { immediate: true });
     }
-  }, [searchQuery, search, resetSearch, updateUrlParams, bookmarks.length, bookmarksLoading, fetchBookmarks]);
+  }, [
+    searchQuery,
+    search,
+    resetSearch,
+    updateUrlParams,
+    bookmarks.length,
+    bookmarksLoading,
+    fetchBookmarks,
+  ]);
 
   /**
    * Handles load more button click
@@ -317,9 +335,7 @@ export function HomePage() {
   return (
     <div className="HomePage">
       <header className="HomePage-hero">
-        <h1 className="HomePage-title heading-3xl">
-          Find the right tool for the job
-        </h1>
+        <h1 className="HomePage-title heading-3xl">Find the right tool for the job</h1>
         <p className="HomePage-subtitle body-lg">
           Browse practical software, references, and resources for makers.
         </p>
@@ -362,9 +378,7 @@ export function HomePage() {
         isLoading={isLoading && tools.length === 0}
         emptyTitle={isFiltering ? "No matching tools" : "No tools yet"}
         emptyDescription={
-          isFiltering
-            ? "Try adjusting your search or filters."
-            : "Be the first to submit a tool!"
+          isFiltering ? "Try adjusting your search or filters." : "Be the first to submit a tool!"
         }
       />
 

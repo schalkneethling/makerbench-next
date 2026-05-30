@@ -11,11 +11,7 @@ export interface ResultCountProps {
  * Displays count of items out of total.
  * Updates dynamically as filters/search change results.
  */
-export function ResultCount({
-  count,
-  total,
-  className = "",
-}: ResultCountProps) {
+export function ResultCount({ count, total, className = "" }: ResultCountProps) {
   return (
     <p className={`ResultCount ${className}`.trim()} aria-live="polite">
       {typeof total === "number" ? (

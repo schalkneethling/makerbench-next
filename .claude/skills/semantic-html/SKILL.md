@@ -244,15 +244,8 @@ Current best practice (due to browser support gaps with `aria-errormessage`):
 
 ```html
 <label for="email">Email</label>
-<input
-  type="email"
-  id="email"
-  aria-invalid="true"
-  aria-describedby="email-error"
-/>
-<p id="email-error" class="error">
-  Enter a valid email address, like name@example.com
-</p>
+<input type="email" id="email" aria-invalid="true" aria-describedby="email-error" />
+<p id="email-error" class="error">Enter a valid email address, like name@example.com</p>
 ```
 
 ## Tables

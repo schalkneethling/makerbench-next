@@ -84,9 +84,7 @@ describe("process-bookmark", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockDb = createMockDb();
-    vi.mocked(getDb).mockReturnValue(
-      mockDb as unknown as ReturnType<typeof getDb>,
-    );
+    vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
     mockContext = createMockContext();
 
     // Default mocks for external services

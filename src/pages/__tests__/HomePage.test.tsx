@@ -119,9 +119,7 @@ describe("HomePage", () => {
     });
 
     vi.mocked(useTags).mockImplementation(({ enabled = true } = {}) => ({
-      tags: enabled
-        ? [{ id: "t1", name: "javascript", usageCount: 3 }]
-        : [],
+      tags: enabled ? [{ id: "t1", name: "javascript", usageCount: 3 }] : [],
       isLoading: false,
       error: null,
     }));

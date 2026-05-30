@@ -42,17 +42,11 @@ export function ToolGrid({
       );
     }
 
-    return tools.map((tool) => (
-      <ToolCard key={tool.id} {...tool} onTagClick={onTagClick} />
-    ));
+    return tools.map((tool) => <ToolCard key={tool.id} {...tool} onTagClick={onTagClick} />);
   };
 
   return (
-    <div
-      className={`ToolGrid ${className}`.trim()}
-      aria-live="polite"
-      aria-busy={isLoading}
-    >
+    <div className={`ToolGrid ${className}`.trim()} aria-live="polite" aria-busy={isLoading}>
       {renderContent()}
     </div>
   );

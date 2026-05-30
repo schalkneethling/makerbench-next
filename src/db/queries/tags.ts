@@ -38,11 +38,7 @@ export async function getTagByName(name: string) {
   return row ? { id: row.name, name: row.name } : undefined;
 }
 
-export async function searchTagsByName(
-  searchTerm: string,
-  limit = 50,
-  offset = 0,
-) {
+export async function searchTagsByName(searchTerm: string, limit = 50, offset = 0) {
   const result = await db.execute<TagUsageRow>(sql`
     select distinct t.tag_name as name
     from tool_listings

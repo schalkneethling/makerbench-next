@@ -24,9 +24,7 @@ describe("TextInput", () => {
   });
 
   it("combines hint and error in aria-describedby", () => {
-    render(
-      <TextInput label="Email" hint="We'll never share" error="Invalid" />,
-    );
+    render(<TextInput label="Email" hint="We'll never share" error="Invalid" />);
     const input = screen.getByLabelText(/email/i);
     const describedBy = input.getAttribute("aria-describedby");
 
@@ -39,16 +37,11 @@ describe("TextInput", () => {
     expect(screen.getByLabelText(/email/i)).not.toHaveAttribute("aria-invalid");
 
     rerender(<TextInput label="Email" error="Invalid" />);
-    expect(screen.getByLabelText(/email/i)).toHaveAttribute(
-      "aria-invalid",
-      "true",
-    );
+    expect(screen.getByLabelText(/email/i)).toHaveAttribute("aria-invalid", "true");
   });
 
   it("applies error class to container when error present", () => {
-    const { container } = render(
-      <TextInput label="Email" error="Invalid email" />,
-    );
+    const { container } = render(<TextInput label="Email" error="Invalid email" />);
     expect(container.querySelector(".TextInput")).toHaveClass("TextInput--error");
   });
 });

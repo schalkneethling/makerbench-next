@@ -93,9 +93,7 @@ export default async (req: Request, context: Context) => {
             ilike(resourcesTable.canonicalUrl, searchPattern),
           )
         : undefined,
-      tagFilters.length > 0
-        ? sql`${toolListingsTable.tags} && ${tagFilters}`
-        : undefined,
+      tagFilters.length > 0 ? sql`${toolListingsTable.tags} && ${tagFilters}` : undefined,
     ].filter((filter) => filter !== undefined);
 
     const rows = await db

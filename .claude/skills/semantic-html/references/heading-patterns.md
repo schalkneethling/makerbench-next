@@ -139,11 +139,7 @@ function Card({ title, headingLevel = 3, headingClass, children }) {
 // Specialised product card - knows its context
 function ProductCard({ product, headingLevel = 3 }) {
   return (
-    <Card
-      title={product.name}
-      headingLevel={headingLevel}
-      headingClass="product-card__title"
-    >
+    <Card title={product.name} headingLevel={headingLevel} headingClass="product-card__title">
       <p className="product-card__price">{product.price}</p>
       <p className="product-card__description">{product.description}</p>
     </Card>
