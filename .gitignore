@@ -34,3 +34,6 @@ env.d.ts
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+*storybook.log
+storybook-static

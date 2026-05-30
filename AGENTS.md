@@ -31,6 +31,7 @@ pkill -9 -f "playwright" 2>/dev/null
 - **Tests:** `pnpm test` only (includes `--run`; never watch mode unless asked)
 - **After tests:** verify no vitest/playwright/node orphans remain
 - **Dev servers:** do not start in background unless requested; kill before session end
+- **Storybook:** `pnpm storybook` for the workshop UI; `npx vitest --project storybook run` for story tests
 - **Playwright:** `npx playwright test --project=chromium` for e2e; kill test servers after runs
 
 ## External APIs
@@ -104,7 +105,15 @@ Responsive/CSS patterns: `.cursor/rules/css-coder.mdc`
 
 Test **our logic**, not the platform or React. No coverage-for-coverage tests.
 
-**Playwright:** use **`toMatchAriaSnapshot()`** for page/component structure — one assertion on the accessibility tree. Update snapshots when DOM structure changes; never ignore failing ARIA tests.
+| Layer | Command | Notes |
+| --- | --- | --- |
+| Unit / component / function | `pnpm test` | Vitest; always `--run` in CI |
+| Storybook interactions | `npx vitest --project storybook run` | Browser mode (Playwright); stories in `src/**/*.stories.tsx` |
+| E2e | `npx playwright test --project=chromium` | ARIA snapshots for page structure |
+
+**Playwright e2e:** use **`toMatchAriaSnapshot()`** for page/component structure — one assertion on the accessibility tree. Update snapshots when DOM structure changes; never ignore failing ARIA tests.
+
+**Storybook:** colocated `*.stories.tsx` files; shared setup in `.storybook/preview.tsx` (app CSS, `AuthProvider`, `BrowserRouter`, MSW). New stories start with `tags: ['ai-generated']`; remove `'needs-work'` only after `npx vitest --project storybook run` passes for that file. Do not start Storybook in the background unless requested.
 
 Workflow: change component → `npx playwright test --project=chromium` → fix snapshot or component → commit.
 

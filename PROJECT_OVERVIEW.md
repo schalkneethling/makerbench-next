@@ -19,6 +19,18 @@ See [architecture.md](./architecture.md) for the full technical reference.
 - Supabase Postgres schema + Drizzle migrations
 - Valibot validation on client and server boundaries
 - Unit, component, function, and e2e test suites
+- Storybook 10 with colocated component stories, MSW-backed preview, and Vitest browser tests (10 story files; pages/layout not yet covered)
+
+### Storybook status (May 2026)
+
+| Area | Status |
+| --- | --- |
+| Config | `.storybook/main.ts`, `preview.tsx`, `msw-handlers.ts` |
+| Addons | a11y, docs, Vitest, Chromatic, MCP |
+| Stories | Button, Alert, LoadMoreButton, ResultCount, TagBadge, TagCloud, SearchInput, TagInput, ToolCard, ToolCardSkeleton |
+| Not yet in Storybook | Pages, Header/Footer, ResourceCard, auth-heavy flows |
+
+Commands: `pnpm storybook`, `npx vitest --project storybook run`
 
 ### Not Yet Implemented
 

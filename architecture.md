@@ -40,6 +40,7 @@ flowchart LR
 | Images | Cloudinary | Hosts generated screenshots |
 | Secrets | Varlock + 1Password plugin | Local env loading; schema in `.env.schema` |
 | Hosting | Netlify | Static build + serverless functions |
+| Component docs | Storybook 10 | Colocated stories, MSW preview, Vitest interaction tests |
 
 ## Repository Structure
 
@@ -48,6 +49,7 @@ makerbench-next/
 ├── src/                      # Frontend application
 │   ├── api/                  # HTTP client layer (fetch + Valibot response validation)
 │   ├── components/           # UI components (bookmarks, forms, layout, resources, search, tags, ui)
+│   │   └── **/*.stories.tsx  # Colocated Storybook stories (where present)
 │   ├── db/                   # Drizzle schema and query helpers (shared with functions)
 │   ├── hooks/                # React hooks and AuthProvider
 │   ├── lib/                  # Validation, services (metadata, screenshot, cloudinary), Supabase client
@@ -59,6 +61,7 @@ makerbench-next/
 │       └── *.mts             # One function per endpoint
 ├── migrations/postgres/      # Drizzle SQL migrations (Supabase Postgres)
 ├── e2e/                      # Playwright end-to-end tests
+├── .storybook/               # Storybook config, preview decorators, MSW handlers
 ├── scripts/                  # One-off maintenance scripts (e.g. Turso import)
 ├── docs/                     # Supplementary guides (local dev, deployment)
 ├── netlify.toml              # Build, publish, SPA redirect config
@@ -382,11 +385,24 @@ sequenceDiagram
 | --- | --- | --- | --- |
 | Unit / component | Vitest + Testing Library + happy-dom | `src/**/__tests__/` | Hooks, components, validation, API clients |
 | Function | Vitest | `netlify/functions/__tests__/` | Endpoint handlers, shared lib |
+| Storybook | Storybook 10 + Vitest browser (Playwright) | `src/**/*.stories.tsx`, `.storybook/` | Isolated component render, play functions, a11y addon |
 | E2e | Playwright | `e2e/` | Page structure via ARIA snapshots, user flows |
 
-Run `pnpm test` for unit tests (always exits; never watch mode in CI). Run `pnpm test:e2e` for Playwright (starts Vite dev server automatically).
+Run `pnpm test` for unit/component/function tests (always exits; never watch mode in CI). Run `npx vitest --project storybook run` for Storybook interaction tests. Run `pnpm test:e2e` for Playwright (starts Vite dev server automatically). Run `pnpm storybook` for the component workshop UI.
 
-API tests use MSW (`src/test/mocks/`) for frontend client tests. Function tests use direct handler invocation with mocked dependencies.
+API tests use MSW (`src/test/mocks/`) for frontend client tests. Storybook uses MSW via `msw-storybook-addon` (handlers in `.storybook/msw-handlers.ts`; worker in `public/`). The Vitest **storybook** project does not load `src/test/setup.ts` (Node MSW server) — only the unit and components projects do. Function tests use direct handler invocation with mocked dependencies.
+
+### Storybook setup (May 2026)
+
+- **Framework:** `@storybook/react-vite` (Storybook 10.4.x)
+- **Preview:** `.storybook/preview.tsx` imports `src/index.css`, wraps stories in `AuthProvider` + `BrowserRouter`, and registers MSW loaders/handlers
+- **Static assets:** `staticDirs: ['../public']` in `.storybook/main.ts` (includes MSW service worker)
+- **Env:** Varlock Vite plugin merged in `viteFinal` so `VITE_SUPABASE_*` matches the main app
+- **Stories tagged** `ai-generated` in meta; stories with passing Vitest runs should not carry `needs-work`
+
+**Components with stories today:** Button, Alert, LoadMoreButton, ResultCount, TagBadge, TagCloud, SearchInput, TagInput, ToolCard, ToolCardSkeleton.
+
+**Not yet covered:** route pages, Header/Footer/MainLayout, ResourceCard, and other data-fetching views.
 
 ## Build and Deployment
 
@@ -455,6 +471,8 @@ See [ROADMAP.md](./ROADMAP.md) and [GitHub Issues](https://github.com/schalkneet
 | Library handlers | `netlify/functions/get-library.mts`, `add-library.mts` |
 | Function shared libs | `netlify/functions/lib/` |
 | Migrations | `migrations/postgres/` |
+| Storybook config | `.storybook/main.ts`, `.storybook/preview.tsx`, `.storybook/msw-handlers.ts` |
+| Component stories | `src/components/**/*.stories.tsx` |
 
 ## Related Documentation
 

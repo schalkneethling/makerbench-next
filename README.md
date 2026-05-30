@@ -25,6 +25,7 @@ Core functionality is implemented:
 - Personal bookmark library with Google/GitHub sign-in (`/library`)
 - Filter by tags with URL-synced state
 - Responsive React UI with routing (`/submit`, `/about`, `/privacy`)
+- Storybook component workshop with colocated stories and Vitest interaction tests (see [Storybook](#storybook) below)
 
 ## Tech Stack
 
@@ -36,6 +37,7 @@ Core functionality is implemented:
 - Browserless (screenshots)
 - Cloudinary (image storage)
 - Vitest + Testing Library + Playwright
+- Storybook 10 (component docs, a11y, interaction tests via Vitest browser mode)
 
 ## Development
 
@@ -46,7 +48,21 @@ pnpm lint
 pnpm lint:css
 pnpm typecheck
 pnpm build
+pnpm storybook          # component workshop at http://localhost:6006
+pnpm build-storybook    # static Storybook build
 ```
+
+### Storybook
+
+Colocated stories live next to components (`*.stories.tsx` under `src/components/`). Shared preview (`.storybook/preview.tsx`) loads app CSS and wraps stories with `AuthProvider` and `BrowserRouter`; API routes are mocked with MSW (`.storybook/msw-handlers.ts`).
+
+Run interaction/a11y tests for stories:
+
+```bash
+npx vitest --project storybook run
+```
+
+Current coverage (May 2026): core UI primitives and form/search/tag components — Button, Alert, LoadMoreButton, ResultCount, TagBadge, TagCloud, SearchInput, TagInput, ToolCard, ToolCardSkeleton. Page-level and layout stories are not yet written.
 
 For full local setup (including Netlify Functions + env configuration), use:
 - [docs/local-development.md](./docs/local-development.md)
@@ -94,7 +110,7 @@ Open backlog is tracked in GitHub Issues:
 
 ## Documentation
 
-- Architecture: [architecture.md](./architecture.md)
+- Architecture (includes testing and Storybook): [architecture.md](./architecture.md)
 - Local setup: [docs/local-development.md](./docs/local-development.md)
 - Production deployment: [docs/production-deployment.md](./docs/production-deployment.md)
 - Database setup: [DATABASE_SETUP.md](./DATABASE_SETUP.md)
