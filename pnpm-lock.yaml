@@ -21,8 +21,8 @@ importers:
         specifier: ^2.106.2
         version: 2.106.2
       '@varlock/1password-plugin':
-        specifier: ^0.3.5
-        version: 0.3.5(varlock@0.7.4)
+        specifier: ^1.1.0
+        version: 1.1.0(varlock@0.7.4)
       cheerio:
         specifier: ^1.1.2
         version: 1.2.0
@@ -1893,11 +1893,11 @@ packages:
     peerDependencies:
       valibot: ^1.4.0
 
-  '@varlock/1password-plugin@0.3.5':
-    resolution: {integrity: sha512-JFrNPHdXtHa2VVs/BQ4Yx7gtPhQxkFyoYzejdzeXAxpRgTiQ/4AkdWQOwd+yGL08y+pkl+vQOTUBh2Z5QiUhpA==}
+  '@varlock/1password-plugin@1.1.0':
+    resolution: {integrity: sha512-78olHIxWqRy4CAsVHdu4KHkKuqTmuG9w3IrpDZy+9ZjQvKkbA9I5zk9xvnxWTYxCfe0a4CcyiS0yd4WIlWmydA==}
     engines: {node: '>=22'}
     peerDependencies:
-      varlock: ^0.7.3
+      varlock: ^1.1.0
 
   '@varlock/vite-integration@0.2.10':
     resolution: {integrity: sha512-awd2fSWA/p/kR6eqX4+qCiVqVHhnMt01sjHCIBcuNq7qyTmyaet+9MSdPHd8TykeiectJhGPodzMj4Zw6cy8gA==}
@@ -5297,7 +5297,7 @@ snapshots:
     dependencies:
       valibot: 1.2.0(typescript@6.0.3)
 
-  '@varlock/1password-plugin@0.3.5(varlock@0.7.4)':
+  '@varlock/1password-plugin@1.1.0(varlock@0.7.4)':
     dependencies:
       varlock: 0.7.4
 
