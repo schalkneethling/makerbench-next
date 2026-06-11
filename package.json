@@ -27,7 +27,7 @@
   "dependencies": {
     "@heroicons/react": "^2.2.0",
     "@netlify/functions": "^5.2.1",
-    "@sentry/node": "^10.54.0",
+    "@sentry/node": "^10.56.0",
     "@supabase/supabase-js": "^2.106.2",
     "@varlock/1password-plugin": "^1.1.0",
     "cheerio": "^1.1.2",
