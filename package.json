@@ -29,7 +29,7 @@
     "@netlify/functions": "^5.2.1",
     "@sentry/node": "^10.56.0",
     "@supabase/supabase-js": "^2.106.2",
-    "@varlock/1password-plugin": "^1.1.0",
+    "@varlock/1password-plugin": "^1.2.0",
     "cheerio": "^1.1.2",
     "cloudinary": "^2.10.0",
     "drizzle-orm": "^0.45.2",
@@ -38,7 +38,7 @@
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.15.1",
     "valibot": "^1.4.1",
-    "varlock": "^0.7.4"
+    "varlock": "^1.6.1"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^5.2.1",
