@@ -59,6 +59,7 @@
     "@varlock/vite-integration": "^1.1.3",
     "@vitejs/plugin-react": "^6.0.2",
     "@vitest/browser": "3.2.4",
+    "@vitest/browser-playwright": "4.1.8",
     "@vitest/coverage-v8": "4.1.8",
     "@vitest/ui": "^3.2.4",
     "babel-plugin-react-compiler": "^1.0.0",

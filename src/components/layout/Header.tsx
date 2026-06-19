@@ -17,7 +17,8 @@ export function Header() {
   } = useAuth();
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthPending, setIsAuthPending] = useState(false);
-  const displayName = identity?.user.displayName ?? identity?.user.email ?? "Maker";
+  const displayName =
+    identity?.user.displayName ?? identity?.user.email ?? "Maker";
 
   async function handleAuthAction(action: () => Promise<void>) {
     setAuthError(null);
@@ -28,7 +29,9 @@ export function Header() {
       setIsAuthPending(false);
     } catch (error) {
       setAuthError(
-        error instanceof Error ? error.message : "Authentication failed. Please try again.",
+        error instanceof Error
+          ? error.message
+          : "Authentication failed. Please try again.",
       );
       setIsAuthPending(false);
     }
@@ -66,7 +69,14 @@ export function Header() {
                   </p>
                 )}
                 {identity?.user.email && (
-                  <p className="Header-profileEmail ui-caption">{identity.user.email}</p>
+                  <p className="Header-profileEmail ui-caption">
+                    {identity.user.email}
+                  </p>
+                )}
+                {isAdmin && (
+                  <LinkButton to="/admin/moderation" variant="secondary">
+                    Moderation
+                  </LinkButton>
                 )}
                 <button
                   type="button"
