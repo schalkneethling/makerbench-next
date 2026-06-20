@@ -9,6 +9,17 @@ import { useAuth } from "../hooks/useAuth";
 
 import "./AdminModerationPage.css";
 
+function getSafeHref(url: string): string | null {
+  try {
+    const parsedUrl = new URL(url);
+    return ["http:", "https:", "mailto:"].includes(parsedUrl.protocol)
+      ? url
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 export function AdminModerationPage() {
   const {
     accessToken,
@@ -63,18 +74,16 @@ export function AdminModerationPage() {
 
       <div
         className="AdminModerationPage-tabs"
-        role="tablist"
         aria-labelledby="moderation-filter-heading"
       >
         <h2 id="moderation-filter-heading" className="visually-hidden">
-          Moderation type
+          Moderation type filter
         </h2>
         {moderationTypes.map(({ type, label }) => (
           <button
             className="AdminModerationPage-tab"
             type="button"
-            role="tab"
-            aria-selected={activeType === type}
+            aria-pressed={activeType === type}
             key={type}
             onClick={() => setActiveType(type)}
           >
@@ -111,6 +120,10 @@ export function AdminModerationPage() {
           <ul className="AdminModerationPage-list">
             {items.map((item) => {
               const tagHeadingId = `moderation-tags-${item.id}`;
+              const safeHref = getSafeHref(item.url);
+              const safeSubmitterHref = item.submitterUrl
+                ? getSafeHref(item.submitterUrl)
+                : null;
 
               return (
                 <li className="AdminModerationPage-item" key={item.id}>
@@ -127,9 +140,15 @@ export function AdminModerationPage() {
                       <h3 className="AdminModerationPage-cardTitle heading-lg">
                         {item.title}
                       </h3>
-                      <a className="AdminModerationPage-url" href={item.url}>
-                        {item.url}
-                      </a>
+                      {safeHref ? (
+                        <a className="AdminModerationPage-url" href={safeHref}>
+                          {item.url}
+                        </a>
+                      ) : (
+                        <span className="AdminModerationPage-url">
+                          {item.url}
+                        </span>
+                      )}
                       {item.description && (
                         <p className="AdminModerationPage-description body-base">
                           {item.description}
@@ -143,8 +162,8 @@ export function AdminModerationPage() {
                       {item.submitter && (
                         <p className="AdminModerationPage-meta ui-caption">
                           Submitted by{" "}
-                          {item.submitterUrl ? (
-                            <a href={item.submitterUrl}>{item.submitter}</a>
+                          {safeSubmitterHref ? (
+                            <a href={safeSubmitterHref}>{item.submitter}</a>
                           ) : (
                             item.submitter
                           )}

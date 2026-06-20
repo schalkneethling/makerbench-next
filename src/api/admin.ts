@@ -91,6 +91,7 @@ function getAuthHeaders(accessToken: string): HeadersInit {
 export async function getModerationQueue(
   accessToken: string,
   type?: ModerationEntityType,
+  signal?: AbortSignal,
 ): Promise<ModerationItem[]> {
   const searchParams = new URLSearchParams();
   if (type) {
@@ -101,6 +102,7 @@ export async function getModerationQueue(
     `/api/admin/moderation?${searchParams.toString()}`,
     {
       headers: getAuthHeaders(accessToken),
+      signal,
     },
   );
   const json = await parseJsonResponse(response);

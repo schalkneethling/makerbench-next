@@ -195,6 +195,7 @@ async function reviewTool({ id, action }: ModerationReviewInput) {
       approved_at = ${action === "approve" ? now : null},
       updated_at = ${now}
     where id = ${id}
+      and status = 'pending'
     returning id, status
   `);
 
@@ -219,6 +220,7 @@ async function reviewPublicEntity(
       rejection_reason = ${action === "reject" ? rejectionReason?.trim() || null : null},
       updated_at = ${now}
     where ${target.idColumn} = ${id}
+      and status = 'pending'
     returning id, status
   `);
 

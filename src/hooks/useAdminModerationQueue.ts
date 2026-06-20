@@ -60,6 +60,7 @@ export function useAdminModerationQueue({
         const nextItems = await getModerationQueue(
           queueAccessToken,
           activeType === "all" ? undefined : activeType,
+          controller.signal,
         );
         if (!controller.signal.aborted) {
           startViewTransition(() => {

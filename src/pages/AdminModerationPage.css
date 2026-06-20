@@ -52,7 +52,7 @@
   padding-inline: var(--size-12);
 }
 
-.AdminModerationPage-tab[aria-selected="true"] {
+.AdminModerationPage-tab[aria-pressed="true"] {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
   color: var(--color-text-inverted);
