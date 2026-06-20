@@ -1,0 +1,143 @@
+.AdminModerationPage {
+  display: grid;
+  gap: var(--size-24);
+  margin-inline: auto;
+  max-inline-size: 75rem;
+  padding-block: var(--size-32);
+  padding-inline: var(--size-16);
+}
+
+.AdminModerationPage-header,
+.AdminModerationPage-card,
+.AdminModerationPage-cardBody,
+.AdminModerationPage-actions,
+.AdminModerationPage-reason {
+  display: grid;
+}
+
+.AdminModerationPage-header {
+  gap: var(--size-8);
+}
+
+.AdminModerationPage-title,
+.AdminModerationPage-description,
+.AdminModerationPage-cardTitle,
+.AdminModerationPage-meta {
+  margin: 0;
+}
+
+.AdminModerationPage-description,
+.AdminModerationPage-meta {
+  color: var(--color-text-muted);
+}
+
+.AdminModerationPage-tabs,
+.AdminModerationPage-buttons,
+.AdminModerationPage-tags {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.AdminModerationPage-tabs {
+  gap: var(--size-8);
+}
+
+.AdminModerationPage-tab {
+  background-color: var(--color-surface-raised);
+  border: var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font: var(--typography-button);
+  padding-block: var(--size-8);
+  padding-inline: var(--size-12);
+}
+
+.AdminModerationPage-tab[aria-pressed="true"] {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-text-inverted);
+}
+
+.AdminModerationPage-list {
+  display: grid;
+  gap: var(--size-16);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.AdminModerationPage-card {
+  background-color: var(--color-surface-raised);
+  border: var(--border-default);
+  border-radius: var(--radius-md);
+  gap: var(--size-20);
+  padding: var(--size-20);
+}
+
+.AdminModerationPage-cardHeader {
+  align-items: center;
+  display: flex;
+  gap: var(--size-12);
+  justify-content: space-between;
+}
+
+.AdminModerationPage-type,
+.AdminModerationPage-tag {
+  border-radius: var(--radius-sm);
+  font: var(--typography-caption);
+  padding-block: var(--size-4);
+  padding-inline: var(--size-8);
+}
+
+.AdminModerationPage-type {
+  background-color: var(--color-primary);
+  color: var(--color-text-inverted);
+}
+
+.AdminModerationPage-cardBody,
+.AdminModerationPage-actions,
+.AdminModerationPage-reason {
+  gap: var(--size-12);
+}
+
+.AdminModerationPage-url {
+  overflow-wrap: anywhere;
+}
+
+.AdminModerationPage-tags {
+  gap: var(--size-8);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.AdminModerationPage-tag {
+  background-color: var(--color-surface);
+  border: var(--border-default);
+}
+
+.AdminModerationPage-reason {
+  max-inline-size: 42rem;
+}
+
+.AdminModerationPage-reasonField {
+  background-color: var(--color-surface);
+  border: var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font: inherit;
+  min-block-size: 5rem;
+  padding: var(--size-12);
+  resize: vertical;
+}
+
+.AdminModerationPage-buttons {
+  gap: var(--size-12);
+}
+
+@media (width >= 48rem) {
+  .AdminModerationPage-actions {
+    align-items: end;
+    grid-template-columns: minmax(20rem, 1fr) auto;
+  }
+}

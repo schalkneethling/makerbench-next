@@ -17,5 +17,12 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["netlify/functions", "src/types", "src/db/schema.ts", "src/db/errors.ts", "src/lib"]
+  "include": [
+    "netlify/functions",
+    "src/types",
+    "src/vite-env.d.ts",
+    "src/db/schema.ts",
+    "src/db/errors.ts",
+    "src/lib"
+  ]
 }
