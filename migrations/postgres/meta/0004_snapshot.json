@@ -1,6 +1,6 @@
 {
-  "id": "b4e6c6c2-8ac2-4a32-9d83-b02f08cb0e8e",
-  "prevId": "2f2d0783-b1a4-44f3-b753-4dbde6d27cb6",
+  "id": "7273dc61-0f03-4950-bbf3-400e26d2d630",
+  "prevId": "b4e6c6c2-8ac2-4a32-9d83-b02f08cb0e8e",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -186,8 +186,12 @@
           "tableFrom": "bookmarks",
           "tableTo": "users",
           "schemaTo": "auth",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -195,8 +199,12 @@
           "name": "bookmarks_resource_id_resources_id_fk",
           "tableFrom": "bookmarks",
           "tableTo": "resources",
-          "columnsFrom": ["resource_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "resource_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -204,8 +212,12 @@
           "name": "bookmarks_parent_id_bookmarks_id_fk",
           "tableFrom": "bookmarks",
           "tableTo": "bookmarks",
-          "columnsFrom": ["parent_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -237,11 +249,23 @@
           "name": "submitted_by_user_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "submitted_by_bookmark_id": {
           "name": "submitted_by_bookmark_id",
           "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "submitter_name": {
+          "name": "submitter_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "submitter_github_url": {
+          "name": "submitter_github_url",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -398,8 +422,12 @@
           "name": "public_listings_resource_id_resources_id_fk",
           "tableFrom": "public_listings",
           "tableTo": "resources",
-          "columnsFrom": ["resource_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "resource_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -408,8 +436,12 @@
           "tableFrom": "public_listings",
           "tableTo": "users",
           "schemaTo": "auth",
-          "columnsFrom": ["submitted_by_user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "submitted_by_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -417,8 +449,12 @@
           "name": "public_listings_submitted_by_bookmark_id_bookmarks_id_fk",
           "tableFrom": "public_listings",
           "tableTo": "bookmarks",
-          "columnsFrom": ["submitted_by_bookmark_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "submitted_by_bookmark_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -427,8 +463,12 @@
           "tableFrom": "public_listings",
           "tableTo": "users",
           "schemaTo": "auth",
-          "columnsFrom": ["reviewed_by"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "reviewed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -676,8 +716,12 @@
           "name": "public_stack_items_public_stack_id_public_stacks_id_fk",
           "tableFrom": "public_stack_items",
           "tableTo": "public_stacks",
-          "columnsFrom": ["public_stack_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "public_stack_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -685,8 +729,12 @@
           "name": "public_stack_items_bookmark_id_bookmarks_id_fk",
           "tableFrom": "public_stack_items",
           "tableTo": "bookmarks",
-          "columnsFrom": ["bookmark_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "bookmark_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -694,8 +742,12 @@
           "name": "public_stack_items_resource_id_resources_id_fk",
           "tableFrom": "public_stack_items",
           "tableTo": "resources",
-          "columnsFrom": ["resource_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "resource_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -703,8 +755,12 @@
           "name": "public_stack_items_source_public_listing_id_public_listings_id_fk",
           "tableFrom": "public_stack_items",
           "tableTo": "public_listings",
-          "columnsFrom": ["source_public_listing_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "source_public_listing_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -713,8 +769,12 @@
           "tableFrom": "public_stack_items",
           "tableTo": "users",
           "schemaTo": "auth",
-          "columnsFrom": ["reviewed_by"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "reviewed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -928,8 +988,12 @@
           "name": "public_stacks_root_bookmark_id_bookmarks_id_fk",
           "tableFrom": "public_stacks",
           "tableTo": "bookmarks",
-          "columnsFrom": ["root_bookmark_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "root_bookmark_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -937,8 +1001,12 @@
           "name": "public_stacks_resource_id_resources_id_fk",
           "tableFrom": "public_stacks",
           "tableTo": "resources",
-          "columnsFrom": ["resource_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "resource_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -947,8 +1015,12 @@
           "tableFrom": "public_stacks",
           "tableTo": "users",
           "schemaTo": "auth",
-          "columnsFrom": ["owner_user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "owner_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -957,8 +1029,12 @@
           "tableFrom": "public_stacks",
           "tableTo": "users",
           "schemaTo": "auth",
-          "columnsFrom": ["reviewed_by"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "reviewed_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1027,7 +1103,9 @@
         "resources_normalized_url_unique": {
           "name": "resources_normalized_url_unique",
           "nullsNotDistinct": false,
-          "columns": ["normalized_url"]
+          "columns": [
+            "normalized_url"
+          ]
         }
       },
       "policies": {},
@@ -1172,8 +1250,12 @@
           "name": "tool_listings_resource_id_resources_id_fk",
           "tableFrom": "tool_listings",
           "tableTo": "resources",
-          "columnsFrom": ["resource_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "resource_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1230,8 +1312,12 @@
           "tableFrom": "user_preferences",
           "tableTo": "users",
           "schemaTo": "auth",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1241,7 +1327,9 @@
         "user_preferences_user_id_unique": {
           "name": "user_preferences_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": ["user_id"]
+          "columns": [
+            "user_id"
+          ]
         }
       },
       "policies": {},
@@ -1308,8 +1396,12 @@
           "tableFrom": "user_roles",
           "tableTo": "users",
           "schemaTo": "auth",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

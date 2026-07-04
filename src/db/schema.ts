@@ -94,7 +94,7 @@ export const bookmarksTable = pgTable(
     index("idx_bookmarks_resource").on(table.resourceId),
     uniqueIndex("unique_user_resource").on(table.userId, table.resourceId),
   ],
-);
+).enableRLS();
 
 export const publicListingsTable = pgTable(
   "public_listings",
@@ -103,12 +103,14 @@ export const publicListingsTable = pgTable(
     resourceId: uuid("resource_id")
       .notNull()
       .references(() => resourcesTable.id, { onDelete: "cascade" }),
-    submittedByUserId: uuid("submitted_by_user_id")
-      .notNull()
-      .references(() => authUsersTable.id, { onDelete: "cascade" }),
+    submittedByUserId: uuid("submitted_by_user_id").references(() => authUsersTable.id, {
+      onDelete: "cascade",
+    }),
     submittedByBookmarkId: uuid("submitted_by_bookmark_id").references(() => bookmarksTable.id, {
       onDelete: "set null",
     }),
+    submitterName: text("submitter_name"),
+    submitterGithubUrl: text("submitter_github_url"),
     status: text("status", {
       enum: ["pending", "approved", "rejected"],
     }).notNull(),
@@ -247,7 +249,7 @@ export const userRolesTable = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [uniqueIndex("unique_user_role").on(table.userId, table.role)],
-);
+).enableRLS();
 
 export const userPreferencesTable = pgTable("user_preferences", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -261,7 +263,7 @@ export const userPreferencesTable = pgTable("user_preferences", {
     .default("default")
     .notNull(),
   ...timestamps,
-});
+}).enableRLS();
 
 export type InsertResource = typeof resourcesTable.$inferInsert;
 export type SelectResource = typeof resourcesTable.$inferSelect;
