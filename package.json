@@ -28,7 +28,7 @@
     "@heroicons/react": "^2.2.0",
     "@netlify/functions": "^5.2.1",
     "@sentry/node": "^10.59.0",
-    "@supabase/supabase-js": "^2.106.2",
+    "@supabase/supabase-js": "^2.110.0",
     "@varlock/1password-plugin": "^1.2.0",
     "cheerio": "^1.1.2",
     "cloudinary": "^2.10.0",
