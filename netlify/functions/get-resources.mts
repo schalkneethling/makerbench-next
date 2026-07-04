@@ -24,7 +24,7 @@ interface PublicResource {
   description: string | null;
   tags: { id: string; name: string }[];
   createdAt: string;
-  kind: "resource" | "stack";
+  kind: "article" | "resource" | "stack";
   children?: Array<{
     id: string;
     url: string;
@@ -41,7 +41,7 @@ interface PublicResourceRow extends Record<string, unknown> {
   description: string | null;
   tags: string[];
   created_at: Date | string;
-  kind: "resource" | "stack";
+  kind: "article" | "resource" | "stack";
 }
 
 interface StackItemRow extends Record<string, unknown> {
@@ -107,7 +107,7 @@ async function getApprovedResourcesPage(
           public_listings.meta_description as description,
           public_listings.tags,
           public_listings.created_at,
-          'resource'::text as kind
+          public_listings.content_kind as kind
         from public_listings
         inner join resources on public_listings.resource_id = resources.id
         where public_listings.status = 'approved'

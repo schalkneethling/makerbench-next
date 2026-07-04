@@ -21,6 +21,15 @@ describe("resources API", () => {
                 description: "Useful reading",
                 tags: [{ id: "reading", name: "reading" }],
                 createdAt: "2024-01-01",
+                kind: "article",
+              },
+              {
+                id: "resource-1",
+                url: "https://example.com/reference",
+                title: "Example Reference",
+                description: "Useful reference",
+                tags: [{ id: "reference", name: "reference" }],
+                createdAt: "2024-01-01",
                 kind: "resource",
               },
               {
@@ -55,9 +64,11 @@ describe("resources API", () => {
 
     const result = await getResources();
 
-    expect(result.resources).toHaveLength(2);
-    expect(result.resources[1].kind).toBe("stack");
-    expect(result.resources[1].children).toHaveLength(1);
+    expect(result.resources).toHaveLength(3);
+    expect(result.resources[0].kind).toBe("article");
+    expect(result.resources[1].kind).toBe("resource");
+    expect(result.resources[2].kind).toBe("stack");
+    expect(result.resources[2].children).toHaveLength(1);
   });
 
   it("passes search params through", async () => {

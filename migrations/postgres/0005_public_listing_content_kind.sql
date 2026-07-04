@@ -1,0 +1,2 @@
+ALTER TABLE "public_listings" ADD COLUMN "content_kind" text DEFAULT 'resource' NOT NULL;--> statement-breakpoint
+ALTER TABLE "public_listings" ADD CONSTRAINT "public_listings_content_kind_check" CHECK ("public_listings"."content_kind" in ('article', 'resource'));
