@@ -132,8 +132,14 @@ export async function listPendingModerationItems(
         public_listings.page_title as title,
         public_listings.meta_description as description,
         public_listings.tags,
-        public_listings.submitted_by_user_id::text as submitter,
-        null::text as submitter_url,
+        coalesce(
+          nullif(btrim(public_listings.submitter_name), ''),
+          case
+            when public_listings.submitted_by_user_id is null then 'Anonymous'
+            else 'Signed-in user'
+          end
+        ) as submitter,
+        nullif(btrim(public_listings.submitter_github_url), '') as submitter_url,
         null::uuid as parent_id,
         null::text as parent_title,
         public_listings.created_at
