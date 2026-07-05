@@ -1,5 +1,9 @@
 import * as v from "valibot";
-import { isValidGithubProfileUrl } from "./github";
+import {
+  GITHUB_USERNAME_MAX_LENGTH,
+  isValidGithubProfileUrl,
+  isValidGithubUsername,
+} from "./github";
 
 const urlSchema = v.pipe(v.string(), v.url("Please enter a valid URL"));
 const MAX_URL_LENGTH = 2000;
@@ -44,6 +48,60 @@ const githubProfileUrlSchema = v.pipe(
 
 const optionalGithubProfileUrlSchema = v.optional(v.union([githubProfileUrlSchema, v.literal("")]));
 
+const optionalSubmitterNameSchema = v.optional(
+  v.pipe(v.string(), v.maxLength(100, "Name must be 100 characters or less")),
+);
+
+const optionalGithubUsernameSchema = v.optional(
+  v.union([
+    v.pipe(
+      v.string(),
+      v.maxLength(
+        GITHUB_USERNAME_MAX_LENGTH,
+        `GitHub username must be ${GITHUB_USERNAME_MAX_LENGTH} characters or less`,
+      ),
+      v.check(isValidGithubUsername, "Please enter a valid GitHub username"),
+    ),
+    v.literal(""),
+  ]),
+);
+
+export const publicSubmissionTypeSchema = v.picklist(["tool", "article", "resource"]);
+export const publicSubmissionStatusSchema = v.picklist(["pending", "approved", "rejected"]);
+
+export const publicSubmissionAuthenticatedUserSchema = v.object({
+  userId: v.pipe(v.string(), v.uuid("Authenticated user id must be a valid UUID")),
+});
+
+// Server-side code should populate this from verified auth context, not trust arbitrary client JSON.
+export const publicSubmissionRequestSchema = v.object({
+  type: publicSubmissionTypeSchema,
+  url: resourceUrlSchema,
+  tags: resourceTagsSchema,
+  submitterName: optionalSubmitterNameSchema,
+  submitterGithubUsername: optionalGithubUsernameSchema,
+  submitterGithubUrl: optionalGithubProfileUrlSchema,
+  authenticatedUser: v.optional(publicSubmissionAuthenticatedUserSchema),
+});
+
+export const publicSubmissionResponseDataSchema = v.object({
+  submittedItemId: v.pipe(v.string(), v.uuid()),
+  type: publicSubmissionTypeSchema,
+  status: publicSubmissionStatusSchema,
+  message: v.string(),
+});
+
+export const publicSubmissionResponseSchema = v.object({
+  success: v.literal(true),
+  data: publicSubmissionResponseDataSchema,
+});
+
+export const apiErrorResponseSchema = v.object({
+  success: v.literal(false),
+  error: v.string(),
+  details: v.optional(v.record(v.string(), v.array(v.string()))),
+});
+
 export const tagSchema = v.object({
   id: v.pipe(v.string(), v.uuid()),
   name: v.pipe(
@@ -70,31 +128,15 @@ export const toolSubmissionSchema = v.object({
     v.array(v.pipe(v.string(), v.minLength(1, "Tag cannot be empty"))),
     v.minLength(1, "At least one tag is required"),
   ),
-  submitterName: v.optional(
-    v.pipe(v.string(), v.maxLength(100, "Name must be 100 characters or less")),
-  ),
+  submitterName: optionalSubmitterNameSchema,
   submitterGithubUrl: optionalGithubProfileUrlSchema,
 });
 
 export const bookmarkRequestSchema = v.object({
   url: resourceUrlSchema,
   tags: resourceTagsSchema,
-  submitterName: v.optional(
-    v.pipe(v.string(), v.maxLength(100, "Name must be 100 characters or less")),
-  ),
-  submitterGithubUsername: v.optional(
-    v.union([
-      v.pipe(
-        v.string(),
-        v.maxLength(39, "GitHub username must be 39 characters or less"),
-        v.regex(
-          /^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/,
-          "Please enter a valid GitHub username",
-        ),
-      ),
-      v.literal(""),
-    ]),
-  ),
+  submitterName: optionalSubmitterNameSchema,
+  submitterGithubUsername: optionalGithubUsernameSchema,
   submitterGithubUrl: optionalGithubProfileUrlSchema,
 });
 
@@ -150,6 +192,11 @@ export type Submitter = v.InferOutput<typeof submitterSchema>;
 export type ToolSubmissionData = v.InferOutput<typeof toolSubmissionSchema>;
 export type BookmarkRequest = v.InferOutput<typeof bookmarkRequestSchema>;
 export type PersonalResourceRequest = v.InferOutput<typeof personalResourceRequestSchema>;
+export type PublicSubmissionType = v.InferOutput<typeof publicSubmissionTypeSchema>;
+export type PublicSubmissionStatus = v.InferOutput<typeof publicSubmissionStatusSchema>;
+export type PublicSubmissionRequest = v.InferOutput<typeof publicSubmissionRequestSchema>;
+export type PublicSubmissionResponseData = v.InferOutput<typeof publicSubmissionResponseDataSchema>;
+export type ApiErrorResponse = v.InferOutput<typeof apiErrorResponseSchema>;
 export type ToolMetadata = v.InferOutput<typeof toolMetadataSchema>;
 export type Tool = v.InferOutput<typeof toolSchema>;
 export type SearchRequest = v.InferOutput<typeof searchRequestSchema>;
@@ -166,6 +213,14 @@ export const validateBookmarkRequest = (data: unknown) => {
 
 export const validatePersonalResourceRequest = (data: unknown) => {
   return v.safeParse(personalResourceRequestSchema, data);
+};
+
+export const validatePublicSubmissionRequest = (data: unknown) => {
+  return v.safeParse(publicSubmissionRequestSchema, data);
+};
+
+export const validatePublicSubmissionResponse = (data: unknown) => {
+  return v.safeParse(publicSubmissionResponseSchema, data);
 };
 
 export const validateSearchRequest = (data: unknown) => {

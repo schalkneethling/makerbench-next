@@ -4,7 +4,9 @@ import type { ErrorResponse, SuccessResponse } from "../lib/responses";
 
 /** Success data shape for process-bookmark */
 interface BookmarkCreated {
-  bookmarkId: string;
+  submittedItemId: string;
+  type: "tool";
+  status: "pending";
   message: string;
 }
 
@@ -68,7 +70,7 @@ function createMockDb() {
     values: vi.fn().mockReturnThis(),
     onConflictDoUpdate: vi.fn().mockReturnThis(),
     onConflictDoNothing: vi.fn().mockReturnThis(),
-    returning: vi.fn().mockResolvedValue([{ id: "test-bookmark-id" }]),
+    returning: vi.fn().mockResolvedValue([{ id: "11111111-1111-4111-8111-111111111111" }]),
     innerJoin: vi.fn().mockReturnThis(),
     leftJoin: vi.fn().mockReturnThis(),
     orderBy: vi.fn().mockReturnThis(),
@@ -135,7 +137,7 @@ describe("process-bookmark", () => {
     it("returns 422 for missing URL", async () => {
       const req = new Request("https://test.com/api/tools", {
         method: "POST",
-        body: JSON.stringify({ tags: ["test"] }),
+        body: JSON.stringify({ type: "tool", tags: ["test"] }),
         headers: { "Content-Type": "application/json" },
       });
 
@@ -149,7 +151,7 @@ describe("process-bookmark", () => {
     it("returns 422 for missing tags", async () => {
       const req = new Request("https://test.com/api/tools", {
         method: "POST",
-        body: JSON.stringify({ url: "https://example.com" }),
+        body: JSON.stringify({ type: "tool", url: "https://example.com" }),
         headers: { "Content-Type": "application/json" },
       });
 
@@ -163,13 +165,31 @@ describe("process-bookmark", () => {
     it("returns 422 for invalid URL format", async () => {
       const req = new Request("https://test.com/api/tools", {
         method: "POST",
-        body: JSON.stringify({ url: "not-a-url", tags: ["test"] }),
+        body: JSON.stringify({ type: "tool", url: "not-a-url", tags: ["test"] }),
         headers: { "Content-Type": "application/json" },
       });
 
       const res = await processBookmark(req, mockContext);
 
       expect(res.status).toBe(422);
+    });
+
+    it("returns 422 when the tools endpoint receives a non-tool submission", async () => {
+      const req = new Request("https://test.com/api/tools", {
+        method: "POST",
+        body: JSON.stringify({
+          type: "article",
+          url: "https://example.com/article",
+          tags: ["test"],
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const res = await processBookmark(req, mockContext);
+
+      expect(res.status).toBe(422);
+      const body = (await res.json()) as ErrorResponse;
+      expect(body.details?.type).toContain("/api/tools only accepts tool submissions");
     });
 
     it("returns generic 503 when required env vars are missing", async () => {
@@ -182,6 +202,7 @@ describe("process-bookmark", () => {
         const req = new Request("https://test.com/api/tools", {
           method: "POST",
           body: JSON.stringify({
+            type: "tool",
             url: "https://example.com/tool",
             tags: ["test"],
           }),
@@ -210,6 +231,7 @@ describe("process-bookmark", () => {
       const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({
+          type: "tool",
           url: "https://example.com",
           tags: ["test"],
         }),
@@ -225,10 +247,11 @@ describe("process-bookmark", () => {
   });
 
   describe("successful submission", () => {
-    it("returns 201 with bookmark ID on success", async () => {
+    it("returns 201 with public submission status data on success", async () => {
       const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({
+          type: "tool",
           url: "https://example.com/tool",
           tags: ["javascript", "testing"],
         }),
@@ -240,7 +263,9 @@ describe("process-bookmark", () => {
       expect(res.status).toBe(201);
       const body = (await res.json()) as SuccessResponse<BookmarkCreated>;
       expect(body.success).toBe(true);
-      expect(body.data.bookmarkId).toBeDefined();
+      expect(body.data.submittedItemId).toBeDefined();
+      expect(body.data.type).toBe("tool");
+      expect(body.data.status).toBe("pending");
       expect(body.data.message).toContain("submitted");
     });
 
@@ -248,6 +273,7 @@ describe("process-bookmark", () => {
       const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({
+          type: "tool",
           url: "https://example.com/tool",
           tags: ["test"],
         }),
@@ -269,6 +295,7 @@ describe("process-bookmark", () => {
       const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({
+          type: "tool",
           url: "https://example.com/tool",
           tags: ["test"],
         }),
@@ -296,6 +323,7 @@ describe("process-bookmark", () => {
       const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({
+          type: "tool",
           url: "https://example.com/tool",
           tags: ["test"],
         }),
@@ -312,6 +340,7 @@ describe("process-bookmark", () => {
       const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({
+          type: "tool",
           url: "https://example.com/tool",
           tags: ["JavaScript", "TESTING"],
         }),

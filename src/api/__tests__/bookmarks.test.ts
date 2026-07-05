@@ -136,7 +136,7 @@ function createGetTagsHandler() {
  */
 function createSubmitBookmarkHandler() {
   return http.post(`${API_BASE}/api/tools`, async ({ request }) => {
-    const body = (await request.json()) as { url?: string; tags?: string[] };
+    const body = (await request.json()) as { type?: string; url?: string; tags?: string[] };
 
     // Validate URL is present
     if (!body.url) {
@@ -145,6 +145,17 @@ function createSubmitBookmarkHandler() {
           success: false,
           error: "Validation failed",
           details: { url: ["URL is required"] },
+        },
+        { status: 422 },
+      );
+    }
+
+    if (body.type !== "tool") {
+      return HttpResponse.json(
+        {
+          success: false,
+          error: "Validation failed",
+          details: { type: ["/api/tools only accepts tool submissions"] },
         },
         { status: 422 },
       );
@@ -165,7 +176,9 @@ function createSubmitBookmarkHandler() {
       {
         success: true,
         data: {
-          bookmarkId: "new-bookmark-id",
+          submittedItemId: "11111111-1111-4111-8111-111111111111",
+          type: "tool",
+          status: "pending",
           message: "Bookmark submitted. It will be reviewed shortly.",
         },
       },
@@ -304,7 +317,9 @@ describe("submitBookmark", () => {
       tags: ["typescript"],
     });
 
-    expect(result.bookmarkId).toBe("new-bookmark-id");
+    expect(result.submittedItemId).toBe("11111111-1111-4111-8111-111111111111");
+    expect(result.type).toBe("tool");
+    expect(result.status).toBe("pending");
     expect(result.message).toContain("submitted");
   });
 

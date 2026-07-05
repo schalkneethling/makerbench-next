@@ -3,7 +3,15 @@
  */
 
 const GITHUB_HOSTS = new Set(["github.com", "www.github.com"]);
+export const GITHUB_USERNAME_MAX_LENGTH = 39;
 const GITHUB_USERNAME_PATTERN = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/;
+
+/**
+ * Returns true when a value can be used as a GitHub profile username segment.
+ */
+export function isValidGithubUsername(username: string): boolean {
+  return username.length <= GITHUB_USERNAME_MAX_LENGTH && GITHUB_USERNAME_PATTERN.test(username);
+}
 
 /**
  * Returns true when URL is a GitHub profile URL in the form:
@@ -30,7 +38,7 @@ export function isValidGithubProfileUrl(url: string): boolean {
       return false;
     }
 
-    return GITHUB_USERNAME_PATTERN.test(pathSegments[0]);
+    return isValidGithubUsername(pathSegments[0]);
   } catch {
     return false;
   }

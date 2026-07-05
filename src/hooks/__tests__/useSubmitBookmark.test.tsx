@@ -35,7 +35,9 @@ function createSubmitHandler() {
       {
         success: true,
         data: {
-          bookmarkId: "new-bookmark-id",
+          submittedItemId: "11111111-1111-4111-8111-111111111111",
+          type: "tool",
+          status: "pending",
           message: "Bookmark submitted successfully",
         },
       },
@@ -75,9 +77,12 @@ describe("useSubmitBookmark", () => {
 
     expect(result.current.isSubmitting).toBe(false);
     expect(result.current.error).toBeNull();
-    expect(result.current.response?.bookmarkId).toBe("new-bookmark-id");
+    expect(result.current.response?.submittedItemId).toBe(
+      "11111111-1111-4111-8111-111111111111",
+    );
+    expect(result.current.response?.status).toBe("pending");
     expect(result.current.response?.message).toContain("successfully");
-    expect(submitResult?.bookmarkId).toBe("new-bookmark-id");
+    expect(submitResult?.submittedItemId).toBe("11111111-1111-4111-8111-111111111111");
   });
 
   it("sets isSubmitting during request", async () => {

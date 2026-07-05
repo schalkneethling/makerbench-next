@@ -21,7 +21,7 @@ import {
 import { extractMetadata } from "../../src/lib/services/metadata";
 import { captureScreenshot } from "../../src/lib/services/screenshot";
 import { uploadScreenshot } from "../../src/lib/services/cloudinary";
-import { validateBookmarkRequest } from "../../src/lib/validation";
+import { validatePublicSubmissionRequest } from "../../src/lib/validation";
 
 const FALLBACK_IMAGE = "/makerbench-fallback.png";
 
@@ -62,9 +62,15 @@ export default async (req: Request, _context: Context) => {
     return validationError("Invalid JSON in request body");
   }
 
-  const validation = validateBookmarkRequest(body);
+  const validation = validatePublicSubmissionRequest(body);
   if (!validation.success) {
     return validationError("Validation failed", getValidationDetails(validation.issues));
+  }
+
+  if (validation.output.type !== "tool") {
+    return validationError("Validation failed", {
+      type: ["/api/tools only accepts tool submissions"],
+    });
   }
 
   const {
@@ -146,7 +152,9 @@ export default async (req: Request, _context: Context) => {
     }
 
     return created({
-      bookmarkId: tool.id,
+      submittedItemId: tool.id,
+      type: "tool",
+      status: "pending",
       message: "Tool submitted. It will be reviewed shortly.",
     });
   } catch (error) {

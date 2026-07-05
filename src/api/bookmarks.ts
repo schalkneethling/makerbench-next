@@ -1,5 +1,10 @@
 import * as v from "valibot";
-import type { BookmarkRequest } from "../lib/validation";
+import {
+  apiErrorResponseSchema,
+  publicSubmissionResponseSchema,
+  type BookmarkRequest,
+  type PublicSubmissionResponseData,
+} from "../lib/validation";
 
 function getBaseUrl(): string {
   if (typeof window !== "undefined") {
@@ -53,25 +58,9 @@ const bookmarksResponseSchema = v.object({
   data: bookmarksDataSchema,
 });
 
-const submitDataSchema = v.object({
-  bookmarkId: v.string(),
-  message: v.string(),
-});
-
-const submitResponseSchema = v.object({
-  success: v.literal(true),
-  data: submitDataSchema,
-});
-
 const tagsResponseSchema = v.object({
   success: v.literal(true),
   data: tagsDataSchema,
-});
-
-const errorResponseSchema = v.object({
-  success: v.literal(false),
-  error: v.string(),
-  details: v.optional(v.record(v.string(), v.array(v.string()))),
 });
 
 // TODO(#61): These bookmark* schemas are legacy compatibility exports for the
@@ -83,8 +72,8 @@ export type PaginationInfo = v.InferOutput<typeof paginationSchema>;
 export type Bookmark = v.InferOutput<typeof bookmarkSchema>;
 export type BookmarksResponse = v.InferOutput<typeof bookmarksDataSchema>;
 export type TagsResponse = v.InferOutput<typeof tagsDataSchema>;
-export type SubmitBookmarkResponse = v.InferOutput<typeof submitDataSchema>;
-export type ApiError = v.InferOutput<typeof errorResponseSchema>;
+export type SubmitBookmarkResponse = PublicSubmissionResponseData;
+export type ApiError = v.InferOutput<typeof apiErrorResponseSchema>;
 
 export type Tool = Bookmark;
 export type ToolsResponse = BookmarksResponse;
@@ -123,7 +112,7 @@ export class BookmarkApiError extends Error {
 }
 
 function throwApiError(json: unknown, status: number): never {
-  const parsed = v.safeParse(errorResponseSchema, json);
+  const parsed = v.safeParse(apiErrorResponseSchema, json);
   throw new BookmarkApiError(
     parsed.success ? parsed.output.error : "An unexpected error occurred",
     status,
@@ -246,6 +235,7 @@ export async function submitBookmark(data: BookmarkRequest): Promise<SubmitBookm
   const { submitterGithubUsername, submitterGithubUrl, ...rest } = data;
   const payload = {
     ...rest,
+    type: "tool",
     submitterGithubUrl: submitterGithubUsername
       ? `https://github.com/${submitterGithubUsername}`
       : submitterGithubUrl,
@@ -265,7 +255,7 @@ export async function submitBookmark(data: BookmarkRequest): Promise<SubmitBookm
     throwApiError(json, response.status);
   }
 
-  const result = v.safeParse(submitResponseSchema, json);
+  const result = v.safeParse(publicSubmissionResponseSchema, json);
   if (!result.success) {
     throw new BookmarkApiError("Invalid response from server", 500);
   }
