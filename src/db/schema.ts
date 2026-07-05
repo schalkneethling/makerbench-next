@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
   bigint,
+  check,
   index,
   pgSchema,
   pgTable,
@@ -111,6 +112,11 @@ export const publicListingsTable = pgTable(
     }),
     submitterName: text("submitter_name"),
     submitterGithubUrl: text("submitter_github_url"),
+    contentKind: text("content_kind", {
+      enum: ["article", "resource"],
+    })
+      .default("resource")
+      .notNull(),
     status: text("status", {
       enum: ["pending", "approved", "rejected"],
     }).notNull(),
@@ -139,6 +145,10 @@ export const publicListingsTable = pgTable(
     ),
     index("idx_public_listings_resource").on(table.resourceId),
     uniqueIndex("unique_public_listing_resource").on(table.resourceId),
+    check(
+      "public_listings_content_kind_check",
+      sql`${table.contentKind} in ('article', 'resource')`,
+    ),
   ],
 );
 

@@ -9,7 +9,7 @@ interface PublicResource {
   description: string | null;
   tags: { id: string; name: string }[];
   createdAt: string;
-  kind: "resource" | "stack";
+  kind: "article" | "resource" | "stack";
   children?: Array<{
     id: string;
     url: string;
@@ -108,12 +108,12 @@ describe("get-resources", () => {
           },
           {
             id: "listing-1",
-            url: "https://example.com/tool",
-            title: "Tool",
+            url: "https://example.com/article",
+            title: "Article",
             description: null,
             tags: ["design"],
             created_at: "2024-01-02T00:00:00.000Z",
-            kind: "resource",
+            kind: "article",
           },
         ],
       })
@@ -159,12 +159,12 @@ describe("get-resources", () => {
       },
       {
         id: "listing-1",
-        url: "https://example.com/tool",
-        title: "Tool",
+        url: "https://example.com/article",
+        title: "Article",
         description: null,
         tags: [{ id: "design", name: "design" }],
         createdAt: "2024-01-02T00:00:00.000Z",
-        kind: "resource",
+        kind: "article",
       },
     ]);
     expect(body.data.pagination).toEqual({

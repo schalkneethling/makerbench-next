@@ -36,6 +36,13 @@
       "when": 1783176429994,
       "tag": "0004_public_listing_attribution",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783178299192,
+      "tag": "0005_public_listing_content_kind",
+      "breakpoints": true
     }
   ]
 }

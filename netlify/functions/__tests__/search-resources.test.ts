@@ -9,7 +9,7 @@ interface PublicResource {
   description: string | null;
   tags: { id: string; name: string }[];
   createdAt: string;
-  kind: "resource" | "stack";
+  kind: "article" | "resource" | "stack";
   children?: Array<{
     id: string;
     url: string;
@@ -216,6 +216,43 @@ describe("search-resources", () => {
     expect(body.data.resources).toEqual([]);
     expect(body.data.pagination.total).toBe(0);
     expect(body.data.pagination.hasMore).toBe(false);
+    expect(mockDb.execute).toHaveBeenCalledTimes(2);
+  });
+
+  it("preserves article kinds for matching public listings", async () => {
+    mockDb.execute
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            id: "article-1",
+            url: "https://example.com/article",
+            title: "Article",
+            description: "Useful reading",
+            tags: ["reading"],
+            created_at: "2024-01-04T00:00:00.000Z",
+            kind: "article",
+          },
+        ],
+      })
+      .mockResolvedValueOnce({ rows: [{ total: 1 }] });
+
+    const req = new Request("https://test.com/api/resources/search?q=article");
+
+    const res = await searchResources(req, mockContext);
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as SuccessResponse<SearchResultsData>;
+    expect(body.data.resources).toEqual([
+      {
+        id: "article-1",
+        url: "https://example.com/article",
+        title: "Article",
+        description: "Useful reading",
+        tags: [{ id: "reading", name: "reading" }],
+        createdAt: "2024-01-04T00:00:00.000Z",
+        kind: "article",
+      },
+    ]);
     expect(mockDb.execute).toHaveBeenCalledTimes(2);
   });
 });

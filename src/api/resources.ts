@@ -29,7 +29,7 @@ const resourceSchema = v.object({
   description: v.nullable(v.string()),
   tags: v.array(resourceTagSchema),
   createdAt: v.string(),
-  kind: v.picklist(["resource", "stack"]),
+  kind: v.picklist(["article", "resource", "stack"]),
   children: v.optional(v.array(resourceChildSchema)),
 });
 

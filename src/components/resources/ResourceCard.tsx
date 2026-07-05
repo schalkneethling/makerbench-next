@@ -31,6 +31,18 @@ function getHostname(url: string): string {
   return parsedUrl.protocol === "mailto:" ? "" : parsedUrl.hostname.replace(/^www\./, "");
 }
 
+function getKindLabel(kind: Resource["kind"]): string {
+  if (kind === "stack") {
+    return "Stack";
+  }
+
+  if (kind === "article") {
+    return "Article";
+  }
+
+  return "Resource";
+}
+
 export function ResourceCard({ resource, onTagClick }: ResourceCardProps) {
   const titleId = useId();
   const isStack = resource.kind === "stack";
@@ -41,7 +53,7 @@ export function ResourceCard({ resource, onTagClick }: ResourceCardProps) {
       <div className="ResourceCard-main">
         {/* TODO: Rework the card-click pattern so the full card is clickable without wrapping all content in one anchor. */}
         <a href={resourceHref} className="ResourceCard-link" aria-labelledby={titleId}>
-          <span className="ResourceCard-kind ui-caption">{isStack ? "Stack" : "Resource"}</span>
+          <span className="ResourceCard-kind ui-caption">{getKindLabel(resource.kind)}</span>
           <h3 id={titleId} className="ResourceCard-title heading-base">
             {resource.title}
           </h3>
