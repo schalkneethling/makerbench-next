@@ -1,7 +1,27 @@
 import { describe, expect, it } from "vitest";
-import { getGithubUsernameFromProfileUrl, isValidGithubProfileUrl } from "../github";
+import {
+  getGithubUsernameFromProfileUrl,
+  isValidGithubProfileUrl,
+  isValidGithubUsername,
+} from "../github";
 
 describe("github utils", () => {
+  describe("isValidGithubUsername", () => {
+    it("accepts username values used in profile URLs", () => {
+      expect(isValidGithubUsername("octocat")).toBe(true);
+      expect(isValidGithubUsername("octo-cat")).toBe(true);
+      expect(isValidGithubUsername("octocat123")).toBe(true);
+    });
+
+    it("rejects values that cannot be GitHub profile username segments", () => {
+      expect(isValidGithubUsername("-octocat")).toBe(false);
+      expect(isValidGithubUsername("octocat-")).toBe(false);
+      expect(isValidGithubUsername("octocat/repo")).toBe(false);
+      expect(isValidGithubUsername("josé")).toBe(false);
+      expect(isValidGithubUsername("a".repeat(40))).toBe(false);
+    });
+  });
+
   describe("isValidGithubProfileUrl", () => {
     it("accepts valid profile URLs", () => {
       expect(isValidGithubProfileUrl("https://github.com/octocat")).toBe(true);

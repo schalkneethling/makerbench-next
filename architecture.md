@@ -209,12 +209,13 @@ All responses follow a consistent envelope:
 
 Valibot schemas in `src/lib/validation.ts` define:
 
+- Shared public submissions for tools, articles, and resources (`publicSubmissionRequestSchema`, `publicSubmissionResponseSchema`)
 - Tool submission (`toolSubmissionSchema`)
 - Personal library entries (`personalResourceRequestSchema`)
 - Tag constraints (1–10 tags, max 50 chars each)
 - URL normalization rules (HTTP/HTTPS only, max 2000 chars)
 
-Functions call `validate*()` helpers; the frontend reuses the same schemas for form validation.
+Public submission success responses return a submitted item id, `tool | article | resource` type, moderation status, and message. Functions call `validate*()` helpers; the frontend reuses the same schemas for form validation.
 
 ### External service integrations
 
