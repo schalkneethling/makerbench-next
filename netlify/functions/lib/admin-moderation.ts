@@ -114,8 +114,14 @@ export async function listPendingModerationItems(
         tool_listings.page_title as title,
         tool_listings.meta_description as description,
         tool_listings.tags,
-        tool_listings.submitter_name as submitter,
-        tool_listings.submitter_github_url as submitter_url,
+          coalesce(
+            nullif(btrim(tool_listings.submitter_name), ''),
+            case
+              when tool_listings.submitted_by_user_id is null then 'Anonymous'
+              else 'Signed-in user'
+            end
+          ) as submitter,
+          nullif(btrim(tool_listings.submitter_github_url), '') as submitter_url,
         null::uuid as parent_id,
         null::text as parent_title,
         tool_listings.created_at
@@ -191,7 +197,8 @@ export async function listPendingModerationItems(
   return result.rows.map(mapModerationRow);
 }
 
-async function reviewTool({ id, action }: ModerationReviewInput) {
+async function reviewTool(review: ModerationReviewInput, reviewerId: string) {
+  const { id, action, rejectionCode, rejectionReason } = review;
   const now = new Date();
   const nextStatus = action === "approve" ? "approved" : "rejected";
   const result = await getDb().execute<ReviewedRow>(sql`
@@ -199,6 +206,10 @@ async function reviewTool({ id, action }: ModerationReviewInput) {
     set
       status = ${nextStatus},
       approved_at = ${action === "approve" ? now : null},
+      reviewed_at = ${now},
+      reviewed_by = ${reviewerId},
+      rejection_code = ${action === "reject" ? rejectionCode?.trim() || null : null},
+      rejection_reason = ${action === "reject" ? rejectionReason?.trim() || null : null},
       updated_at = ${now}
     where id = ${id}
       and status = 'pending'
@@ -247,5 +258,5 @@ export async function reviewModerationItem(
     return await reviewPublicEntity(review, reviewerId);
   }
 
-  return await reviewTool(review);
+  return await reviewTool(review, reviewerId);
 }

@@ -64,6 +64,17 @@ describe("Validation Schemas", () => {
       const result = validateToolSubmission(invalidSubmission);
       expect(result.success).toBe(false);
     });
+
+    it("should reject GitHub profile URLs on non-canonical hosts", () => {
+      const invalidSubmission = {
+        url: "https://example.com",
+        tags: ["development"],
+        submitterGithubUrl: "https://www.github.com/johndoe",
+      };
+
+      const result = validateToolSubmission(invalidSubmission);
+      expect(result.success).toBe(false);
+    });
   });
 
   describe("validatePersonalResourceRequest", () => {

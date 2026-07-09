@@ -185,7 +185,7 @@ Shared utilities live in `netlify/functions/lib/`:
 
 | Method | Path                    | Function file          | Auth | Description                                |
 | ------ | ----------------------- | ---------------------- | ---- | ------------------------------------------ |
-| `POST` | `/api/tools`            | `process-bookmark.mts` | No   | Submit tool (stored as `pending`)          |
+| `POST` | `/api/tools`            | `process-tool.mts`     | No   | Submit tool (stored as `pending`)          |
 | `GET`  | `/api/tools`            | `get-bookmarks.mts`    | No   | List approved tools (paginated)            |
 | `GET`  | `/api/tools/search`     | `search-bookmarks.mts` | No   | Search/filter approved tools               |
 | `GET`  | `/api/tools/tags`       | `get-tags.mts`         | No   | Tag cloud with usage counts                |
@@ -466,7 +466,7 @@ See [ROADMAP.md](./ROADMAP.md) and [GitHub Issues](https://github.com/schalkneet
 | API clients          | `src/api/`                                                                   |
 | Validation schemas   | `src/lib/validation.ts`                                                      |
 | Database schema      | `src/db/schema.ts`                                                           |
-| Submit handler       | `netlify/functions/process-bookmark.mts`                                     |
+| Submit handler       | `netlify/functions/process-tool.mts`                                         |
 | List/search handlers | `netlify/functions/get-bookmarks.mts`, `search-bookmarks.mts`                |
 | Auth handler         | `netlify/functions/auth-whoami.mts`                                          |
 | Library handlers     | `netlify/functions/get-library.mts`, `add-library.mts`                       |
