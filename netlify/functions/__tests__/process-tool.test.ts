@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Context } from "@netlify/functions";
 import type { ErrorResponse, SuccessResponse } from "../lib/responses";
 
-/** Success data shape for process-bookmark */
-interface BookmarkCreated {
+/** Success data shape for process-tool */
+interface ToolSubmissionCreated {
   submittedItemId: string;
   type: "tool";
   status: "pending";
@@ -28,7 +28,7 @@ vi.mock("../../../src/lib/services/cloudinary", () => ({
   uploadScreenshot: vi.fn(),
 }));
 
-import processBookmark from "../process-bookmark.mts";
+import processTool from "../process-tool.mts";
 import { getDb } from "../lib/db";
 import { extractMetadata } from "../../../src/lib/services/metadata";
 import { captureScreenshot } from "../../../src/lib/services/screenshot";
@@ -70,7 +70,9 @@ function createMockDb() {
     values: vi.fn().mockReturnThis(),
     onConflictDoUpdate: vi.fn().mockReturnThis(),
     onConflictDoNothing: vi.fn().mockReturnThis(),
-    returning: vi.fn().mockResolvedValue([{ id: "11111111-1111-4111-8111-111111111111" }]),
+    returning: vi
+      .fn()
+      .mockResolvedValue([{ id: "11111111-1111-4111-8111-111111111111" }]),
     innerJoin: vi.fn().mockReturnThis(),
     leftJoin: vi.fn().mockReturnThis(),
     orderBy: vi.fn().mockReturnThis(),
@@ -79,14 +81,16 @@ function createMockDb() {
   return mockDb;
 }
 
-describe("process-bookmark", () => {
+describe("process-tool", () => {
   let mockDb: ReturnType<typeof createMockDb>;
   let mockContext: Context;
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockDb = createMockDb();
-    vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
     mockContext = createMockContext();
 
     // Default mocks for external services
@@ -115,7 +119,7 @@ describe("process-bookmark", () => {
         method: "GET",
       });
 
-      const res = await processBookmark(req, mockContext);
+      const res = await processTool(req, mockContext);
 
       expect(res.status).toBe(405);
       const body = (await res.json()) as ErrorResponse;
@@ -129,7 +133,7 @@ describe("process-bookmark", () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      const res = await processBookmark(req, mockContext);
+      const res = await processTool(req, mockContext);
 
       expect(res.status).toBe(422);
     });
@@ -141,7 +145,7 @@ describe("process-bookmark", () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      const res = await processBookmark(req, mockContext);
+      const res = await processTool(req, mockContext);
 
       expect(res.status).toBe(422);
       const body = (await res.json()) as ErrorResponse;
@@ -155,7 +159,7 @@ describe("process-bookmark", () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      const res = await processBookmark(req, mockContext);
+      const res = await processTool(req, mockContext);
 
       expect(res.status).toBe(422);
       const body = (await res.json()) as ErrorResponse;
@@ -165,11 +169,15 @@ describe("process-bookmark", () => {
     it("returns 422 for invalid URL format", async () => {
       const req = new Request("https://test.com/api/tools", {
         method: "POST",
-        body: JSON.stringify({ type: "tool", url: "not-a-url", tags: ["test"] }),
+        body: JSON.stringify({
+          type: "tool",
+          url: "not-a-url",
+          tags: ["test"],
+        }),
         headers: { "Content-Type": "application/json" },
       });
 
-      const res = await processBookmark(req, mockContext);
+      const res = await processTool(req, mockContext);
 
       expect(res.status).toBe(422);
     });
@@ -185,11 +193,13 @@ describe("process-bookmark", () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      const res = await processBookmark(req, mockContext);
+      const res = await processTool(req, mockContext);
 
       expect(res.status).toBe(422);
       const body = (await res.json()) as ErrorResponse;
-      expect(body.details?.type).toContain("/api/tools only accepts tool submissions");
+      expect(body.details?.type).toContain(
+        "/api/tools only accepts tool submissions",
+      );
     });
 
     it("returns generic 503 when required env vars are missing", async () => {
@@ -209,7 +219,7 @@ describe("process-bookmark", () => {
           headers: { "Content-Type": "application/json" },
         });
 
-        const res = await processBookmark(req, mockContext);
+        const res = await processTool(req, mockContext);
 
         expect(res.status).toBe(503);
         const body = (await res.json()) as ErrorResponse;
@@ -238,7 +248,7 @@ describe("process-bookmark", () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      const res = await processBookmark(req, mockContext);
+      const res = await processTool(req, mockContext);
 
       expect(res.status).toBe(409);
       const body = (await res.json()) as ErrorResponse;
@@ -258,10 +268,10 @@ describe("process-bookmark", () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      const res = await processBookmark(req, mockContext);
+      const res = await processTool(req, mockContext);
 
       expect(res.status).toBe(201);
-      const body = (await res.json()) as SuccessResponse<BookmarkCreated>;
+      const body = (await res.json()) as SuccessResponse<ToolSubmissionCreated>;
       expect(body.success).toBe(true);
       expect(body.data.submittedItemId).toBeDefined();
       expect(body.data.type).toBe("tool");
@@ -280,7 +290,7 @@ describe("process-bookmark", () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      await processBookmark(req, mockContext);
+      await processTool(req, mockContext);
 
       expect(extractMetadata).toHaveBeenCalledWith("https://example.com/tool");
     });
@@ -302,7 +312,7 @@ describe("process-bookmark", () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      await processBookmark(req, mockContext);
+      await processTool(req, mockContext);
 
       // Should not attempt screenshot when OG image exists
       expect(captureScreenshot).not.toHaveBeenCalled();
@@ -330,7 +340,7 @@ describe("process-bookmark", () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      await processBookmark(req, mockContext);
+      await processTool(req, mockContext);
 
       expect(captureScreenshot).toHaveBeenCalled();
       expect(uploadScreenshot).toHaveBeenCalled();
@@ -347,7 +357,7 @@ describe("process-bookmark", () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      await processBookmark(req, mockContext);
+      await processTool(req, mockContext);
 
       // Verify insert was called (tags are processed internally)
       expect(mockDb.insert).toHaveBeenCalled();

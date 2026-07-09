@@ -1,14 +1,8 @@
 import type { BaseIssue } from "valibot";
 
-import {
-  type AuthenticatedUser,
-  verifyAuthenticatedUser,
-} from "./auth";
+import { type AuthenticatedUser, verifyAuthenticatedUser } from "./auth";
 import { getDb } from "./db";
-import {
-  assertRequiredEnv,
-  handleMissingEnvironmentError,
-} from "./env";
+import { assertRequiredEnv, handleMissingEnvironmentError } from "./env";
 import {
   conflict,
   created,
@@ -58,12 +52,17 @@ interface SubmissionContext {
 function getIssueField(issue: BaseIssue<unknown>): string {
   const path = issue.path
     ?.map((pathItem) => pathItem.key)
-    .filter((key): key is string | number => typeof key === "string" || typeof key === "number");
+    .filter(
+      (key): key is string | number =>
+        typeof key === "string" || typeof key === "number",
+    );
 
   return path && path.length > 0 ? path.join(".") : "form";
 }
 
-function getValidationDetails(issues: readonly BaseIssue<unknown>[]): Record<string, string[]> {
+function getValidationDetails(
+  issues: readonly BaseIssue<unknown>[],
+): Record<string, string[]> {
   return issues.reduce<Record<string, string[]>>((details, issue) => {
     const field = getIssueField(issue);
     details[field] ??= [];
@@ -74,7 +73,9 @@ function getValidationDetails(issues: readonly BaseIssue<unknown>[]): Record<str
 
 function requestHasBearerToken(req: Request): boolean {
   const header = req.headers.get("Authorization");
-  return Boolean(header?.startsWith("Bearer ") && header.slice("Bearer ".length).trim());
+  return Boolean(
+    header?.startsWith("Bearer ") && header.slice("Bearer ".length).trim(),
+  );
 }
 
 async function getOptionalAuthenticatedUser(
@@ -105,7 +106,10 @@ function normalizeTags(tags: string[]): string[] {
   ];
 }
 
-function normalizeSubmitterGithubUrl(submission: PublicSubmissionRequest): string | undefined {
+/** Builds a canonical GitHub profile URL from either a submitted URL or username. */
+function normalizeSubmitterGithubUrl(
+  submission: PublicSubmissionRequest,
+): string | undefined {
   const submittedUrl = submission.submitterGithubUrl?.trim();
   if (submittedUrl) {
     return submittedUrl;
@@ -115,17 +119,23 @@ function normalizeSubmitterGithubUrl(submission: PublicSubmissionRequest): strin
   return username ? `https://github.com/${username}` : undefined;
 }
 
-function normalizeSubmitterName(submission: PublicSubmissionRequest): string | undefined {
+/** Returns a trimmed submitter name when attribution was provided. */
+function normalizeSubmitterName(
+  submission: PublicSubmissionRequest,
+): string | undefined {
   const submitterName = submission.submitterName?.trim();
   return submitterName && submitterName.length > 0 ? submitterName : undefined;
 }
 
 function isPublicListingSubmission(
   submission: PublicSubmissionRequest,
-): submission is PublicSubmissionRequest & { type: PublicListingSubmissionType } {
+): submission is PublicSubmissionRequest & {
+  type: PublicListingSubmissionType;
+} {
   return submission.type !== "tool";
 }
 
+/** Inserts a pending tool listing, using OG imagery or screenshot fallback metadata. */
 async function createToolSubmission({
   authenticated,
   metadata,
@@ -134,7 +144,10 @@ async function createToolSubmission({
   normalizedUrl,
   resourceId,
   tags,
-}: SubmissionContext & { metadata: MetadataResult; resourceId: string }): Promise<string | null> {
+}: SubmissionContext & {
+  metadata: MetadataResult;
+  resourceId: string;
+}): Promise<string | null> {
   let imageUrl: string = FALLBACK_IMAGE;
   let imageSource: "og" | "screenshot" | "fallback" = "fallback";
 
@@ -144,7 +157,10 @@ async function createToolSubmission({
   } else {
     const screenshot = await captureScreenshot(normalizedUrl);
     if (screenshot.success && screenshot.buffer) {
-      const upload = await uploadScreenshot(screenshot.buffer, crypto.randomUUID());
+      const upload = await uploadScreenshot(
+        screenshot.buffer,
+        crypto.randomUUID(),
+      );
       if (upload.success && upload.url) {
         imageUrl = upload.url;
         imageSource = "screenshot";
@@ -172,6 +188,7 @@ async function createToolSubmission({
   return tool?.id ?? null;
 }
 
+/** Inserts a pending public article/resource listing linked to the shared resource row. */
 async function createPublicListingSubmission({
   authenticated,
   metadata,
@@ -205,6 +222,7 @@ async function createPublicListingSubmission({
   return listing?.id ?? null;
 }
 
+/** Upserts the canonical resource identity and returns its id for listing inserts. */
 async function getOrCreateResourceId(
   metadata: MetadataResult,
   normalizedUrl: string,
@@ -227,6 +245,7 @@ async function getOrCreateResourceId(
   return resource.id;
 }
 
+/** Formats the success message returned by public submission endpoints. */
 function getSuccessMessage(type: PublicSubmissionType): string {
   if (type === "tool") {
     return "Tool submitted. It will be reviewed shortly.";
@@ -236,6 +255,7 @@ function getSuccessMessage(type: PublicSubmissionType): string {
   return `${label} submitted. It will be reviewed shortly.`;
 }
 
+/** Formats the generic processing error for the submitted content type. */
 function getProcessingErrorMessage(type: PublicSubmissionType): string {
   if (type === "tool") {
     return "An error occurred while processing the tool";
@@ -244,6 +264,7 @@ function getProcessingErrorMessage(type: PublicSubmissionType): string {
   return `An error occurred while processing the ${type}`;
 }
 
+/** Handles shared public submission validation, attribution, metadata, and inserts. */
 export async function handlePublicSubmission(
   req: Request,
   options: PublicSubmissionOptions,
@@ -260,7 +281,10 @@ export async function handlePublicSubmission(
     return handleMissingEnvironmentError(error, options.endpointName);
   }
 
-  const authenticated = await getOptionalAuthenticatedUser(req, options.endpointName);
+  const authenticated = await getOptionalAuthenticatedUser(
+    req,
+    options.endpointName,
+  );
   if (authenticated instanceof Response) {
     return authenticated;
   }
@@ -274,10 +298,16 @@ export async function handlePublicSubmission(
 
   const validation = validatePublicSubmissionRequest(body);
   if (!validation.success) {
-    return validationError("Validation failed", getValidationDetails(validation.issues));
+    return validationError(
+      "Validation failed",
+      getValidationDetails(validation.issues),
+    );
   }
 
-  if (options.allowedTypes && !options.allowedTypes.includes(validation.output.type)) {
+  if (
+    options.allowedTypes &&
+    !options.allowedTypes.includes(validation.output.type)
+  ) {
     return validationError("Validation failed", options.rejectedTypeDetails);
   }
 
@@ -297,7 +327,9 @@ export async function handlePublicSubmission(
 
   const submissionContext: SubmissionContext = {
     authenticated,
-    normalizedSubmitterGithubUrl: normalizeSubmitterGithubUrl(validation.output),
+    normalizedSubmitterGithubUrl: normalizeSubmitterGithubUrl(
+      validation.output,
+    ),
     normalizedSubmitterName: normalizeSubmitterName(validation.output),
     normalizedUrl,
     submission: validation.output,
@@ -306,7 +338,11 @@ export async function handlePublicSubmission(
 
   try {
     const metadata = await extractMetadata(normalizedUrl);
-    const resourceId = await getOrCreateResourceId(metadata, normalizedUrl, validation.output);
+    const resourceId = await getOrCreateResourceId(
+      metadata,
+      normalizedUrl,
+      validation.output,
+    );
     const submittedItemId = isPublicListingSubmission(validation.output)
       ? await createPublicListingSubmission({
           ...submissionContext,
@@ -314,7 +350,11 @@ export async function handlePublicSubmission(
           resourceId,
           submission: validation.output,
         })
-      : await createToolSubmission({ ...submissionContext, metadata, resourceId });
+      : await createToolSubmission({
+          ...submissionContext,
+          metadata,
+          resourceId,
+        });
 
     if (!submittedItemId) {
       return conflict("This URL has already been submitted");

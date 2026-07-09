@@ -38,6 +38,23 @@ interface ErrorBody {
   details: Record<string, string[]>;
 }
 
+type ModerationUpdateCase = readonly [
+  type: string,
+  status: string,
+  expectedSqlParts: readonly string[],
+];
+
+const moderationUpdateCases = [
+  ["tool", "approved", ["reviewed_by"]],
+  ["resource", "approved", ["reviewed_by"]],
+  ["stack", "approved", ["reviewed_by"]],
+  ["stack-item", "approved", ["reviewed_by"]],
+  ["tool", "rejected", ["rejection_code", "rejection_reason"]],
+  ["resource", "rejected", ["rejection_code", "rejection_reason"]],
+  ["stack", "rejected", ["rejection_code", "rejection_reason"]],
+  ["stack-item", "rejected", ["rejection_code", "rejection_reason"]],
+] satisfies readonly ModerationUpdateCase[];
+
 function createExecuteDb(rows: unknown[]) {
   return {
     execute: vi.fn().mockResolvedValue({ rows }),
@@ -248,52 +265,48 @@ describe("admin-moderation", () => {
     ]);
   });
 
-  it.each([
-    ["tool", "approved", "reviewed_by"],
-    ["resource", "approved", "reviewed_by"],
-    ["stack", "approved", "reviewed_by"],
-    ["stack-item", "approved", "reviewed_by"],
-    ["tool", "rejected", "rejection_reason"],
-    ["resource", "rejected", "rejection_reason"],
-    ["stack", "rejected", "rejection_reason"],
-    ["stack-item", "rejected", "rejection_reason"],
-  ])("updates a %s item to %s", async (type, status, expectedSql) => {
-    const mockDb = createExecuteDb([
-      { id: "22222222-2222-4222-8222-222222222222", status },
-    ]);
-    vi.mocked(getDb).mockReturnValue(
-      mockDb as unknown as ReturnType<typeof getDb>,
-    );
+  it.each(moderationUpdateCases)(
+    "updates a %s item to %s",
+    async (type, status, expectedSqlParts) => {
+      const mockDb = createExecuteDb([
+        { id: "22222222-2222-4222-8222-222222222222", status },
+      ]);
+      vi.mocked(getDb).mockReturnValue(
+        mockDb as unknown as ReturnType<typeof getDb>,
+      );
 
-    const res = await adminModeration(
-      new Request("https://test.com/api/admin/moderation", {
-        method: "PATCH",
-        headers: {
-          Authorization: "Bearer token-1",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: "22222222-2222-4222-8222-222222222222",
-          type,
-          action: status === "approved" ? "approve" : "reject",
-          rejectionReason: status === "rejected" ? "Does not fit" : undefined,
+      const res = await adminModeration(
+        new Request("https://test.com/api/admin/moderation", {
+          method: "PATCH",
+          headers: {
+            Authorization: "Bearer token-1",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: "22222222-2222-4222-8222-222222222222",
+            type,
+            action: status === "approved" ? "approve" : "reject",
+            rejectionCode: status === "rejected" ? "off-topic" : undefined,
+            rejectionReason: status === "rejected" ? "Does not fit" : undefined,
+          }),
         }),
-      }),
-      createMockContext(),
-    );
+        createMockContext(),
+      );
 
-    expect(res.status).toBe(200);
-    const body = (await res.json()) as ModerationReviewBody;
-    expect(body.data).toEqual({
-      id: "22222222-2222-4222-8222-222222222222",
-      type,
-      status,
-    });
-    expect(mockDb.execute).toHaveBeenCalledTimes(1);
-    expect(getSqlText(mockDb.execute.mock.calls[0]?.[0])).toContain(
-      expectedSql,
-    );
-  });
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as ModerationReviewBody;
+      expect(body.data).toEqual({
+        id: "22222222-2222-4222-8222-222222222222",
+        type,
+        status,
+      });
+      expect(mockDb.execute).toHaveBeenCalledTimes(1);
+      const sqlText = getSqlText(mockDb.execute.mock.calls[0]?.[0]);
+      for (const expectedSqlPart of expectedSqlParts) {
+        expect(sqlText).toContain(expectedSqlPart);
+      }
+    },
+  );
 
   it("returns field-level validation details for invalid review requests", async () => {
     const res = await adminModeration(
