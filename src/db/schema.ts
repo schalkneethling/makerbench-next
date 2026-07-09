@@ -40,6 +40,9 @@ export const toolListingsTable = pgTable(
     resourceId: uuid("resource_id")
       .notNull()
       .references(() => resourcesTable.id, { onDelete: "cascade" }),
+    submittedByUserId: uuid("submitted_by_user_id").references(() => authUsersTable.id, {
+      onDelete: "cascade",
+    }),
     status: text("status", { enum: ["pending", "approved", "rejected"] })
       .default("pending")
       .notNull(),
@@ -57,6 +60,12 @@ export const toolListingsTable = pgTable(
     submitterGithubUrl: text("submitter_github_url"),
     metadata: text("metadata"),
     approvedAt: timestamp("approved_at", { withTimezone: true }),
+    rejectionCode: text("rejection_code"),
+    rejectionReason: text("rejection_reason"),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+    reviewedBy: uuid("reviewed_by").references(() => authUsersTable.id, {
+      onDelete: "set null",
+    }),
     ...timestamps,
   },
   (table) => [

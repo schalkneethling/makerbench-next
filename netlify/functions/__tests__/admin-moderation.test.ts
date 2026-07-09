@@ -44,6 +44,25 @@ function createExecuteDb(rows: unknown[]) {
   };
 }
 
+function getSqlText(query: unknown): string {
+  const queryChunks = (query as { queryChunks?: unknown[] }).queryChunks ?? [];
+
+  return queryChunks
+    .map((chunk) => {
+      if (
+        chunk &&
+        typeof chunk === "object" &&
+        "value" in chunk &&
+        Array.isArray(chunk.value)
+      ) {
+        return chunk.value.join("");
+      }
+
+      return "";
+    })
+    .join("");
+}
+
 describe("admin-moderation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -230,15 +249,15 @@ describe("admin-moderation", () => {
   });
 
   it.each([
-    ["tool", "approved"],
-    ["resource", "approved"],
-    ["stack", "approved"],
-    ["stack-item", "approved"],
-    ["tool", "rejected"],
-    ["resource", "rejected"],
-    ["stack", "rejected"],
-    ["stack-item", "rejected"],
-  ])("updates a %s item to %s", async (type, status) => {
+    ["tool", "approved", "reviewed_by"],
+    ["resource", "approved", "reviewed_by"],
+    ["stack", "approved", "reviewed_by"],
+    ["stack-item", "approved", "reviewed_by"],
+    ["tool", "rejected", "rejection_reason"],
+    ["resource", "rejected", "rejection_reason"],
+    ["stack", "rejected", "rejection_reason"],
+    ["stack-item", "rejected", "rejection_reason"],
+  ])("updates a %s item to %s", async (type, status, expectedSql) => {
     const mockDb = createExecuteDb([
       { id: "22222222-2222-4222-8222-222222222222", status },
     ]);
@@ -271,6 +290,9 @@ describe("admin-moderation", () => {
       status,
     });
     expect(mockDb.execute).toHaveBeenCalledTimes(1);
+    expect(getSqlText(mockDb.execute.mock.calls[0]?.[0])).toContain(
+      expectedSql,
+    );
   });
 
   it("returns field-level validation details for invalid review requests", async () => {
