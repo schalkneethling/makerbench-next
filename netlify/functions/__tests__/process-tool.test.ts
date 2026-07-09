@@ -28,11 +28,19 @@ vi.mock("../../../src/lib/services/cloudinary", () => ({
   uploadScreenshot: vi.fn(),
 }));
 
+vi.mock("node:dns/promises", () => ({
+  lookup: vi.fn(),
+}));
+
 import processTool from "../process-tool.mts";
 import { getDb } from "../lib/db";
+import { lookup } from "node:dns/promises";
 import { extractMetadata } from "../../../src/lib/services/metadata";
 import { captureScreenshot } from "../../../src/lib/services/screenshot";
 import { uploadScreenshot } from "../../../src/lib/services/cloudinary";
+
+const RESOURCE_ID = "11111111-1111-4111-8111-111111111111";
+const TOOL_LISTING_ID = "22222222-2222-4222-8222-222222222222";
 
 /**
  * Creates a mock Netlify Context object
@@ -72,7 +80,8 @@ function createMockDb() {
     onConflictDoNothing: vi.fn().mockReturnThis(),
     returning: vi
       .fn()
-      .mockResolvedValue([{ id: "11111111-1111-4111-8111-111111111111" }]),
+      .mockResolvedValueOnce([{ id: RESOURCE_ID }])
+      .mockResolvedValueOnce([{ id: TOOL_LISTING_ID }]),
     innerJoin: vi.fn().mockReturnThis(),
     leftJoin: vi.fn().mockReturnThis(),
     orderBy: vi.fn().mockReturnThis(),
@@ -92,6 +101,9 @@ describe("process-tool", () => {
       mockDb as unknown as ReturnType<typeof getDb>,
     );
     mockContext = createMockContext();
+    vi.mocked(lookup).mockResolvedValue([
+      { address: "93.184.216.34", family: 4 },
+    ] as never);
 
     // Default mocks for external services
     vi.mocked(extractMetadata).mockResolvedValue({
@@ -182,6 +194,23 @@ describe("process-tool", () => {
       expect(res.status).toBe(422);
     });
 
+    it("returns 422 for private submission targets before fetching metadata", async () => {
+      const req = new Request("https://test.com/api/tools", {
+        method: "POST",
+        body: JSON.stringify({
+          type: "tool",
+          url: "http://127.0.0.1:3000/tool",
+          tags: ["test"],
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const res = await processTool(req, mockContext);
+
+      expect(res.status).toBe(422);
+      expect(extractMetadata).not.toHaveBeenCalled();
+    });
+
     it("returns 422 when the tools endpoint receives a non-tool submission", async () => {
       const req = new Request("https://test.com/api/tools", {
         method: "POST",
@@ -234,6 +263,7 @@ describe("process-tool", () => {
 
   describe("duplicate detection", () => {
     it("returns 409 for duplicate URL", async () => {
+      mockDb.returning.mockReset();
       mockDb.returning
         .mockResolvedValueOnce([{ id: "existing-resource-id" }])
         .mockResolvedValueOnce([]);
@@ -273,7 +303,7 @@ describe("process-tool", () => {
       expect(res.status).toBe(201);
       const body = (await res.json()) as SuccessResponse<ToolSubmissionCreated>;
       expect(body.success).toBe(true);
-      expect(body.data.submittedItemId).toBeDefined();
+      expect(body.data.submittedItemId).toBe(TOOL_LISTING_ID);
       expect(body.data.type).toBe("tool");
       expect(body.data.status).toBe("pending");
       expect(body.data.message).toContain("submitted");
@@ -316,6 +346,43 @@ describe("process-tool", () => {
 
       // Should not attempt screenshot when OG image exists
       expect(captureScreenshot).not.toHaveBeenCalled();
+    });
+
+    it("falls back to screenshot when the OG image URL is unsafe", async () => {
+      vi.mocked(extractMetadata).mockResolvedValueOnce({
+        title: "Test",
+        description: "Test desc",
+        ogImage: "javascript:alert(1)",
+      });
+      vi.mocked(captureScreenshot).mockResolvedValueOnce({
+        success: true,
+        buffer: Buffer.from("fake-image"),
+      });
+      vi.mocked(uploadScreenshot).mockResolvedValueOnce({
+        success: true,
+        url: "https://cloudinary.com/screenshot.png",
+        publicId: "test-id",
+      });
+
+      const req = new Request("https://test.com/api/tools", {
+        method: "POST",
+        body: JSON.stringify({
+          type: "tool",
+          url: "https://example.com/tool",
+          tags: ["test"],
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      await processTool(req, mockContext);
+
+      expect(mockDb.values).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          imageUrl: "https://cloudinary.com/screenshot.png",
+          imageSource: "screenshot",
+        }),
+      );
     });
 
     it("falls back to screenshot when no OG image", async () => {
