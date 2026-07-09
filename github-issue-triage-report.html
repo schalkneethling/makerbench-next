@@ -1,327 +1,516 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GitHub Issue Triage Report - schalkneethling/makerbench-next</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MakerBench GitHub Issue Triage Report</title>
     <style>
-      :root { color-scheme: light dark; --bg: #f8fafc; --fg: #172033; --muted: #566174; --panel: #ffffff; --border: #d8dee8; --link: #0b5cad; --p0: #b60205; --p1: #d93f0b; --p2: #8a6500; --p3: #0e6f13; }
-      @media (prefers-color-scheme: dark) { :root { --bg: #111827; --fg: #eef2f7; --muted: #b7c0cf; --panel: #182235; --border: #314159; --link: #8ab4ff; --p2: #f2b900; } }
-      * { box-sizing: border-box; }
-      body { margin: 0; background: var(--bg); color: var(--fg); font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.5; }
-      main { inline-size: min(1180px, calc(100% - 32px)); margin-inline: auto; padding-block: 32px 48px; }
-      h1, h2, h3 { line-height: 1.2; margin-block: 0 12px; }
-      p { margin-block: 0 12px; color: var(--muted); }
-      a { color: var(--link); }
-      .meta, .cards { display: grid; gap: 12px; }
-      .cards { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); margin-block: 18px 24px; }
-      .card, details { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; }
-      .card { padding: 14px; }
-      .card strong { display: block; font-size: 1.4rem; }
-      details { margin-block-start: 18px; overflow: clip; }
-      summary { cursor: pointer; padding: 16px; font-weight: 700; }
-      .details-body { border-block-start: 1px solid var(--border); padding: 16px; }
-      table { inline-size: 100%; border-collapse: collapse; font-size: 0.92rem; }
-      th, td { border-block-end: 1px solid var(--border); padding: 10px; text-align: start; vertical-align: top; }
-      th { color: var(--muted); font-weight: 700; }
-      .priority, .label { display: inline-block; border-radius: 999px; padding-block: 2px; padding-inline: 8px; font-weight: 700; white-space: nowrap; }
-      .priority { color: #fff; }
-      .priority.p0 { background: var(--p0); }
-      .priority.p1 { background: var(--p1); }
-      .priority.p2 { background: var(--p2); color: #111827; }
-      .priority.p3 { background: var(--p3); }
-      .label { margin-block: 2px; background: color-mix(in srgb, var(--muted) 18%, transparent); color: var(--fg); font-size: 0.78rem; }
-      .table-wrap { overflow-x: auto; }
-      .status { color: var(--muted); }
+      :root {
+        color-scheme: light;
+        --bg: #f8fafc;
+        --panel: #ffffff;
+        --ink: #172033;
+        --muted: #5b6578;
+        --line: #d8dee9;
+        --p0: #b60205;
+        --p1: #d93f0b;
+        --p2: #9a7300;
+        --p3: #0e8a16;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      main {
+        max-width: 1180px;
+        margin-inline: auto;
+        padding: 32px 20px 48px;
+      }
+
+      h1,
+      h2,
+      h3 {
+        line-height: 1.2;
+        margin-block: 0 12px;
+      }
+
+      p {
+        margin-block: 0 12px;
+      }
+
+      a {
+        color: #165bd8;
+      }
+
+      .summary,
+      details {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 18px;
+      }
+
+      .summary {
+        display: grid;
+        gap: 16px;
+        margin-block: 24px;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+      }
+
+      .metric {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 12px;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 1.6rem;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      details {
+        margin-block: 18px;
+      }
+
+      summary {
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-block-start: 14px;
+      }
+
+      th,
+      td {
+        border-block-start: 1px solid var(--line);
+        padding: 10px;
+        text-align: start;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--muted);
+        font-size: 0.82rem;
+        text-transform: uppercase;
+      }
+
+      .badge {
+        border-radius: 999px;
+        color: #fff;
+        display: inline-block;
+        font-size: 0.78rem;
+        font-weight: 700;
+        min-inline-size: 2.4rem;
+        padding: 2px 8px;
+        text-align: center;
+      }
+
+      .p0 {
+        background: var(--p0);
+      }
+
+      .p1 {
+        background: var(--p1);
+      }
+
+      .p2 {
+        background: var(--p2);
+      }
+
+      .p3 {
+        background: var(--p3);
+      }
+
+      ul {
+        margin-block: 8px 0;
+        padding-inline-start: 22px;
+      }
+
+      code {
+        background: #eef2f7;
+        border-radius: 4px;
+        padding: 1px 4px;
+      }
     </style>
   </head>
   <body>
     <main>
-      <h1>GitHub Issue Triage Report</h1>
-      <section class="meta" aria-labelledby="report-meta">
-        <h2 id="report-meta">Summary</h2>
-        <p><strong>Generated:</strong> 2026-06-14T21:26:20.826Z</p>
-        <p><strong>Input repositories:</strong> schalkneethling/makerbench-next</p>
-        <p><strong>Label update status:</strong> Created missing canonical labels <code>p0</code>, <code>p1</code>, <code>p2</code>, and <code>p3</code>; applied exactly one canonical priority label to every open issue. Legacy <code>p-one</code> labels were removed from issues #118 and #119 during canonicalization.</p>
-      </section>
+      <h1>MakerBench GitHub Issue Triage Report</h1>
+      <p class="muted">
+        Generated 2026-07-09T16:53:40Z for
+        <a href="https://github.com/schalkneethling/makerbench-next">schalkneethling/makerbench-next</a>.
+      </p>
 
-      <section aria-labelledby="counts">
-        <h2 id="counts">Counts</h2>
-        <div class="cards" aria-label="Priority counts">
-          <div class="card"><span>Total open issues</span><strong>27</strong></div>
-          <div class="card"><span>p0</span><strong>1</strong></div>
-          <div class="card"><span>p1</span><strong>6</strong></div>
-          <div class="card"><span>p2</span><strong>15</strong></div>
-          <div class="card"><span>p3</span><strong>5</strong></div>
+      <section class="summary" aria-labelledby="summary-heading">
+        <div>
+          <h2 id="summary-heading">Summary</h2>
+          <p>
+            Local <code>main</code> was clean and aligned with <code>origin/main</code> after
+            fetch. Recent merges included public submission contracts/API work, admin moderation
+            queue work, public listing content kind support, and dependency updates.
+          </p>
+          <p>
+            Four open issues were closed as completed after matching their acceptance criteria
+            against merged code: <a href="https://github.com/schalkneethling/makerbench-next/issues/105">#105</a>,
+            <a href="https://github.com/schalkneethling/makerbench-next/issues/154">#154</a>,
+            <a href="https://github.com/schalkneethling/makerbench-next/issues/160">#160</a>, and
+            <a href="https://github.com/schalkneethling/makerbench-next/issues/167">#167</a>.
+            Issue <a href="https://github.com/schalkneethling/makerbench-next/issues/169">#169</a>
+            received the missing <code>p2</code> priority label.
+          </p>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Repository</th><th>Status</th><th>Open</th><th>p0</th><th>p1</th><th>p2</th><th>p3</th><th>Nominated next issue</th></tr>
-            </thead>
-            <tbody>
-            <tr>
-              <td>schalkneethling/makerbench-next</td>
-              <td>Triaged</td>
-              <td>27</td>
-              <td>1</td>
-              <td>6</td>
-              <td>15</td>
-              <td>5</td>
-              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/105">#105 Add unified admin moderation queue</a></td>
-            </tr>
-            </tbody>
-          </table>
+
+        <div class="metrics" aria-label="Open issue priority counts">
+          <div class="metric"><strong>40</strong><span>Open issues</span></div>
+          <div class="metric"><strong>3</strong><span>p0</span></div>
+          <div class="metric"><strong>12</strong><span>p1</span></div>
+          <div class="metric"><strong>20</strong><span>p2</span></div>
+          <div class="metric"><strong>5</strong><span>p3</span></div>
         </div>
+
+        <p>
+          Quality check: every open issue has exactly one <code>p0</code>, <code>p1</code>,
+          <code>p2</code>, or <code>p3</code> label. Missing priority issues: none.
+        </p>
       </section>
 
       <details open>
-        <summary>schalkneethling/makerbench-next - 27 open issues - next: #105 Add unified admin moderation queue</summary>
-        <div class="details-body">
-          <section aria-labelledby="goal-summary">
-            <h2 id="goal-summary">Project Goal Summary</h2>
-            <p>MakerBench helps makers discover high-signal tools, resources, and articles through clear tagging, search, and a moderated public catalog. The current focus is closing the moderation and publishing loop: unified admin review, a broader submit-resource flow, server-side abuse controls, and Supabase-aligned docs. Private library work remains important, but should follow the immediate moderation/submission reliability work unless it directly unblocks that loop.</p>
-          </section>
-          <section aria-labelledby="next-issue">
-            <h2 id="next-issue">Next Issue Nomination</h2>
-            <p><a href="https://github.com/schalkneethling/makerbench-next/issues/105">#105 Add unified admin moderation queue</a> should be worked on next because it is the clearest blocker for the current moderation and publishing milestone.</p>
-          </section>
-          <section aria-labelledby="issue-table">
-            <h2 id="issue-table">Issue Triage</h2>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Priority</th>
-                    <th>Issue</th>
-                    <th>Rationale tied to GOAL.md</th>
-                    <th>Impact</th>
-                    <th>Current labels</th>
-                    <th>Notes or uncertainty</th>
-                  </tr>
-                </thead>
-                <tbody>
-              <tr>
-                <td><span class="priority p0">p0</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/105">#105 Add unified admin moderation queue</a></td>
-                <td>GOAL.md names the next milestone as closing the moderation and publishing loop; without an admin queue, pending tools/resources/stacks cannot reliably become approved public catalog entries.</td>
-                <td>Blocks core maintainer workflow, public publishing, and trust in moderated catalog data.</td>
-                <td><span class="label">p0</span></td>
-                <td>Nominated next issue because it most directly unlocks the current focus and has enough API/UI scope to start.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p1">p1</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/115">#115 Rename submit flow to Submit a Resource with type selection and auth-aware attribution</a></td>
-                <td>GOAL.md calls for broadening “Submit Tool” into a clear “Submit Resource” flow with a required tool/resource choice and auth-aware attribution.</td>
-                <td>Major user-facing step toward useful submissions and correct moderation routing.</td>
-                <td><span class="label">p1</span></td>
-                <td>Resource backend mapping still needs implementation design, but the user-facing direction is explicit.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p1">p1</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/119">#119 Add URL blocklist enforcement for resource submissions</a></td>
-                <td>GOAL.md explicitly calls for server-side URL/domain blocklists before broader public submission increases moderation load.</td>
-                <td>Reduces repeat spam and protects moderator trust before submission volume grows.</td>
-                <td><span class="label">enhancement</span> <span class="label">p1</span></td>
-                <td>Security-sensitive behavior must stay server-side with generic public errors.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p1">p1</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/118">#118 Add rate limiting for resource submissions</a></td>
-                <td>GOAL.md lists rate limiting as a near-term submission protection for the moderation loop.</td>
-                <td>Prevents repeated submissions from creating avoidable moderation load.</td>
-                <td><span class="label">enhancement</span> <span class="label">p1</span></td>
-                <td>Should coordinate with the selected submission endpoint and audit/logging model.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p1">p1</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/131">#131 Update stale Turso setup and deployment docs after Supabase migration</a></td>
-                <td>GOAL.md success criteria require docs, schema, roadmap, tests, and app copy to agree on the current product direction; stale Turso setup docs point contributors at the wrong backend.</td>
-                <td>High contributor impact and avoids incorrect local/production setup.</td>
-                <td><span class="label">documentation</span> <span class="label">p1</span></td>
-                <td>More concrete and urgent than the broader docs audit in #77.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p1">p1</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/71">#71 Audit LinkStack RLS, triggers, and schema parity</a></td>
-                <td>GOAL.md treats Supabase Auth, RLS, server-side authorization, and schema/migration sync as core constraints for signed-in library and moderation work.</td>
-                <td>Unblocks secure dependent UI without guessing at database access boundaries.</td>
-                <td><span class="label">p1</span></td>
-                <td>Keep scope feature-driven to avoid broad schema churn.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p1">p1</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/70">#70 Port LinkStack metadata inspection for resource forms</a></td>
-                <td>GOAL.md expects submissions to extract metadata automatically and use validated API contracts; resource forms need a shared metadata path to match tool submission quality.</td>
-                <td>Improves submit UX and reduces duplicate metadata-fetching paths.</td>
-                <td><span class="label">p1</span></td>
-                <td>Likely pairs well with #115 once endpoint shape is decided.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p2">p2</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/106">#106 Return pagination totals from tool list and search endpoints</a></td>
-                <td>Accurate pagination totals support the public catalog discovery experience in GOAL.md, but current behavior still works without totals.</td>
-                <td>Improves result clarity and list/search polish.</td>
-                <td><span class="label">p2</span></td>
-                <td>Useful after higher-priority moderation and submission blockers.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p2">p2</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/116">#116 Use masonry-gridlanes-wc for resource card layout on /resources</a></td>
-                <td>A denser resource-card layout helps users browse the curated resource catalog, but it does not block publishing, moderation, or submission quality.</td>
-                <td>Improves browsing ergonomics on /resources.</td>
-                <td><span class="label">p2</span></td>
-                <td>Has clear implementation notes and verification requirements.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p2">p2</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/76">#76 P2: Normalize pagination validation across API functions</a></td>
-                <td>GOAL.md emphasizes typed, validated API contracts; shared strict pagination validation supports that constraint across functions.</td>
-                <td>Prevents inconsistent API edge-case behavior.</td>
-                <td><span class="label">p2</span></td>
-                <td>Cross-cutting but smaller than the current moderation/submission slice.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p2">p2</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/75">#75 P2: Consolidate shared API client plumbing</a></td>
-                <td>GOAL.md favors approachable, validated implementation patterns; consolidating duplicated API client plumbing helps maintain tools/resources consistently.</td>
-                <td>Reduces drift and improves future client changes.</td>
-                <td><span class="label">p2</span></td>
-                <td>Should follow behavior-level priorities rather than preempt them.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p2">p2</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/73">#73 Design resource browsing scopes and view controls</a></td>
-                <td>Private collecting is a core goal, and stable browsing/library scopes are useful before expanding signed-in resource workflows.</td>
-                <td>Clarifies navigation model for future library work.</td>
-                <td><span class="label">p2</span></td>
-                <td>Design decision work; not a current publishing-loop blocker.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p2">p2</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/68">#68 Add public submission flow for personal resources and stacks</a></td>
-                <td>Public submission of personal resources/stacks supports the moderation loop, but it depends on clearer submit/publication and library foundations.</td>
-                <td>Extends publishing workflow for signed-in resource ownership.</td>
-                <td><span class="label">p2</span></td>
-                <td>Keep separate from the unified public submit flow unless product language changes.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p2">p2</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/67">#67 Add save-to-library from public resources</a></td>
-                <td>Saving public resources into a private library advances the signed-in collecting goal, but it is not required to close the public moderation loop.</td>
-                <td>High-value signed-in workflow once library basics are stable.</td>
-                <td><span class="label">p2</span></td>
-                <td>Should preserve public/private data boundaries.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p2">p2</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/66">#66 Add read status and notes for personal resources</a></td>
-                <td>Notes/read status are part of the richer private-library direction in GOAL.md, but come after owner-only library basics and publication workflow.</td>
-                <td>Improves personal resource usefulness.</td>
-                <td><span class="label">p2</span></td>
-                <td>Privacy boundary tests matter more than broad coverage.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p2">p2</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/65">#65 Add personal resource stacks</a></td>
-                <td>Personal stacks align with future private-library workflows, but are not needed for the immediate public moderation milestone.</td>
-                <td>Adds structure for signed-in users managing grouped resources.</td>
-                <td><span class="label">p2</span></td>
-                <td>Schema/API support should determine scope.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p2">p2</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/64">#64 Build signed-in personal resource library</a></td>
-                <td>Private collecting is a core goal; this issue is partially complete and remaining edit/delete support is useful but no longer blocks the current moderation focus.</td>
-                <td>Completes signed-in personal library CRUD.</td>
-                <td><span class="label">p2</span></td>
-                <td>Comment notes list/create are done; edit/delete remain.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p2">p2</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/61">#61 Systematic post-migration refactor for naming, duplication, and helpers</a></td>
-                <td>The goal favors approachable code and current MakerBench terminology; post-migration cleanup helps contributors but should not interrupt feature blockers.</td>
-                <td>Reduces long-term maintenance cost and concept drift.</td>
-                <td><span class="label">p2</span></td>
-                <td>Best handled incrementally after behavior is stable.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p2">p2</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/60">#60 Modernize React data fetching and interaction patterns</a></td>
-                <td>GOAL.md asks for clear React patterns and real-behavior tests; modernizing fetch/interaction patterns can improve consistency across tools/resources.</td>
-                <td>Improves UX and maintainability, but current flows remain usable.</td>
-                <td><span class="label">p2</span></td>
-                <td>Use React 19 patterns only where they simplify the code.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p2">p2</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/58">#58 Clean up ResourceCard clickable-card semantics</a></td>
-                <td>Semantic HTML and accessibility are project-wide constraints, and ResourceCard click semantics affect the resource browsing experience.</td>
-                <td>Improves keyboard/screen-reader correctness and nested interactions.</td>
-                <td><span class="label">p2</span></td>
-                <td>Focused accessibility improvement, not a publishing blocker.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p2">p2</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/57">#57 Audit temporary API performance logging after Supabase migration</a></td>
-                <td>GOAL.md values reliable implementation and useful observability; migration-only performance logs should be reviewed after Supabase behavior is understood.</td>
-                <td>Keeps production logs useful and lower-noise.</td>
-                <td><span class="label">p2</span></td>
-                <td>Timing depends on realistic Supabase-backed API exercise.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p2">p2</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/56">#56 Rename LinkStack Supabase secret references for MakerBench ownership</a></td>
-                <td>Supabase is the canonical data store in GOAL.md; LinkStack-named secrets are confusing but not currently blocking app behavior.</td>
-                <td>Improves ownership clarity and environment documentation.</td>
-                <td><span class="label">p2</span></td>
-                <td>Coordinate with actual 1Password/Netlify secret rename timing.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p3">p3</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/107">#107 Decide whether to support AND/OR search mode for tools</a></td>
-                <td>AND/OR search mode is a product-choice enhancement for discovery, while current AND behavior is functional and not called out in the current focus.</td>
-                <td>Potentially useful search refinement, but speculative.</td>
-                <td><span class="label">p3</span></td>
-                <td>Could be closed by documenting the current AND-only choice.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p3">p3</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/78">#78 P3: Add header images to resource cards</a></td>
-                <td>Resource header images are visual polish for catalog browsing and do not advance the near-term moderation/submission loop.</td>
-                <td>Improves visual parity with tool cards.</td>
-                <td><span class="label">p3</span></td>
-                <td>Issue itself was already framed as P3.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p3">p3</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/77">#77 P3: Audit public copy and docs after Supabase migration</a></td>
-                <td>The broad docs/copy audit supports the goal of agreement across docs and product direction, but #131 captures the urgent setup/deployment drift.</td>
-                <td>Useful hygiene after concrete Supabase docs are corrected.</td>
-                <td><span class="label">p3</span></td>
-                <td>Issue itself was already framed as P3.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p3">p3</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/72">#72 Evaluate LinkStack library settings and unread limit workflow</a></td>
-                <td>Unread limits and encouragement are an exploratory product idea outside the current moderation, submission, and core private-library path.</td>
-                <td>Could shape future personal-library behavior, but value is uncertain.</td>
-                <td><span class="label">p3</span></td>
-                <td>Lower priority because the issue asks for evaluation, not known necessary implementation.</td>
-              </tr>
-              <tr>
-                <td><span class="priority p3">p3</span></td>
-                <td><a href="https://github.com/schalkneethling/makerbench-next/issues/59">#59 Evaluate MakerBench-wide user preferences and theme model</a></td>
-                <td>A MakerBench-wide preferences/theme model is speculative relative to the current goal and should not precede moderation/publishing reliability.</td>
-                <td>Could clarify future preference use, but has weak immediate user impact.</td>
-                <td><span class="label">p3</span></td>
-                <td>Keep as a decision issue until a concrete preference need appears.</td>
-              </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-        </div>
+        <summary>schalkneethling/makerbench-next - 40 open issues - next: #161 Harden unified admin moderation API across all submission types</summary>
+
+        <h2>Goal Alignment</h2>
+        <p>
+          MakerBench is currently focused on closing the moderation and publishing loop:
+          reliable admin review, public visibility only for approved content, a broader
+          submit-resource flow, and abuse controls before public submissions widen.
+        </p>
+
+        <h3>Merge Review</h3>
+        <ul>
+          <li><a href="https://github.com/schalkneethling/makerbench-next/pull/139">PR #139</a> completed the unified admin moderation queue surface and API baseline; follow-ups remain in #161 and #162.</li>
+          <li><a href="https://github.com/schalkneethling/makerbench-next/pull/168">PR #168</a> added shared public submission contracts for the tools API.</li>
+          <li><a href="https://github.com/schalkneethling/makerbench-next/pull/175">PR #175</a> added the shared <code>/api/submissions</code> endpoint, routing, optional auth, duplicate conflicts, public URL checks, moderation metadata, and tests.</li>
+          <li><a href="https://github.com/schalkneethling/makerbench-next/pull/166">PR #166</a> completed public listing content kind support.</li>
+        </ul>
+
+        <h3>Next Issue</h3>
+        <p>
+          Nomination: <a href="https://github.com/schalkneethling/makerbench-next/issues/161">#161 Harden unified admin moderation API across all submission types</a>.
+          It is the most direct remaining blocker for the current milestone because moderation
+          must be trustworthy before newly submitted content can safely move into public listings.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Priority</th>
+              <th>Issue</th>
+              <th>Rationale</th>
+              <th>Impact</th>
+              <th>Labels</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge p0">p0</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/161">#161 Harden unified admin moderation API across all submission types</a></td>
+              <td>Directly protects the admin review loop across supported entity types.</td>
+              <td>Blocks trusted moderation and publication.</td>
+              <td>enhancement, p0</td>
+            </tr>
+            <tr>
+              <td><span class="badge p0">p0</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/162">#162 Verify approved and rejected submissions on public surfaces</a></td>
+              <td>Confirms approved content appears and rejected content stays hidden.</td>
+              <td>Blocks confidence in the public catalog.</td>
+              <td>enhancement, p0</td>
+            </tr>
+            <tr>
+              <td><span class="badge p0">p0</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/148">#148 Phase 4: Moderation and publication loop for submitted content</a></td>
+              <td>Phase tracker for the current north-star milestone.</td>
+              <td>Keeps moderation work grouped and visible.</td>
+              <td>enhancement, p0</td>
+            </tr>
+
+            <tr>
+              <td><span class="badge p1">p1</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/164">#164 Document and verify launch readiness for public submissions</a></td>
+              <td>Documents the newly merged submission flow and launch guardrails.</td>
+              <td>Reduces release and contributor confusion.</td>
+              <td>documentation, p1</td>
+            </tr>
+            <tr>
+              <td><span class="badge p1">p1</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/163">#163 Add duplicate and spam controls for public submissions</a></td>
+              <td>Abuse prevention is required before widening public submission volume.</td>
+              <td>Protects moderation load and catalog quality.</td>
+              <td>enhancement, p1</td>
+            </tr>
+            <tr>
+              <td><span class="badge p1">p1</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/156">#156 Rework /submit into a type-aware Submit a Resource flow</a></td>
+              <td>Frontend still needs to expose the backend's broader submission contract.</td>
+              <td>Turns the merged API into a usable contributor workflow.</td>
+              <td>enhancement, p1</td>
+            </tr>
+            <tr>
+              <td><span class="badge p1">p1</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/155">#155 Add public submission client API, hook, and component tests</a></td>
+              <td>Client code still posts tool submissions through legacy plumbing.</td>
+              <td>Needed for robust UI integration and error handling.</td>
+              <td>enhancement, p1</td>
+            </tr>
+            <tr>
+              <td><span class="badge p1">p1</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/150">#150 Phase 2: Anonymous and auth-aware public submit flow</a></td>
+              <td>Phase tracker remains open while client and submit-page work remain.</td>
+              <td>Coordinates submit-flow completion.</td>
+              <td>enhancement, p1</td>
+            </tr>
+            <tr>
+              <td><span class="badge p1">p1</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/147">#147 Phase 5: Public submission abuse prevention and launch readiness</a></td>
+              <td>Tracks launch controls after the submission backend lands.</td>
+              <td>Prevents noisy or unsafe public intake.</td>
+              <td>enhancement, p1</td>
+            </tr>
+            <tr>
+              <td><span class="badge p1">p1</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/131">#131 Update stale Turso setup and deployment docs after Supabase migration</a></td>
+              <td>Goal says docs, schema, and app direction should agree.</td>
+              <td>Important for contributor reliability.</td>
+              <td>documentation, p1</td>
+            </tr>
+            <tr>
+              <td><span class="badge p1">p1</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/119">#119 Add URL blocklist enforcement for resource submissions</a></td>
+              <td>Part of the abuse-control work needed for public submissions.</td>
+              <td>Reduces unsafe or low-quality intake.</td>
+              <td>enhancement, p1</td>
+            </tr>
+            <tr>
+              <td><span class="badge p1">p1</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/118">#118 Add rate limiting for resource submissions</a></td>
+              <td>Server-side submission protection remains a stated current focus.</td>
+              <td>Protects API and moderators.</td>
+              <td>enhancement, p1</td>
+            </tr>
+            <tr>
+              <td><span class="badge p1">p1</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/115">#115 Rename submit flow to Submit a Resource with type selection and auth-aware attribution</a></td>
+              <td>Matches the product direction away from tool-only submissions.</td>
+              <td>Clarifies contributor workflow.</td>
+              <td>p1</td>
+            </tr>
+            <tr>
+              <td><span class="badge p1">p1</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/71">#71 Audit LinkStack RLS, triggers, and schema parity</a></td>
+              <td>Security/data integrity audit for migrated resource behavior.</td>
+              <td>Protects trust in signed-in and public data.</td>
+              <td>p1</td>
+            </tr>
+            <tr>
+              <td><span class="badge p1">p1</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/70">#70 Port LinkStack metadata inspection for resource forms</a></td>
+              <td>Improves resource submission quality and prefill behavior.</td>
+              <td>Helps submissions be useful and easier to review.</td>
+              <td>p1</td>
+            </tr>
+
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/169">#169 Document architecture and identify shared server/client utilities</a></td>
+              <td>Useful for approaching growing duplication, but not an immediate blocker.</td>
+              <td>Improves maintainability after recent backend expansion.</td>
+              <td>enhancement, p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/159">#159 Show publication state for signed-in user submissions</a></td>
+              <td>Important submitter feedback after moderation basics work.</td>
+              <td>Improves signed-in user workflow.</td>
+              <td>enhancement, p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/158">#158 Add submit-to-public-review action for saved library resources</a></td>
+              <td>Extends private library into public review after core flow is stable.</td>
+              <td>Connects private collecting to public catalog growth.</td>
+              <td>enhancement, p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/157">#157 Implement public submission flow for personal stacks and stack items</a></td>
+              <td>Useful expansion once moderation and ordinary resource submissions are reliable.</td>
+              <td>Enables richer public curation paths.</td>
+              <td>enhancement, p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/149">#149 Phase 3: Signed-in library to public publishing path</a></td>
+              <td>Phase tracker for signed-in publishing, behind the current moderation focus.</td>
+              <td>Coordinates private-to-public workflow.</td>
+              <td>enhancement, p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/116">#116 Use masonry-gridlanes-wc for resource card layout on /resources</a></td>
+              <td>Presentation improvement for browsing, not core moderation work.</td>
+              <td>Improves resource discovery UI.</td>
+              <td>p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/106">#106 Return pagination totals from tool list and search endpoints</a></td>
+              <td>Useful API consistency improvement.</td>
+              <td>Improves browse/search UX and clients.</td>
+              <td>p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/76">#76 Normalize pagination validation across API functions</a></td>
+              <td>Consistency work aligned with API reliability.</td>
+              <td>Reduces drift and edge-case bugs.</td>
+              <td>p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/75">#75 Consolidate shared API client plumbing</a></td>
+              <td>Good cleanup after current feature work stabilizes.</td>
+              <td>Reduces duplicated client error handling.</td>
+              <td>p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/73">#73 Design resource browsing scopes and view controls</a></td>
+              <td>Helps discovery, but can follow moderation/publication reliability.</td>
+              <td>Improves resource browsing.</td>
+              <td>p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/68">#68 Add public submission flow for personal resources and stacks</a></td>
+              <td>Goal-aligned signed-in expansion, after baseline public submit flow.</td>
+              <td>Enables richer private-to-public curation.</td>
+              <td>p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/67">#67 Add save-to-library from public resources</a></td>
+              <td>Important private library bridge, not a launch blocker for moderation.</td>
+              <td>Improves signed-in collecting.</td>
+              <td>p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/66">#66 Add read status and notes for personal resources</a></td>
+              <td>Private library enhancement after core flows.</td>
+              <td>Improves personal organization.</td>
+              <td>p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/65">#65 Add personal resource stacks</a></td>
+              <td>Useful signed-in feature behind moderation and public submission stability.</td>
+              <td>Enables richer private collections.</td>
+              <td>p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/64">#64 Build signed-in personal resource library</a></td>
+              <td>Partially complete; remaining edit/delete and parity work is useful but not urgent.</td>
+              <td>Improves signed-in library completeness.</td>
+              <td>p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/61">#61 Systematic post-migration refactor for naming, duplication, and helpers</a></td>
+              <td>Helpful maintenance pass once current milestone changes settle.</td>
+              <td>Reduces future implementation drag.</td>
+              <td>p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/60">#60 Modernize React data fetching and interaction patterns</a></td>
+              <td>Quality improvement, but not a direct moderation blocker.</td>
+              <td>Improves consistency and UX polish.</td>
+              <td>p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/58">#58 Clean up ResourceCard clickable-card semantics</a></td>
+              <td>Accessibility and component quality improvement.</td>
+              <td>Improves public resource card behavior.</td>
+              <td>p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/57">#57 Audit temporary API performance logging after Supabase migration</a></td>
+              <td>Reduces production log noise after migration.</td>
+              <td>Improves maintainability and observability quality.</td>
+              <td>p2</td>
+            </tr>
+            <tr>
+              <td><span class="badge p2">p2</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/56">#56 Rename LinkStack Supabase secret references for MakerBench ownership</a></td>
+              <td>Naming/config cleanup aligned with project ownership.</td>
+              <td>Reduces setup confusion.</td>
+              <td>p2</td>
+            </tr>
+
+            <tr>
+              <td><span class="badge p3">p3</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/107">#107 Decide whether to support AND/OR search mode for tools</a></td>
+              <td>Product choice for search sophistication, not current moderation work.</td>
+              <td>Potential discovery improvement.</td>
+              <td>p3</td>
+            </tr>
+            <tr>
+              <td><span class="badge p3">p3</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/78">#78 Add header images to resource cards</a></td>
+              <td>Polish after core catalog and moderation flows are reliable.</td>
+              <td>Visual enhancement.</td>
+              <td>p3</td>
+            </tr>
+            <tr>
+              <td><span class="badge p3">p3</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/77">#77 Audit public copy and docs after Supabase migration</a></td>
+              <td>Useful polish, but less urgent than stale setup docs and launch readiness.</td>
+              <td>Improves consistency.</td>
+              <td>p3</td>
+            </tr>
+            <tr>
+              <td><span class="badge p3">p3</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/72">#72 Evaluate LinkStack library settings and unread limit workflow</a></td>
+              <td>Speculative product parity work.</td>
+              <td>Low immediate impact.</td>
+              <td>p3</td>
+            </tr>
+            <tr>
+              <td><span class="badge p3">p3</span></td>
+              <td><a href="https://github.com/schalkneethling/makerbench-next/issues/59">#59 Evaluate MakerBench-wide user preferences and theme model</a></td>
+              <td>Deferred product direction, weak immediate alignment with current milestone.</td>
+              <td>Low immediate impact.</td>
+              <td>p3</td>
+            </tr>
+          </tbody>
+        </table>
       </details>
     </main>
   </body>

@@ -35,24 +35,46 @@ interface ModerationReviewBody {
 }
 
 interface ErrorBody {
+  error: string;
   details: Record<string, string[]>;
 }
 
 type ModerationUpdateCase = readonly [
   type: string,
   status: string,
+  expectedTable: string,
   expectedSqlParts: readonly string[],
 ];
 
 const moderationUpdateCases = [
-  ["tool", "approved", ["reviewed_by"]],
-  ["resource", "approved", ["reviewed_by"]],
-  ["stack", "approved", ["reviewed_by"]],
-  ["stack-item", "approved", ["reviewed_by"]],
-  ["tool", "rejected", ["rejection_code", "rejection_reason"]],
-  ["resource", "rejected", ["rejection_code", "rejection_reason"]],
-  ["stack", "rejected", ["rejection_code", "rejection_reason"]],
-  ["stack-item", "rejected", ["rejection_code", "rejection_reason"]],
+  ["tool", "approved", "tool_listings", ["approved_at", "reviewed_by"]],
+  ["resource", "approved", "public_listings", ["reviewed_by"]],
+  ["stack", "approved", "public_stacks", ["reviewed_by"]],
+  ["stack-item", "approved", "public_stack_items", ["reviewed_by"]],
+  [
+    "tool",
+    "rejected",
+    "tool_listings",
+    ["approved_at", "rejection_code", "rejection_reason"],
+  ],
+  [
+    "resource",
+    "rejected",
+    "public_listings",
+    ["rejection_code", "rejection_reason"],
+  ],
+  [
+    "stack",
+    "rejected",
+    "public_stacks",
+    ["rejection_code", "rejection_reason"],
+  ],
+  [
+    "stack-item",
+    "rejected",
+    "public_stack_items",
+    ["rejection_code", "rejection_reason"],
+  ],
 ] satisfies readonly ModerationUpdateCase[];
 
 function createExecuteDb(rows: unknown[]) {
@@ -62,22 +84,17 @@ function createExecuteDb(rows: unknown[]) {
 }
 
 function getSqlText(query: unknown): string {
+  if (!query || typeof query !== "object") {
+    return "";
+  }
+
+  if ("value" in query && Array.isArray(query.value)) {
+    return query.value.join("");
+  }
+
   const queryChunks = (query as { queryChunks?: unknown[] }).queryChunks ?? [];
 
-  return queryChunks
-    .map((chunk) => {
-      if (
-        chunk &&
-        typeof chunk === "object" &&
-        "value" in chunk &&
-        Array.isArray(chunk.value)
-      ) {
-        return chunk.value.join("");
-      }
-
-      return "";
-    })
-    .join("");
+  return queryChunks.map(getSqlText).join("");
 }
 
 describe("admin-moderation", () => {
@@ -86,31 +103,52 @@ describe("admin-moderation", () => {
     vi.mocked(verifyAuthenticatedUser).mockResolvedValue(adminAuth as never);
   });
 
-  it("returns 401 when the request is not authenticated", async () => {
-    vi.mocked(verifyAuthenticatedUser).mockResolvedValue(null);
+  it.each(["GET", "PATCH"] as const)(
+    "returns 401 when a %s request is not authenticated",
+    async (method) => {
+      vi.mocked(verifyAuthenticatedUser).mockResolvedValue(null);
 
+      const res = await adminModeration(
+        new Request("https://test.com/api/admin/moderation", { method }),
+        createMockContext(),
+      );
+
+      expect(res.status).toBe(401);
+      expect(getDb).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(["GET", "PATCH"] as const)(
+    "returns 403 when a %s request comes from a non-admin user",
+    async (method) => {
+      vi.mocked(verifyAuthenticatedUser).mockResolvedValue({
+        ...adminAuth,
+        isAdmin: false,
+      } as never);
+
+      const res = await adminModeration(
+        new Request("https://test.com/api/admin/moderation", {
+          method,
+          headers: { Authorization: "Bearer token-1" },
+        }),
+        createMockContext(),
+      );
+
+      expect(res.status).toBe(403);
+      expect(getDb).not.toHaveBeenCalled();
+    },
+  );
+
+  it("returns 400 for an invalid moderation type filter", async () => {
     const res = await adminModeration(
-      new Request("https://test.com/api/admin/moderation"),
-      createMockContext(),
-    );
-
-    expect(res.status).toBe(401);
-  });
-
-  it("returns 403 when the user is not an admin", async () => {
-    vi.mocked(verifyAuthenticatedUser).mockResolvedValue({
-      ...adminAuth,
-      isAdmin: false,
-    } as never);
-
-    const res = await adminModeration(
-      new Request("https://test.com/api/admin/moderation", {
+      new Request("https://test.com/api/admin/moderation?type=article", {
         headers: { Authorization: "Bearer token-1" },
       }),
       createMockContext(),
     );
 
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(400);
+    expect(getDb).not.toHaveBeenCalled();
   });
 
   it("lists pending moderation items across entity types", async () => {
@@ -168,6 +206,19 @@ describe("admin-moderation", () => {
             parent_id: null,
             parent_title: null,
             created_at: "2026-06-01T20:00:00.000Z",
+          },
+          {
+            id: "stack-1",
+            type: "stack",
+            url: "https://example.com/stack",
+            title: "Stack",
+            description: "Stack description",
+            tags: ["workflow"],
+            submitter: "11111111-1111-4111-8111-111111111111",
+            submitter_url: null,
+            parent_id: null,
+            parent_title: null,
+            created_at: "2026-06-01T22:00:00.000Z",
           },
           {
             id: "item-1",
@@ -248,6 +299,18 @@ describe("admin-moderation", () => {
         createdAt: "2026-06-01T20:00:00.000Z",
       },
       {
+        id: "stack-1",
+        type: "stack",
+        url: "https://example.com/stack",
+        title: "Stack",
+        description: "Stack description",
+        tags: [{ id: "workflow", name: "workflow" }],
+        submitter: "11111111-1111-4111-8111-111111111111",
+        submitterUrl: null,
+        parent: null,
+        createdAt: "2026-06-01T22:00:00.000Z",
+      },
+      {
         id: "item-1",
         type: "stack-item",
         url: "https://example.com/item",
@@ -267,7 +330,7 @@ describe("admin-moderation", () => {
 
   it.each(moderationUpdateCases)(
     "updates a %s item to %s",
-    async (type, status, expectedSqlParts) => {
+    async (type, status, expectedTable, expectedSqlParts) => {
       const mockDb = createExecuteDb([
         { id: "22222222-2222-4222-8222-222222222222", status },
       ]);
@@ -302,6 +365,8 @@ describe("admin-moderation", () => {
       });
       expect(mockDb.execute).toHaveBeenCalledTimes(1);
       const sqlText = getSqlText(mockDb.execute.mock.calls[0]?.[0]);
+      expect(sqlText).toContain(`update ${expectedTable}`);
+      expect(sqlText).toContain("and status = 'pending'");
       for (const expectedSqlPart of expectedSqlParts) {
         expect(sqlText).toContain(expectedSqlPart);
       }
@@ -330,6 +395,64 @@ describe("admin-moderation", () => {
     expect(body.details.id?.[0]).toContain("Invalid UUID");
   });
 
+  it("returns 422 for malformed review JSON", async () => {
+    const res = await adminModeration(
+      new Request("https://test.com/api/admin/moderation", {
+        method: "PATCH",
+        headers: {
+          Authorization: "Bearer token-1",
+          "Content-Type": "application/json",
+        },
+        body: "{",
+      }),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(422);
+    const body = (await res.json()) as ErrorBody;
+    expect(body.error).toBe("Invalid JSON in request body");
+    expect(getDb).not.toHaveBeenCalled();
+  });
+
+  it("returns 409 without mutating an already-reviewed item", async () => {
+    const mockDb = {
+      execute: vi
+        .fn()
+        .mockResolvedValueOnce({ rows: [] })
+        .mockResolvedValueOnce({ rows: [{ status: "approved" }] }),
+    };
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+
+    const res = await adminModeration(
+      new Request("https://test.com/api/admin/moderation", {
+        method: "PATCH",
+        headers: {
+          Authorization: "Bearer token-1",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: "22222222-2222-4222-8222-222222222222",
+          type: "stack",
+          action: "reject",
+        }),
+      }),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(409);
+    const body = (await res.json()) as ErrorBody;
+    expect(body.error).toBe("Moderation item is already approved");
+    expect(mockDb.execute).toHaveBeenCalledTimes(2);
+    expect(getSqlText(mockDb.execute.mock.calls[0]?.[0])).toContain(
+      "and status = 'pending'",
+    );
+    expect(getSqlText(mockDb.execute.mock.calls[1]?.[0])).toContain(
+      "from public_stacks",
+    );
+  });
+
   it("returns 404 when a moderation item does not exist", async () => {
     const mockDb = createExecuteDb([]);
     vi.mocked(getDb).mockReturnValue(
@@ -353,5 +476,6 @@ describe("admin-moderation", () => {
     );
 
     expect(res.status).toBe(404);
+    expect(mockDb.execute).toHaveBeenCalledTimes(2);
   });
 });
