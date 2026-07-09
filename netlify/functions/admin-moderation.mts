@@ -4,6 +4,7 @@ import * as v from "valibot";
 
 import {
   badRequest,
+  conflict,
   forbidden,
   methodNotAllowed,
   notFound,
@@ -13,9 +14,9 @@ import {
   validationError,
 } from "./lib";
 import {
-  isModerationEntityType,
   listPendingModerationItems,
   moderationReviewSchema,
+  moderationTypeFilterSchema,
   reviewModerationItem,
   type ModerationEntityType,
 } from "./lib/admin-moderation";
@@ -45,18 +46,13 @@ function getValidationDetails(
 
 function parseTypeFilter(req: Request): ModerationEntityType | null | Response {
   const typeParam = new URL(req.url).searchParams.get("type");
-  let type: ModerationEntityType | null = null;
+  const parsed = v.safeParse(moderationTypeFilterSchema, typeParam);
 
-  if (typeParam) {
-    if (!isModerationEntityType(typeParam)) {
-      return badRequest(
-        "type must be one of tool, resource, stack, stack-item",
-      );
-    }
-    type = typeParam;
+  if (!parsed.success) {
+    return badRequest("type must be one of tool, resource, stack, stack-item");
   }
 
-  return type;
+  return parsed.output;
 }
 
 async function requireAdmin(req: Request) {
@@ -100,16 +96,20 @@ async function handlePatch(req: Request, reviewerId: string) {
     );
   }
 
-  const updated = await reviewModerationItem(parsed.output, reviewerId);
+  const result = await reviewModerationItem(parsed.output, reviewerId);
 
-  if (!updated) {
+  if (result.outcome === "not-found") {
     return notFound("Moderation item not found");
   }
 
+  if (result.outcome === "already-reviewed") {
+    return conflict(`Moderation item is already ${result.status}`);
+  }
+
   return ok({
-    id: updated.id,
+    id: result.item.id,
     type: parsed.output.type,
-    status: updated.status,
+    status: result.item.status,
   });
 }
 

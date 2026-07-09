@@ -10,8 +10,13 @@ export const moderationEntityTypes = [
   "stack-item",
 ] as const;
 
+export const moderationEntityTypeSchema = v.picklist(moderationEntityTypes);
+export const moderationTypeFilterSchema = v.nullable(
+  moderationEntityTypeSchema,
+);
+
 export const moderationReviewSchema = v.object({
-  type: v.picklist(moderationEntityTypes),
+  type: moderationEntityTypeSchema,
   id: v.pipe(v.string(), v.uuid()),
   action: v.picklist(["approve", "reject"]),
   rejectionCode: v.optional(v.pipe(v.string(), v.maxLength(100))),
@@ -25,9 +30,7 @@ export type ModerationAction = v.InferOutput<
 export type ModerationReviewInput = v.InferOutput<
   typeof moderationReviewSchema
 >;
-type PublicModerationReviewInput = ModerationReviewInput & {
-  type: Exclude<ModerationEntityType, "tool">;
-};
+type ModerationStatus = "pending" | "approved" | "rejected";
 
 type ModerationQueueRow = Record<string, unknown> & {
   id: string;
@@ -48,21 +51,29 @@ interface ReviewedRow extends Record<string, unknown> {
   status: "approved" | "rejected";
 }
 
-const publicReviewTargets: Record<
-  Exclude<ModerationEntityType, "tool">,
-  { table: ReturnType<typeof sql.raw>; idColumn: ReturnType<typeof sql.raw> }
+interface ModerationStatusRow extends Record<string, unknown> {
+  status: ModerationStatus;
+}
+
+const reviewTargets: Record<
+  ModerationEntityType,
+  { table: ReturnType<typeof sql.raw>; tracksApprovalTime: boolean }
 > = Object.freeze({
+  tool: {
+    table: sql.raw("tool_listings"),
+    tracksApprovalTime: true,
+  },
   resource: {
     table: sql.raw("public_listings"),
-    idColumn: sql.raw("id"),
+    tracksApprovalTime: false,
   },
   stack: {
     table: sql.raw("public_stacks"),
-    idColumn: sql.raw("id"),
+    tracksApprovalTime: false,
   },
   "stack-item": {
     table: sql.raw("public_stack_items"),
-    idColumn: sql.raw("id"),
+    tracksApprovalTime: false,
   },
 });
 
@@ -92,12 +103,6 @@ function mapModerationRow(row: ModerationQueueRow) {
 
 function buildTypePredicate(type: ModerationEntityType | null) {
   return type ? sql`where type = ${type}` : sql``;
-}
-
-export function isModerationEntityType(
-  type: string,
-): type is ModerationEntityType {
-  return moderationEntityTypes.includes(type as ModerationEntityType);
 }
 
 export async function listPendingModerationItems(
@@ -197,15 +202,24 @@ export async function listPendingModerationItems(
   return result.rows.map(mapModerationRow);
 }
 
-async function reviewTool(review: ModerationReviewInput, reviewerId: string) {
-  const { id, action, rejectionCode, rejectionReason } = review;
+/** Applies a guarded moderation transition and reports why no row was updated. */
+export async function reviewModerationItem(
+  review: ModerationReviewInput,
+  reviewerId: string,
+) {
+  const { id, type, action, rejectionCode, rejectionReason } = review;
   const now = new Date();
   const nextStatus = action === "approve" ? "approved" : "rejected";
-  const result = await getDb().execute<ReviewedRow>(sql`
-    update tool_listings
+  const target = reviewTargets[type];
+  const approvedAtAssignment = target.tracksApprovalTime
+    ? sql`approved_at = ${action === "approve" ? now : null},`
+    : sql``;
+  const db = getDb();
+  const result = await db.execute<ReviewedRow>(sql`
+    update ${target.table}
     set
       status = ${nextStatus},
-      approved_at = ${action === "approve" ? now : null},
+      ${approvedAtAssignment}
       reviewed_at = ${now},
       reviewed_by = ${reviewerId},
       rejection_code = ${action === "reject" ? rejectionCode?.trim() || null : null},
@@ -216,47 +230,29 @@ async function reviewTool(review: ModerationReviewInput, reviewerId: string) {
     returning id, status
   `);
 
-  return result.rows[0];
-}
-
-async function reviewPublicEntity(
-  review: PublicModerationReviewInput,
-  reviewerId: string,
-) {
-  const { id, type, action, rejectionCode, rejectionReason } = review;
-  const now = new Date();
-  const nextStatus = action === "approve" ? "approved" : "rejected";
-  const target = publicReviewTargets[type];
-  const result = await getDb().execute<ReviewedRow>(sql`
-    update ${target.table}
-    set
-      status = ${nextStatus},
-      reviewed_at = ${now},
-      reviewed_by = ${reviewerId},
-      rejection_code = ${action === "reject" ? rejectionCode?.trim() || null : null},
-      rejection_reason = ${action === "reject" ? rejectionReason?.trim() || null : null},
-      updated_at = ${now}
-    where ${target.idColumn} = ${id}
-      and status = 'pending'
-    returning id, status
-  `);
-
-  return result.rows[0];
-}
-
-function isPublicModerationReview(
-  review: ModerationReviewInput,
-): review is PublicModerationReviewInput {
-  return review.type !== "tool";
-}
-
-export async function reviewModerationItem(
-  review: ModerationReviewInput,
-  reviewerId: string,
-) {
-  if (isPublicModerationReview(review)) {
-    return await reviewPublicEntity(review, reviewerId);
+  const updated = result.rows[0];
+  if (updated) {
+    return { outcome: "reviewed" as const, item: updated };
   }
 
-  return await reviewTool(review, reviewerId);
+  const existing = await db.execute<ModerationStatusRow>(sql`
+    select status
+    from ${target.table}
+    where id = ${id}
+    limit 1
+  `);
+  const currentStatus = existing.rows[0]?.status;
+
+  if (!currentStatus) {
+    return { outcome: "not-found" as const };
+  }
+
+  if (currentStatus === "pending") {
+    throw new Error(`Pending ${type} moderation item could not be updated`);
+  }
+
+  return {
+    outcome: "already-reviewed" as const,
+    status: currentStatus,
+  };
 }
