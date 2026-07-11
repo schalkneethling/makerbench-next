@@ -35,16 +35,3 @@ export function createMockDb() {
 export function getPgQuery(query: unknown) {
   return pgDialect.sqlToQuery(query as SQL);
 }
-
-export function getSqlText(query: unknown): string {
-  if (!query || typeof query !== "object") {
-    return "";
-  }
-
-  if ("value" in query && Array.isArray(query.value)) {
-    return query.value.join("");
-  }
-
-  const queryChunks = (query as { queryChunks?: unknown[] }).queryChunks ?? [];
-  return queryChunks.map(getSqlText).join("");
-}

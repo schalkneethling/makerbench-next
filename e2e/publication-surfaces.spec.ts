@@ -1,10 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const approvedTool = {
-  id: "approved-tool",
-  url: "https://approved-tool.example.com",
-  title: "Approved Tool",
-  description: "A reviewed tool for public discovery.",
+const approvedBrowseTool = {
+  id: "approved-browse-tool",
+  url: "https://approved-browse-tool.example.com",
+  title: "Approved Browse Tool",
+  description: "A reviewed tool returned by public browse.",
   imageUrl: null,
   submitterName: null,
   submitterGithubUrl: null,
@@ -12,7 +12,15 @@ const approvedTool = {
   tags: [{ id: "reviewed", name: "reviewed" }],
 };
 
-const approvedResources = [
+const approvedSearchTool = {
+  ...approvedBrowseTool,
+  id: "approved-search-tool",
+  url: "https://approved-search-tool.example.com",
+  title: "Approved Search Tool",
+  description: "A reviewed tool returned by public search.",
+};
+
+const approvedBrowseResources = [
   {
     id: "approved-article",
     url: "https://example.com/approved-article",
@@ -51,6 +59,16 @@ const approvedResources = [
   },
 ];
 
+const approvedSearchResource = {
+  id: "approved-search-article",
+  url: "https://example.com/approved-search-article",
+  title: "Approved Search Article",
+  description: "Reviewed guidance returned by resource search.",
+  tags: [{ id: "search", name: "search" }],
+  createdAt: "2026-07-11T11:00:00.000Z",
+  kind: "article",
+};
+
 async function mockPublicTools(page: Page) {
   await page.route(
     (url) =>
@@ -69,7 +87,11 @@ async function mockPublicTools(page: Page) {
         json: {
           success: true,
           data: {
-            bookmarks: [approvedTool],
+            bookmarks: [
+              path === "/api/tools/search"
+                ? approvedSearchTool
+                : approvedBrowseTool,
+            ],
             pagination: { total: null, limit: 20, offset: 0, hasMore: false },
           },
         },
@@ -82,12 +104,22 @@ async function mockPublicResources(page: Page) {
   await page.route(
     (url) => ["/api/resources", "/api/resources/search"].includes(url.pathname),
     async (route) => {
+      const path = new URL(route.request().url()).pathname;
+
       await route.fulfill({
         json: {
           success: true,
           data: {
-            resources: approvedResources,
-            pagination: { total: 3, limit: 20, offset: 0, hasMore: false },
+            resources:
+              path === "/api/resources/search"
+                ? [approvedSearchResource]
+                : approvedBrowseResources,
+            pagination: {
+              total: path === "/api/resources/search" ? 1 : 3,
+              limit: 20,
+              offset: 0,
+              hasMore: false,
+            },
           },
         },
       });
@@ -95,25 +127,51 @@ async function mockPublicResources(page: Page) {
   );
 }
 
+// These E2E cases prove that approved API responses render on each public route.
+// Function query tests own pending/rejected exclusion because public payloads omit status.
 test.describe("public publication surfaces", () => {
   for (const route of ["/", "/tools"]) {
     test(`renders approved tools on ${route}`, async ({ page }) => {
       await mockPublicTools(page);
       await page.goto(route);
-      await expect(page.getByRole("link", { name: "Approved Tool" })).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: "Approved Browse Tool" }),
+      ).toBeVisible();
 
       await expect(page.locator(".ToolGrid")).toMatchAriaSnapshot(`
         - article:
-          - link "Approved Tool":
-            - /url: https://approved-tool.example.com
-            - heading "Approved Tool" [level=3]
-            - paragraph: approved-tool.example.com
-            - paragraph: A reviewed tool for public discovery.
+          - link "Approved Browse Tool":
+            - /url: https://approved-browse-tool.example.com
+            - heading "Approved Browse Tool" [level=3]
+            - paragraph: approved-browse-tool.example.com
+            - paragraph: A reviewed tool returned by public browse.
           - button "reviewed"
       `);
-      await expect(page.getByText(/Pending|Rejected/)).toHaveCount(0);
     });
   }
+
+  test("renders approved tool search results from the search endpoint", async ({
+    page,
+  }) => {
+    await mockPublicTools(page);
+    await page.goto("/tools");
+    await page
+      .getByRole("searchbox", { name: "Search by title or tag" })
+      .fill("search");
+    await expect(
+      page.getByRole("link", { name: "Approved Search Tool" }),
+    ).toBeVisible();
+
+    await expect(page.locator(".ToolGrid")).toMatchAriaSnapshot(`
+      - article:
+        - link "Approved Search Tool":
+          - /url: https://approved-search-tool.example.com
+          - heading "Approved Search Tool" [level=3]
+          - paragraph: approved-search-tool.example.com
+          - paragraph: A reviewed tool returned by public search.
+        - button "reviewed"
+    `);
+  });
 
   test("renders approved resource kinds and only approved stack children", async ({
     page,
@@ -151,6 +209,28 @@ test.describe("public publication surfaces", () => {
               - link "Approved Stack Child"
               - text: example.com
     `);
-    await expect(page.getByText(/Pending|Rejected/)).toHaveCount(0);
+  });
+
+  test("renders approved resource search results from the search endpoint", async ({
+    page,
+  }) => {
+    await mockPublicResources(page);
+    await page.goto("/resources");
+    await page
+      .getByRole("searchbox", { name: "Search resources" })
+      .fill("search");
+    await expect(
+      page.getByRole("link", { name: "Approved Search Article" }),
+    ).toBeVisible();
+
+    await expect(page.locator(".ResourceGrid")).toMatchAriaSnapshot(`
+      - article:
+        - link "Approved Search Article":
+          - text: Article
+          - heading "Approved Search Article" [level=3]
+          - paragraph: example.com
+          - paragraph: Reviewed guidance returned by resource search.
+        - button "search"
+    `);
   });
 });

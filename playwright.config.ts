@@ -1,6 +1,26 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const playwrightPort = process.env.PLAYWRIGHT_PORT ?? "5173";
+const DEFAULT_PLAYWRIGHT_PORT = 5173;
+
+/** Parses the optional E2E server port into a safe TCP port number. */
+function parsePlaywrightPort(value: string | undefined): number {
+  if (value === undefined) {
+    return DEFAULT_PLAYWRIGHT_PORT;
+  }
+
+  if (!/^\d+$/.test(value)) {
+    throw new Error("PLAYWRIGHT_PORT must be an integer between 1 and 65535");
+  }
+
+  const port = Number(value);
+  if (!Number.isInteger(port) || port < 1 || port > 65_535) {
+    throw new Error("PLAYWRIGHT_PORT must be an integer between 1 and 65535");
+  }
+
+  return port;
+}
+
+const playwrightPort = parsePlaywrightPort(process.env.PLAYWRIGHT_PORT);
 const playwrightBaseUrl = `http://localhost:${playwrightPort}`;
 
 /**
@@ -45,7 +65,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: `pnpm dev --port ${playwrightPort}`,
+    command: `pnpm dev --port=${playwrightPort} --strictPort`,
     url: playwrightBaseUrl,
     reuseExistingServer: !process.env.CI,
   },
