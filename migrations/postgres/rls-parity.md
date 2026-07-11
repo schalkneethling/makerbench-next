@@ -36,26 +36,12 @@ migration SQL: broad-policy removal, exact resource visibility predicates,
 role targeting, grants, and existing moderation admin gates. It is a migration
 contract test, not executable proof of PostgreSQL actor behavior.
 
-## Proposed Follow-up Issue
+## Tracked Follow-up
 
-**Title:** Add disposable PostgreSQL RLS actor integration tests
-
-**Priority recommendation:** `p2`
-
-**Body:**
-
-> Add an isolated local Supabase/PostgreSQL test harness that applies the full
-> MakerBench migration journal and executes access-boundary cases as `anon`,
-> `authenticated`, and `service_role` actors. Seed approved and pending tool
-> listings, public listings, stacks, stack items, and bookmarks owned by two
-> users. Verify anonymous approved-catalog visibility, owner-only private
-> resource visibility, denial for another user, denied direct resource inserts
-> for both `anon` and `authenticated`, successful creation only through the
-> trusted Netlify/BYPASSRLS connection, and trusted moderation access. The
-> harness must use a disposable database, run in CI without shared credentials,
-> and fail when a permissive policy or excess grant reopens access.
-
-Do not create this issue as part of #71.
+[#191](https://github.com/schalkneethling/makerbench-next/issues/191) tracks a
+disposable PostgreSQL RLS actor harness. It will execute the boundaries above
+as `anon`, authenticated owner, authenticated other-user, and the trusted
+server role instead of relying only on SQL contract assertions.
 
 ## Other Deferred Work
 
