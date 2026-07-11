@@ -205,6 +205,8 @@ describe("public-submissions", () => {
           type: "resource",
           url: "https://example.com/header-spoof-test",
           tags: ["security"],
+          submitterName: "Ada",
+          submitterGithubUsername: "ada-lovelace",
         },
         undefined,
         {
