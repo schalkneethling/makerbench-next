@@ -42,3 +42,11 @@ export {
   type LibraryResponse,
   type LibraryTag,
 } from "./library";
+
+export {
+  submitPublicSubmission,
+  PublicSubmissionApiError,
+  type PublicSubmissionInput,
+  type PublicSubmissionOptions,
+  type PublicSubmissionResponse,
+} from "./submissions";

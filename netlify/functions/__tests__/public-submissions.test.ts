@@ -37,7 +37,7 @@ import { createMockContext } from "./test-utils";
 
 interface SubmissionCreated {
   submittedItemId: string;
-  type: "tool" | "article" | "resource";
+  type: "tool" | "resource";
   status: "pending";
   message: string;
 }
@@ -88,7 +88,7 @@ describe("public-submissions", () => {
     });
   });
 
-  it("creates an anonymous pending article listing", async () => {
+  it("creates an anonymous pending resource listing", async () => {
     const mockDb = createMockDb();
     mockDb.returning
       .mockResolvedValueOnce([{ id: "11111111-1111-4111-8111-111111111111" }])
@@ -99,8 +99,8 @@ describe("public-submissions", () => {
 
     const res = await publicSubmissions(
       createSubmissionRequest({
-        type: "article",
-        url: "https://example.com/Article?b=2&a=1#section",
+        type: "resource",
+        url: "https://example.com/Resource?b=2&a=1#section",
         tags: ["React", " react ", "Testing"],
         submitterName: " Ada ",
         submitterGithubUsername: "ada-lovelace",
@@ -112,14 +112,14 @@ describe("public-submissions", () => {
     const body = (await res.json()) as SuccessResponse<SubmissionCreated>;
     expect(body.data).toMatchObject({
       submittedItemId: "22222222-2222-4222-8222-222222222222",
-      type: "article",
+      type: "resource",
       status: "pending",
     });
     expect(verifyAuthenticatedUser).not.toHaveBeenCalled();
     expect(mockDb.values).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
-        contentKind: "article",
+        contentKind: "resource",
         submittedByUserId: undefined,
         submitterName: "Ada",
         submitterGithubUrl: "https://github.com/ada-lovelace",
@@ -204,7 +204,7 @@ describe("public-submissions", () => {
   it("returns structured validation details", async () => {
     const res = await publicSubmissions(
       createSubmissionRequest({
-        type: "article",
+        type: "resource",
         url: "not-a-url",
         tags: [],
       }),
@@ -218,6 +218,20 @@ describe("public-submissions", () => {
     expect(body.details?.tags).toBeDefined();
   });
 
+  it("rejects article as a separate public submission type", async () => {
+    const res = await publicSubmissions(
+      createSubmissionRequest({
+        type: "article",
+        url: "https://example.com/article",
+        tags: ["writing"],
+      }),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(422);
+    expect(extractMetadata).not.toHaveBeenCalled();
+  });
+
   it("rejects hostnames that resolve to private addresses before metadata fetch", async () => {
     vi.mocked(lookup).mockResolvedValueOnce([
       { address: "10.0.0.12", family: 4 },
@@ -225,7 +239,7 @@ describe("public-submissions", () => {
 
     const res = await publicSubmissions(
       createSubmissionRequest({
-        type: "article",
+        type: "resource",
         url: "https://example.com/internal",
         tags: ["security"],
       }),

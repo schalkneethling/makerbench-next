@@ -132,10 +132,10 @@ function createGetTagsHandler() {
 }
 
 /**
- * Creates the POST /api/tools handler
+ * Creates the POST /api/submissions compatibility handler
  */
 function createSubmitBookmarkHandler() {
-  return http.post(`${API_BASE}/api/tools`, async ({ request }) => {
+  return http.post(`${API_BASE}/api/submissions`, async ({ request }) => {
     const body = (await request.json()) as { type?: string; url?: string; tags?: string[] };
 
     // Validate URL is present
@@ -321,6 +321,39 @@ describe("submitBookmark", () => {
     expect(result.type).toBe("tool");
     expect(result.status).toBe("pending");
     expect(result.message).toContain("submitted");
+  });
+
+  it("prefers a GitHub username over a conflicting profile URL", async () => {
+    let requestBody: unknown;
+    server.use(
+      http.post(`${API_BASE}/api/submissions`, async ({ request }) => {
+        requestBody = await request.json();
+        return HttpResponse.json(
+          {
+            success: true,
+            data: {
+              submittedItemId: "11111111-1111-4111-8111-111111111111",
+              type: "tool",
+              status: "pending",
+              message: "Bookmark submitted. It will be reviewed shortly.",
+            },
+          },
+          { status: 201 },
+        );
+      }),
+    );
+
+    await submitBookmark({
+      url: "https://example.com/new-tool",
+      tags: ["typescript"],
+      submitterGithubUsername: "preferred-user",
+      submitterGithubUrl: "https://github.com/ignored-user",
+    });
+
+    expect(requestBody).toMatchObject({
+      submitterGithubUrl: "https://github.com/preferred-user",
+    });
+    expect(requestBody).not.toHaveProperty("submitterGithubUsername");
   });
 
   it("throws on validation error with details", async () => {
