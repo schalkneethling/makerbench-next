@@ -150,8 +150,11 @@ describe("submission rate limit", () => {
     }
   });
 
-  it("declares the HMAC secret as required sensitive external Varlock config", () => {
+  it("declares the HMAC secret as sensitive external Varlock config", () => {
     expect(environmentSchema).toContain(
+      "# @type=string(minLength=32) @sensitive\nSUBMISSION_RATE_LIMIT_SECRET=",
+    );
+    expect(environmentSchema).not.toContain(
       "# @type=string(minLength=32) @sensitive @required\nSUBMISSION_RATE_LIMIT_SECRET=",
     );
   });

@@ -519,10 +519,10 @@ environment settings. Key variables:
 
 Server-side functions read secrets via `Netlify.env.get()`. Client-visible vars use the `VITE_` prefix and are bundled by Vite.
 The blank `SUBMISSION_RATE_LIMIT_SECRET=` value in `.env.schema` is an
-intentional Varlock declaration with no checked-in default. Because it is
-marked required and sensitive, callers must provide it through the external
-process environment or a secure Varlock/Netlify source before commands that
-load the schema; Varlock reports a configuration error when it is absent.
+intentional sensitive Varlock declaration with no checked-in default. It is
+optional during frontend builds, but the Netlify submission function requires
+it at runtime and fails closed with a generic 503 when it is absent or invalid.
+Provide it through a secure external process environment or Netlify setting.
 
 ## Current Gaps and Roadmap
 

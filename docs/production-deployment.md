@@ -67,9 +67,10 @@ runtime values through `Netlify.env`; Netlify supplies `CONTEXT` automatically.
 
 Use the required variable names in [`.env.schema`](../.env.schema).
 The blank `SUBMISSION_RATE_LIMIT_SECRET` assignment there is deliberate: it
-declares a required sensitive external value without a repository default.
-Configure it in Netlify for every deploy context before builds or Functions
-run; Varlock validation fails when it is absent.
+declares a sensitive external value without a repository default while allowing
+frontend-only builds to run. Configure it in Netlify before enabling public
+submissions; the submission Function requires it at runtime and fails closed
+with a generic 503 when it is absent or invalid.
 `SENTRY_DSN` is a separate optional Netlify runtime setting. Do not configure
 legacy database variables for the active deployment.
 

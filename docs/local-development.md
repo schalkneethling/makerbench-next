@@ -53,11 +53,11 @@ The required names are:
 configured; it is not required by `.env.schema`. The `VITE_` variables are
 exposed to the browser by Vite; the database and service credentials are
 server-side values. `.env.schema` declares `SUBMISSION_RATE_LIMIT_SECRET` with
-an intentionally blank value, `@required`, and `@sensitive`. In Varlock this
-means there is no checked-in default: export it from a secure external process
-environment or configure a secure Varlock source before running commands that
-load the schema. Missing values fail Varlock configuration validation. Netlify
-Functions read runtime values from `Netlify.env`.
+an intentionally blank value and `@sensitive`. This keeps frontend-only builds
+independent of the server runtime secret while providing no checked-in default.
+Export it from a secure external process environment or configure a secure
+Varlock source before exercising submissions. The Netlify Function requires it
+at runtime and fails closed when it is absent or invalid.
 
 ## 3. Apply Supabase migrations
 
