@@ -1,8 +1,8 @@
 import type { Config, Context } from "@netlify/functions";
-import type { User } from "@supabase/supabase-js";
-
 import {
   assertRequiredEnv,
+  getVerifiedDisplayName,
+  getVerifiedGithubUsername,
   handleMissingEnvironmentError,
   methodNotAllowed,
   ok,
@@ -10,18 +10,6 @@ import {
   unauthorized,
   verifyAuthenticatedUser,
 } from "./lib";
-
-function getDisplayName(user: User): string | null {
-  const metadata = user.user_metadata;
-  const fullName = metadata?.full_name;
-  const name = metadata?.name;
-
-  return typeof fullName === "string" && fullName.trim().length > 0
-    ? fullName
-    : typeof name === "string" && name.trim().length > 0
-      ? name
-      : (user.email ?? null);
-}
 
 export default async (req: Request, _context: Context) => {
   if (req.method !== "GET") {
@@ -46,7 +34,8 @@ export default async (req: Request, _context: Context) => {
       user: {
         id: user.id,
         email: user.email ?? null,
-        displayName: getDisplayName(user),
+        displayName: getVerifiedDisplayName(user),
+        githubUsername: getVerifiedGithubUsername(user),
         avatarUrl:
           typeof user.user_metadata?.avatar_url === "string" ? user.user_metadata.avatar_url : null,
       },

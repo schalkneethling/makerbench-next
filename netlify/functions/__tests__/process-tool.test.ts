@@ -90,6 +90,11 @@ function createMockDb() {
   return mockDb;
 }
 
+const anonymousAttribution = {
+  submitterName: "Ada Lovelace",
+  submitterGithubUsername: "ada-lovelace",
+};
+
 describe("process-tool", () => {
   let mockDb: ReturnType<typeof createMockDb>;
   let mockContext: Context;
@@ -178,6 +183,27 @@ describe("process-tool", () => {
       expect(body.details?.tags).toBeDefined();
     });
 
+    it("requires anonymous attribution with structured field errors", async () => {
+      const req = new Request("https://test.com/api/tools", {
+        method: "POST",
+        body: JSON.stringify({
+          type: "tool",
+          url: "https://example.com/tool",
+          tags: ["test"],
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const res = await processTool(req, mockContext);
+
+      expect(res.status).toBe(422);
+      const body = (await res.json()) as ErrorResponse;
+      expect(body.details).toEqual({
+        submitterName: ["Your name is required"],
+        submitterGithubUsername: ["GitHub username is required"],
+      });
+    });
+
     it("returns 422 for invalid URL format", async () => {
       const req = new Request("https://test.com/api/tools", {
         method: "POST",
@@ -185,6 +211,7 @@ describe("process-tool", () => {
           type: "tool",
           url: "not-a-url",
           tags: ["test"],
+          ...anonymousAttribution,
         }),
         headers: { "Content-Type": "application/json" },
       });
@@ -201,6 +228,7 @@ describe("process-tool", () => {
           type: "tool",
           url: "http://127.0.0.1:3000/tool",
           tags: ["test"],
+          ...anonymousAttribution,
         }),
         headers: { "Content-Type": "application/json" },
       });
@@ -218,6 +246,7 @@ describe("process-tool", () => {
           type: "resource",
           url: "https://example.com/resource",
           tags: ["test"],
+          ...anonymousAttribution,
         }),
         headers: { "Content-Type": "application/json" },
       });
@@ -244,6 +273,7 @@ describe("process-tool", () => {
             type: "tool",
             url: "https://example.com/tool",
             tags: ["test"],
+            ...anonymousAttribution,
           }),
           headers: { "Content-Type": "application/json" },
         });
@@ -274,6 +304,7 @@ describe("process-tool", () => {
           type: "tool",
           url: "https://example.com",
           tags: ["test"],
+          ...anonymousAttribution,
         }),
         headers: { "Content-Type": "application/json" },
       });
@@ -294,6 +325,7 @@ describe("process-tool", () => {
           type: "tool",
           url: "https://example.com/tool",
           tags: ["javascript", "testing"],
+          ...anonymousAttribution,
         }),
         headers: { "Content-Type": "application/json" },
       });
@@ -307,6 +339,14 @@ describe("process-tool", () => {
       expect(body.data.type).toBe("tool");
       expect(body.data.status).toBe("pending");
       expect(body.data.message).toContain("submitted");
+      expect(mockDb.values).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          submittedByUserId: undefined,
+          submitterName: "Ada Lovelace",
+          submitterGithubUrl: "https://github.com/ada-lovelace",
+        }),
+      );
     });
 
     it("extracts metadata from the URL", async () => {
@@ -316,6 +356,7 @@ describe("process-tool", () => {
           type: "tool",
           url: "https://example.com/tool",
           tags: ["test"],
+          ...anonymousAttribution,
         }),
         headers: { "Content-Type": "application/json" },
       });
@@ -338,6 +379,7 @@ describe("process-tool", () => {
           type: "tool",
           url: "https://example.com/tool",
           tags: ["test"],
+          ...anonymousAttribution,
         }),
         headers: { "Content-Type": "application/json" },
       });
@@ -370,6 +412,7 @@ describe("process-tool", () => {
           type: "tool",
           url: "https://example.com/tool",
           tags: ["test"],
+          ...anonymousAttribution,
         }),
         headers: { "Content-Type": "application/json" },
       });
@@ -403,6 +446,7 @@ describe("process-tool", () => {
           type: "tool",
           url: "https://example.com/tool",
           tags: ["test"],
+          ...anonymousAttribution,
         }),
         headers: { "Content-Type": "application/json" },
       });
@@ -420,6 +464,7 @@ describe("process-tool", () => {
           type: "tool",
           url: "https://example.com/tool",
           tags: ["JavaScript", "TESTING"],
+          ...anonymousAttribution,
         }),
         headers: { "Content-Type": "application/json" },
       });

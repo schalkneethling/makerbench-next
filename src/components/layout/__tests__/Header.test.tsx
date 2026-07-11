@@ -55,6 +55,7 @@ describe("Header", () => {
           id: "user-1",
           email: "test@example.com",
           displayName: "Test User",
+          githubUsername: null,
           avatarUrl: null,
         },
         isAdmin: true,

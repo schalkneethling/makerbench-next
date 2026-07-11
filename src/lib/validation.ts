@@ -69,19 +69,13 @@ const optionalGithubUsernameSchema = v.optional(
 export const publicSubmissionTypeSchema = v.picklist(["tool", "resource"]);
 export const publicSubmissionStatusSchema = v.picklist(["pending", "approved", "rejected"]);
 
-export const publicSubmissionAuthenticatedUserSchema = v.object({
-  userId: v.pipe(v.string(), v.uuid("Authenticated user id must be a valid UUID")),
-});
-
-// Server-side code should populate this from verified auth context, not trust arbitrary client JSON.
-export const publicSubmissionRequestSchema = v.object({
+export const publicSubmissionRequestSchema = v.strictObject({
   type: publicSubmissionTypeSchema,
   url: resourceUrlSchema,
   tags: resourceTagsSchema,
   submitterName: optionalSubmitterNameSchema,
   submitterGithubUsername: optionalGithubUsernameSchema,
   submitterGithubUrl: optionalGithubProfileUrlSchema,
-  authenticatedUser: v.optional(publicSubmissionAuthenticatedUserSchema),
 });
 
 export const publicSubmissionResponseDataSchema = v.object({

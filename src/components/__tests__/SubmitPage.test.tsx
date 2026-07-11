@@ -97,6 +97,7 @@ describe("SubmitPage", () => {
           id: "user-1",
           email: "ada@example.com",
           displayName: "Ada Lovelace",
+          githubUsername: "ada-lovelace",
           avatarUrl: null,
         },
         isAdmin: false,
@@ -126,22 +127,20 @@ describe("SubmitPage", () => {
     render(<SubmitPage />);
 
     expect(screen.queryByRole("textbox", { name: "Your name" })).not.toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: "GitHub username" })).toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "GitHub username" })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("radio", { name: "Tool" }));
     await user.type(screen.getByRole("textbox", { name: "URL" }), "https://example.com/tool");
     await user.type(screen.getByRole("textbox", { name: /^tags/i }), "testing{Enter}");
-    await user.type(screen.getByRole("textbox", { name: "GitHub username" }), "ada-lovelace");
     await user.click(screen.getByRole("button", { name: "Submit Resource" }));
 
     await screen.findByText(/submission received/i);
     expect(authorization).toBe("Bearer verified-token");
     expect(requestBody).toEqual({
-      type: "tool",
-      url: "https://example.com/tool",
-      tags: ["testing"],
-      submitterGithubUsername: "ada-lovelace",
-    });
+        type: "tool",
+        url: "https://example.com/tool",
+        tags: ["testing"],
+      });
   });
 
   it("asks a signed-in user for a missing verified name", () => {
@@ -152,6 +151,7 @@ describe("SubmitPage", () => {
           id: "user-1",
           email: null,
           displayName: null,
+          githubUsername: null,
           avatarUrl: null,
         },
         isAdmin: false,

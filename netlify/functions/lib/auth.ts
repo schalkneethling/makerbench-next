@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 
 import { getDb } from "./db";
 import { userRolesTable } from "../../../src/db/schema";
+import { isValidGithubUsername } from "../../../src/lib/github";
 
 function getEnv(key: string): string | undefined {
   if (typeof Netlify !== "undefined" && Netlify?.env) {
@@ -42,6 +43,61 @@ function createAuthClient() {
 export interface AuthenticatedUser {
   user: User;
   isAdmin: boolean;
+}
+
+/** Returns a non-empty string property from a Supabase metadata object. */
+function getMetadataString(metadata: unknown, key: string): string | null {
+  if (!metadata || typeof metadata !== "object") {
+    return null;
+  }
+
+  const value = (metadata as Record<string, unknown>)[key];
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+/** Returns a string list property from a Supabase metadata object. */
+function getMetadataStringList(metadata: unknown, key: string): string[] {
+  if (!metadata || typeof metadata !== "object") {
+    return [];
+  }
+
+  const value = (metadata as Record<string, unknown>)[key];
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
+/** Resolves the name supplied by Supabase's verified user lookup. */
+export function getVerifiedDisplayName(user: User): string | null {
+  return (
+    getMetadataString(user.user_metadata, "full_name") ??
+    getMetadataString(user.user_metadata, "name")
+  );
+}
+
+/** Resolves a GitHub username only from GitHub-specific Supabase provider data. */
+export function getVerifiedGithubUsername(user: User): string | null {
+  const githubIdentity = user.identities?.find(
+    (identity) => identity.provider === "github",
+  );
+  const identityUsername = getMetadataString(
+    githubIdentity?.identity_data,
+    "user_name",
+  );
+  if (identityUsername && isValidGithubUsername(identityUsername)) {
+    return identityUsername;
+  }
+
+  const provider = getMetadataString(user.app_metadata, "provider");
+  const hasGithubProvider =
+    provider === "github" || getMetadataStringList(user.app_metadata, "providers").includes("github");
+  const metadataUsername = hasGithubProvider
+    ? getMetadataString(user.user_metadata, "user_name")
+    : null;
+
+  return metadataUsername && isValidGithubUsername(metadataUsername)
+    ? metadataUsername
+    : null;
 }
 
 export async function verifyAuthenticatedUser(req: Request): Promise<AuthenticatedUser | null> {

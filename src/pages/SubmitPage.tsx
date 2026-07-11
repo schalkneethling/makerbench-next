@@ -81,9 +81,9 @@ export function SubmitPage() {
     accessToken: accessToken ?? undefined,
   });
   const hasVerifiedName = Boolean(identity?.user.displayName?.trim());
+  const hasVerifiedGithubUsername = Boolean(identity?.user.githubUsername?.trim());
   const requireName = !hasVerifiedName;
-  // whoami does not currently expose a verified GitHub username.
-  const requireGithubUsername = true;
+  const requireGithubUsername = !hasVerifiedGithubUsername;
 
   const [submissionType, setSubmissionType] = useState<PublicSubmissionType | "">("");
   const [url, setUrl] = useState("");
