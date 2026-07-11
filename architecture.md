@@ -302,7 +302,7 @@ erDiagram
         uuid id PK
         uuid resource_id FK
         uuid submitted_by_user_id FK
-        text content_kind "resource"
+        text content_kind "article|resource"
         text status "pending|approved|rejected"
         text[] tags
         text submitter_name
@@ -330,6 +330,8 @@ erDiagram
 | `user_roles`         | Admin role assignments                                           |
 | `user_preferences`   | User settings (e.g. highlight color)                             |
 | `auth.users`         | Supabase-managed auth users (referenced, not owned)              |
+
+`public_listings.content_kind` retains `article | resource` for migrated and existing rows. New public submission input is binary `tool | resource`; articles, guides, and other article-like links are submitted as `resource`, not as a third input type.
 
 **Status workflow:** Submissions across `tool_listings`, `public_listings`, `public_stacks`, and `public_stack_items` use `pending | approved | rejected`. New public submissions always start as `pending`; public browse/search endpoints return only `approved` rows. Admins review pending items through `/admin/moderation` and `GET/PATCH /api/admin/moderation`.
 
