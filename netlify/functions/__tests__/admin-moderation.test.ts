@@ -97,6 +97,20 @@ function getSqlText(query: unknown): string {
   return queryChunks.map(getSqlText).join("");
 }
 
+function getSqlParams(query: unknown): unknown[] {
+  if (!query || typeof query !== "object") {
+    return [];
+  }
+
+  if ("value" in query && !Array.isArray(query.value)) {
+    return [query.value];
+  }
+
+  const queryChunks = (query as { queryChunks?: unknown[] }).queryChunks ?? [];
+
+  return queryChunks.flatMap(getSqlParams);
+}
+
 describe("admin-moderation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -150,6 +164,32 @@ describe("admin-moderation", () => {
     expect(res.status).toBe(400);
     expect(getDb).not.toHaveBeenCalled();
   });
+
+  it.each(["tool", "resource", "stack", "stack-item"] as const)(
+    "passes the %s moderation type filter to the pending-items query",
+    async (type) => {
+      const mockDb = createExecuteDb([]);
+      vi.mocked(getDb).mockReturnValue(
+        mockDb as unknown as ReturnType<typeof getDb>,
+      );
+
+      const res = await adminModeration(
+        new Request(
+          `https://test.com/api/admin/moderation?type=${encodeURIComponent(type)}`,
+          {
+            headers: { Authorization: "Bearer token-1" },
+          },
+        ),
+        createMockContext(),
+      );
+
+      expect(res.status).toBe(200);
+      expect(mockDb.execute).toHaveBeenCalledTimes(1);
+      const query = mockDb.execute.mock.calls[0]?.[0];
+      expect(getSqlText(query)).toContain("where type = ");
+      expect(getSqlParams(query)).toEqual([type]);
+    },
+  );
 
   it("lists pending moderation items across entity types", async () => {
     const mockDb = {
