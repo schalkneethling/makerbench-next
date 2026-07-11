@@ -52,10 +52,12 @@ The required names are:
 `SENTRY_DSN` is a separate optional setting read by the Functions when
 configured; it is not required by `.env.schema`. The `VITE_` variables are
 exposed to the browser by Vite; the database and service credentials are
-server-side values. `SUBMISSION_RATE_LIMIT_SECRET` is intentionally supplied
-through a secure local environment source rather than assigned in
-`.env.schema`; its tuning values are defined there. Netlify Functions read
-their values from `Netlify.env`.
+server-side values. `.env.schema` declares `SUBMISSION_RATE_LIMIT_SECRET` with
+an intentionally blank value, `@required`, and `@sensitive`. In Varlock this
+means there is no checked-in default: export it from a secure external process
+environment or configure a secure Varlock source before running commands that
+load the schema. Missing values fail Varlock configuration validation. Netlify
+Functions read runtime values from `Netlify.env`.
 
 ## 3. Apply Supabase migrations
 

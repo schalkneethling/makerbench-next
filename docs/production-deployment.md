@@ -66,6 +66,10 @@ must not be committed or placed in frontend source. Netlify Functions read
 runtime values through `Netlify.env`; Netlify supplies `CONTEXT` automatically.
 
 Use the required variable names in [`.env.schema`](../.env.schema).
+The blank `SUBMISSION_RATE_LIMIT_SECRET` assignment there is deliberate: it
+declares a required sensitive external value without a repository default.
+Configure it in Netlify for every deploy context before builds or Functions
+run; Varlock validation fails when it is absent.
 `SENTRY_DSN` is a separate optional Netlify runtime setting. Do not configure
 legacy database variables for the active deployment.
 

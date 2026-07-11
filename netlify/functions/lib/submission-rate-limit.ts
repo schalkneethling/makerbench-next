@@ -14,6 +14,14 @@ const SUBMISSION_RATE_LIMIT_ENV_KEYS = [
   "SUBMISSION_RATE_LIMIT_WINDOW_SECONDS",
 ] as const;
 
+export const SUBMISSION_RATE_LIMIT_RETENTION_SECONDS = 30 * 24 * 60 * 60;
+export const SUBMISSION_RATE_LIMIT_CLEANUP_BATCH_SIZE = 100;
+
+const keyHashColumn = sql.identifier("key_hash");
+const windowStartedAtColumn = sql.identifier("window_started_at");
+const attemptCountColumn = sql.identifier("attempt_count");
+const updatedAtColumn = sql.identifier("updated_at");
+
 const positiveIntegerStringSchema = v.pipe(
   v.string(),
   v.regex(/^[1-9][0-9]*$/, "Must be a positive integer"),
@@ -93,34 +101,59 @@ export function createSubmissionRateLimitKey(
   return createHmac("sha256", secret).update(subject).digest("hex");
 }
 
+/** Removes a bounded batch of expired rows older than the retention period. */
+async function cleanupStaleSubmissionRateLimits(
+  config: SubmissionRateLimitConfig,
+): Promise<void> {
+  await getDb().execute(sql`
+    WITH stale_rows AS (
+      SELECT ${publicSubmissionRateLimitsTable.keyHash}
+      FROM ${publicSubmissionRateLimitsTable}
+      WHERE
+        ${publicSubmissionRateLimitsTable.updatedAt}
+          < now() - make_interval(secs => ${SUBMISSION_RATE_LIMIT_RETENTION_SECONDS})
+        AND ${publicSubmissionRateLimitsTable.windowStartedAt}
+          <= now() - make_interval(secs => ${config.windowSeconds})
+      ORDER BY ${publicSubmissionRateLimitsTable.updatedAt}
+      LIMIT ${SUBMISSION_RATE_LIMIT_CLEANUP_BATCH_SIZE}
+      FOR UPDATE SKIP LOCKED
+    )
+    DELETE FROM ${publicSubmissionRateLimitsTable}
+    USING stale_rows
+    WHERE ${publicSubmissionRateLimitsTable.keyHash} = stale_rows.key_hash
+  `);
+}
+
 /** Atomically consumes one rate-limit slot and returns whether the request may proceed. */
 export async function consumeSubmissionRateLimit(
   keyHash: string,
   config: SubmissionRateLimitConfig,
 ): Promise<boolean> {
+  await cleanupStaleSubmissionRateLimits(config);
+
   const result = await getDb().execute(sql`
     INSERT INTO ${publicSubmissionRateLimitsTable} (
-      ${publicSubmissionRateLimitsTable.keyHash},
-      ${publicSubmissionRateLimitsTable.windowStartedAt},
-      ${publicSubmissionRateLimitsTable.attemptCount},
-      ${publicSubmissionRateLimitsTable.updatedAt}
+      ${keyHashColumn},
+      ${windowStartedAtColumn},
+      ${attemptCountColumn},
+      ${updatedAtColumn}
     )
     VALUES (${keyHash}, now(), 1, now())
-    ON CONFLICT (${publicSubmissionRateLimitsTable.keyHash}) DO UPDATE
+    ON CONFLICT (${keyHashColumn}) DO UPDATE
     SET
-      ${publicSubmissionRateLimitsTable.windowStartedAt} = CASE
+      ${windowStartedAtColumn} = CASE
         WHEN ${publicSubmissionRateLimitsTable.windowStartedAt}
           <= now() - make_interval(secs => ${config.windowSeconds})
         THEN now()
         ELSE ${publicSubmissionRateLimitsTable.windowStartedAt}
       END,
-      ${publicSubmissionRateLimitsTable.attemptCount} = CASE
+      ${attemptCountColumn} = CASE
         WHEN ${publicSubmissionRateLimitsTable.windowStartedAt}
           <= now() - make_interval(secs => ${config.windowSeconds})
         THEN 1
         ELSE ${publicSubmissionRateLimitsTable.attemptCount} + 1
       END,
-      ${publicSubmissionRateLimitsTable.updatedAt} = now()
+      ${updatedAtColumn} = now()
     WHERE
       ${publicSubmissionRateLimitsTable.windowStartedAt}
         <= now() - make_interval(secs => ${config.windowSeconds})

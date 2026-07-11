@@ -108,6 +108,11 @@ export function serviceUnavailable(error: string): Response {
   return jsonResponse({ success: false, error }, 503);
 }
 
+/** Generic dependency failure response with no internal implementation details. */
+export function dependencyUnavailable(): Response {
+  return serviceUnavailable("Service temporarily unavailable");
+}
+
 /**
  * Method not allowed (405)
  */

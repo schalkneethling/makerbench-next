@@ -243,11 +243,24 @@ The database stores only `HMAC-SHA-256(secret, "user:<id>" | "ip:<address>")`,
 the window start, and an attempt count. It never stores a raw IP or submission
 payload. The counter update is one atomic Postgres `INSERT ... ON CONFLICT ...
 WHERE` statement, so concurrent requests cannot exceed the configured limit.
+Before admission, a separate cleanup statement locks and deletes at most 100
+expired rows whose last update is older than 30 days. It uses the `updated_at`
+retention index and also checks that the rate-limit window has expired, so it
+cannot delete active windows. Cleanup remains separate from the atomic
+admission boundary; a failure in either statement fails closed with a generic
+503 response.
+
 The table has RLS and no `anon` or `authenticated` privileges; only trusted
 server-side database access can use it. This reduces privacy exposure but does
 not make IP-based limits a perfect identity signal (shared NATs and rotating
 addresses remain a tradeoff). Rotate the HMAC secret only deliberately: doing
-so resets anonymous rate-limit continuity.
+so changes every HMAC key and resets continuity for both authenticated user and
+anonymous IP identities.
+
+The SQL concurrency and expiry tests execute the rendered production queries
+against PGlite, an embedded WASM PostgreSQL build. This verifies PostgreSQL SQL
+semantics and persisted counts, but its single-process executor does not model
+network latency, connection-pool scheduling, or multiple server processes.
 
 ### External service integrations
 
@@ -505,6 +518,11 @@ environment settings. Key variables:
 | `SENTRY_DSN`                           | Server only     | Optional error tracking                      |
 
 Server-side functions read secrets via `Netlify.env.get()`. Client-visible vars use the `VITE_` prefix and are bundled by Vite.
+The blank `SUBMISSION_RATE_LIMIT_SECRET=` value in `.env.schema` is an
+intentional Varlock declaration with no checked-in default. Because it is
+marked required and sensitive, callers must provide it through the external
+process environment or a secure Varlock/Netlify source before commands that
+load the schema; Varlock reports a configuration error when it is absent.
 
 ## Current Gaps and Roadmap
 

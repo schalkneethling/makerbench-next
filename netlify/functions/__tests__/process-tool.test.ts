@@ -23,6 +23,12 @@ vi.mock("../lib/auth", async (importOriginal) => {
   };
 });
 
+vi.mock("../lib/sentry", () => ({
+  initSentry: vi.fn(),
+  captureError: vi.fn(),
+  flushSentry: vi.fn().mockResolvedValue(undefined),
+}));
+
 // Mock external services
 vi.mock("../../../src/lib/services/metadata", () => ({
   extractMetadata: vi.fn(),
@@ -295,7 +301,9 @@ describe("process-tool", () => {
     });
 
     it("rejects throttled tool submissions before metadata processing", async () => {
-      mockDb.execute.mockResolvedValueOnce({ rows: [] });
+      mockDb.execute
+        .mockResolvedValueOnce({ rows: [] })
+        .mockResolvedValueOnce({ rows: [] });
       const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({
@@ -314,6 +322,32 @@ describe("process-tool", () => {
         error: "Too many submission attempts. Please try again later.",
       });
       expect(extractMetadata).not.toHaveBeenCalled();
+      expect(mockDb.insert).not.toHaveBeenCalled();
+    });
+
+    it("fails closed on limiter datastore errors without creating tool rows", async () => {
+      mockDb.execute.mockRejectedValueOnce(
+        new Error("rate limit datastore unavailable"),
+      );
+      const req = new Request("https://test.com/api/tools", {
+        method: "POST",
+        body: JSON.stringify({
+          type: "tool",
+          url: "https://example.com/tool",
+          tags: ["test"],
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const res = await processTool(req, mockContext);
+
+      expect(res.status).toBe(503);
+      await expect(res.json()).resolves.toEqual({
+        success: false,
+        error: "Service temporarily unavailable",
+      });
+      expect(extractMetadata).not.toHaveBeenCalled();
+      expect(captureScreenshot).not.toHaveBeenCalled();
       expect(mockDb.insert).not.toHaveBeenCalled();
     });
 

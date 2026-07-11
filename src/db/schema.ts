@@ -300,6 +300,7 @@ export const publicSubmissionRateLimitsTable = pgTable(
       .notNull(),
   },
   (table) => [
+    index("idx_public_submission_rate_limits_updated_at").on(table.updatedAt),
     check(
       "public_submission_rate_limits_attempt_count_check",
       sql`${table.attemptCount} > 0`,

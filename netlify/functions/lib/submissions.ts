@@ -18,6 +18,7 @@ import {
 import {
   conflict,
   created,
+  dependencyUnavailable,
   methodNotAllowed,
   serverError,
   tooManyRequests,
@@ -29,6 +30,7 @@ import {
   consumeSubmissionRateLimit,
   createSubmissionRateLimitKey,
   getSubmissionRateLimitConfig,
+  type SubmissionRateLimitConfig,
 } from "./submission-rate-limit";
 import { normalizeUrl, parseAndNormalizeUrl } from "./url";
 import {
@@ -505,22 +507,37 @@ export async function handlePublicSubmission(
     return validationError("Validation failed", options.rejectedTypeDetails);
   }
 
+  let rateLimitConfig: SubmissionRateLimitConfig;
+  let keyHash: string;
   try {
-    const rateLimitConfig = getSubmissionRateLimitConfig();
-    const keyHash = createSubmissionRateLimitKey(
+    rateLimitConfig = getSubmissionRateLimitConfig();
+    keyHash = createSubmissionRateLimitKey(
       {
         authenticated,
         clientIp: options.context.ip,
       },
       rateLimitConfig.secret,
     );
+  } catch (error) {
+    return handleInvalidEnvironmentError(error, options.endpointName);
+  }
+
+  try {
     const allowed = await consumeSubmissionRateLimit(keyHash, rateLimitConfig);
 
     if (!allowed) {
       return tooManyRequests();
     }
-  } catch (error) {
-    return handleInvalidEnvironmentError(error, options.endpointName);
+  } catch {
+    captureError(
+      new Error("Submission rate limit datastore operation failed"),
+      {
+        function: options.endpointName,
+        dependency: "submission-rate-limit-store",
+      },
+    );
+    await flushSentry();
+    return dependencyUnavailable();
   }
 
   const normalizedUrl = parseAndNormalizeUrl(validation.output.url);

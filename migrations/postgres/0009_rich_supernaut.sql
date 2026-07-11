@@ -1,0 +1,1 @@
+CREATE INDEX "idx_public_submission_rate_limits_updated_at" ON "public_submission_rate_limits" USING btree ("updated_at");
