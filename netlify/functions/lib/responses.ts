@@ -23,6 +23,7 @@ function jsonResponse<T>(body: ApiResponse<T>, status: number): Response {
     status,
     headers: {
       "Content-Type": "application/json",
+      "X-Content-Type-Options": "nosniff",
     },
   });
 }
@@ -126,6 +127,7 @@ export function methodNotAllowed(allowed: string[]): Response {
       status: 405,
       headers: {
         "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
         Allow: allowed.join(", "),
       },
     },

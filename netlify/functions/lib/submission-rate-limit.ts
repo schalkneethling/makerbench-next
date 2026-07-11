@@ -34,7 +34,10 @@ const positiveIntegerStringSchema = v.pipe(
 export const submissionRateLimitEnvironmentSchema = v.object({
   SUBMISSION_RATE_LIMIT_SECRET: v.pipe(
     v.string(),
-    v.minLength(32, "Must contain at least 32 characters"),
+    v.regex(
+      /^[0-9A-Fa-f]{64}$/,
+      "Must contain exactly 64 hexadecimal characters",
+    ),
   ),
   SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS: v.pipe(
     positiveIntegerStringSchema,

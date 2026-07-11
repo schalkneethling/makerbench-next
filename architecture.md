@@ -257,10 +257,11 @@ addresses remain a tradeoff). Rotate the HMAC secret only deliberately: doing
 so changes every HMAC key and resets continuity for both authenticated user and
 anonymous IP identities.
 
-The SQL concurrency and expiry tests execute the rendered production queries
-against PGlite, an embedded WASM PostgreSQL build. This verifies PostgreSQL SQL
-semantics and persisted counts, but its single-process executor does not model
-network latency, connection-pool scheduling, or multiple server processes.
+The serialized admission and expiry tests execute the rendered production
+queries against PGlite, an embedded WASM PostgreSQL build. This verifies the
+admission statement's serialized PostgreSQL semantics and persisted counts,
+but it does not test concurrent connections, network latency, connection-pool
+scheduling, or multiple server processes.
 
 ### External service integrations
 
@@ -512,7 +513,7 @@ environment settings. Key variables:
 | `VITE_SUPABASE_ANON_KEY`               | Client + server | Supabase anon key (JWT verification)         |
 | `CLOUDINARY_*`                         | Server only     | Screenshot upload                            |
 | `BROWSERLESS_API_KEY`                  | Server only     | Screenshot capture                           |
-| `SUBMISSION_RATE_LIMIT_SECRET`         | Server only     | HMAC key, at least 32 characters             |
+| `SUBMISSION_RATE_LIMIT_SECRET`         | Server only     | 64-character hexadecimal HMAC key            |
 | `SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS`   | Server only     | Attempts permitted in one fixed window       |
 | `SUBMISSION_RATE_LIMIT_WINDOW_SECONDS` | Server only     | Fixed-window duration in seconds             |
 | `SENTRY_DSN`                           | Server only     | Optional error tracking                      |
@@ -521,7 +522,8 @@ Server-side functions read secrets via `Netlify.env.get()`. Client-visible vars 
 The blank `SUBMISSION_RATE_LIMIT_SECRET=` value in `.env.schema` is an
 intentional sensitive Varlock declaration with no checked-in default. It is
 optional during frontend builds, but the Netlify submission function requires
-it at runtime and fails closed with a generic 503 when it is absent or invalid.
+it at runtime, validates it as exactly 64 hexadecimal characters, and fails
+closed with a generic 503 when it is absent or invalid.
 Provide it through a secure external process environment or Netlify setting.
 
 ## Current Gaps and Roadmap

@@ -55,7 +55,7 @@ context that needs them:
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
 - `BROWSERLESS_API_KEY`
-- `SUBMISSION_RATE_LIMIT_SECRET` - server-only HMAC secret (32+ characters)
+- `SUBMISSION_RATE_LIMIT_SECRET` - server-only HMAC secret (exactly 64 hexadecimal characters)
 - `SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS` - positive integer, at most 1000
 - `SUBMISSION_RATE_LIMIT_WINDOW_SECONDS` - positive integer, at most 86400
 - `SENTRY_DSN` (optional)
@@ -70,7 +70,10 @@ The blank `SUBMISSION_RATE_LIMIT_SECRET` assignment there is deliberate: it
 declares a sensitive external value without a repository default while allowing
 frontend-only builds to run. Configure it in Netlify before enabling public
 submissions; the submission Function requires it at runtime and fails closed
-with a generic 503 when it is absent or invalid.
+with a generic 503 when it is absent, is not exactly 64 characters, or contains
+non-hexadecimal characters. Generate a suitable value with
+`openssl rand -hex 32` and store it only in Netlify's secure environment
+settings.
 `SENTRY_DSN` is a separate optional Netlify runtime setting. Do not configure
 legacy database variables for the active deployment.
 

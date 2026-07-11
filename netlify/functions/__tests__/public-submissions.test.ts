@@ -45,9 +45,10 @@ import { lookup } from "node:dns/promises";
 import { captureScreenshot } from "../../../src/lib/services/screenshot";
 import { uploadScreenshot } from "../../../src/lib/services/cloudinary";
 import { extractMetadata } from "../../../src/lib/services/metadata";
+import { TEST_SUBMISSION_RATE_LIMIT_SECRET } from "../../../src/test/rate-limit-fixtures";
 import { createMockContext, getPgQuery } from "./test-utils";
 
-const RATE_LIMIT_SECRET = "test-submission-rate-limit-secret-1234567890";
+const RATE_LIMIT_SECRET = TEST_SUBMISSION_RATE_LIMIT_SECRET;
 
 interface SubmissionCreated {
   submittedItemId: string;

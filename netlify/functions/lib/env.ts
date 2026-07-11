@@ -33,13 +33,9 @@ export class InvalidEnvironmentError extends Error {
   }
 }
 
-/** Reads a server environment value from Netlify or the local process. */
+/** Reads a server environment value from the Netlify runtime. */
 export function getEnv(key: string): string | undefined {
-  if (typeof Netlify !== "undefined" && Netlify?.env) {
-    return Netlify.env.get(key) ?? undefined;
-  }
-
-  return process.env[key];
+  return Netlify.env.get(key) ?? undefined;
 }
 
 /**

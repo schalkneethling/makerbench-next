@@ -19,9 +19,10 @@ import {
   type SubmissionRateLimitConfig,
 } from "../submission-rate-limit";
 import { getPgQuery } from "../../__tests__/test-utils";
+import { TEST_SUBMISSION_RATE_LIMIT_SECRET } from "../../../../src/test/rate-limit-fixtures";
 
 const config: SubmissionRateLimitConfig = {
-  secret: "test-submission-rate-limit-secret-1234567890",
+  secret: TEST_SUBMISSION_RATE_LIMIT_SECRET,
   maxAttempts: 5,
   windowSeconds: 3600,
 };
@@ -148,14 +149,27 @@ describe("submission rate limit", () => {
     } finally {
       restoreInvalid();
     }
+
+    for (const invalidSecret of ["a".repeat(63), "g".repeat(64)]) {
+      const restoreInvalidSecret = setRateLimitEnvironment({
+        SUBMISSION_RATE_LIMIT_SECRET: invalidSecret,
+        SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS: "5",
+        SUBMISSION_RATE_LIMIT_WINDOW_SECONDS: "3600",
+      });
+      try {
+        expect(getSubmissionRateLimitConfig).toThrow(InvalidEnvironmentError);
+      } finally {
+        restoreInvalidSecret();
+      }
+    }
   });
 
   it("declares the HMAC secret as sensitive external Varlock config", () => {
     expect(environmentSchema).toContain(
-      "# @type=string(minLength=32) @sensitive\nSUBMISSION_RATE_LIMIT_SECRET=",
+      "# @type=string(isLength=64,matches=/^[0-9A-Fa-f]{64}$/) @sensitive\nSUBMISSION_RATE_LIMIT_SECRET=",
     );
     expect(environmentSchema).not.toContain(
-      "# @type=string(minLength=32) @sensitive @required\nSUBMISSION_RATE_LIMIT_SECRET=",
+      "# @type=string(isLength=64,matches=/^[0-9A-Fa-f]{64}$/) @sensitive @required\nSUBMISSION_RATE_LIMIT_SECRET=",
     );
   });
 

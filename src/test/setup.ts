@@ -1,5 +1,6 @@
 import { beforeAll, afterAll, afterEach, vi } from "vitest";
 import { server } from "./mocks/server";
+import { TEST_SUBMISSION_RATE_LIMIT_SECRET } from "./rate-limit-fixtures";
 import "@testing-library/jest-dom/vitest";
 
 /**
@@ -33,8 +34,7 @@ vi.stubGlobal("Netlify", {
         CLOUDINARY_CLOUD_NAME: "test-cloud",
         CLOUDINARY_API_KEY: "test-api-key",
         CLOUDINARY_API_SECRET: "test-api-secret",
-        SUBMISSION_RATE_LIMIT_SECRET:
-          "test-submission-rate-limit-secret-1234567890",
+        SUBMISSION_RATE_LIMIT_SECRET: TEST_SUBMISSION_RATE_LIMIT_SECRET,
         SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS: "5",
         SUBMISSION_RATE_LIMIT_WINDOW_SECONDS: "3600",
       };
