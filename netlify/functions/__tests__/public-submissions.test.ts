@@ -2,9 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ErrorResponse, SuccessResponse } from "../lib/responses";
 
-vi.mock("../lib/auth", () => ({
-  verifyAuthenticatedUser: vi.fn(),
-}));
+vi.mock("../lib/auth", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../lib/auth")>();
+  return {
+    ...actual,
+    verifyAuthenticatedUser: vi.fn(),
+  };
+});
 
 vi.mock("../lib/db", () => ({
   getDb: vi.fn(),
@@ -194,6 +198,8 @@ describe("public-submissions", () => {
           type: "resource",
           url: "https://example.com/resource",
           tags: ["css"],
+          submitterName: "Spoofed Name",
+          submitterGithubUsername: "spoofed-user",
         },
         "valid-token",
       ),

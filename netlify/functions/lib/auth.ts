@@ -55,18 +55,6 @@ function getMetadataString(metadata: unknown, key: string): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 }
 
-/** Returns a string list property from a Supabase metadata object. */
-function getMetadataStringList(metadata: unknown, key: string): string[] {
-  if (!metadata || typeof metadata !== "object") {
-    return [];
-  }
-
-  const value = (metadata as Record<string, unknown>)[key];
-  return Array.isArray(value)
-    ? value.filter((item): item is string => typeof item === "string")
-    : [];
-}
-
 /** Resolves the name supplied by Supabase's verified user lookup. */
 export function getVerifiedDisplayName(user: User): string | null {
   return (
@@ -88,16 +76,7 @@ export function getVerifiedGithubUsername(user: User): string | null {
     return identityUsername;
   }
 
-  const provider = getMetadataString(user.app_metadata, "provider");
-  const hasGithubProvider =
-    provider === "github" || getMetadataStringList(user.app_metadata, "providers").includes("github");
-  const metadataUsername = hasGithubProvider
-    ? getMetadataString(user.user_metadata, "user_name")
-    : null;
-
-  return metadataUsername && isValidGithubUsername(metadataUsername)
-    ? metadataUsername
-    : null;
+  return null;
 }
 
 export async function verifyAuthenticatedUser(req: Request): Promise<AuthenticatedUser | null> {

@@ -54,10 +54,16 @@ describe("auth-whoami", () => {
               email: "test@example.com",
               user_metadata: {
                 full_name: "Test User",
-                user_name: "test-user",
+                user_name: "spoofed-user",
                 avatar_url: "https://example.com/avatar.png",
               },
               app_metadata: { provider: "github" },
+              identities: [
+                {
+                  provider: "github",
+                  identity_data: { user_name: "test-user" },
+                },
+              ],
             },
           },
           error: null,
@@ -116,7 +122,7 @@ describe("auth-whoami", () => {
     expect(body.data.isAdmin).toBe(false);
   });
 
-  it("does not expose a username from a non-GitHub provider", async () => {
+  it("does not expose user-editable GitHub metadata without a trusted identity", async () => {
     const mockDb = createMockDb();
     vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
     vi.mocked(createClient).mockReturnValue({
@@ -126,8 +132,9 @@ describe("auth-whoami", () => {
             user: {
               id: "user-1",
               email: "test@example.com",
-              user_metadata: { user_name: "not-github" },
-              app_metadata: { provider: "google" },
+              user_metadata: { user_name: "spoofed-user" },
+              app_metadata: { provider: "github" },
+              identities: [],
             },
           },
           error: null,

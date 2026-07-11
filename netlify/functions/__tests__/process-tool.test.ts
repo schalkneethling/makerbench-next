@@ -15,6 +15,14 @@ vi.mock("../lib/db", () => ({
   getDb: vi.fn(),
 }));
 
+vi.mock("../lib/auth", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../lib/auth")>();
+  return {
+    ...actual,
+    verifyAuthenticatedUser: vi.fn(),
+  };
+});
+
 // Mock external services
 vi.mock("../../../src/lib/services/metadata", () => ({
   extractMetadata: vi.fn(),
@@ -33,6 +41,7 @@ vi.mock("node:dns/promises", () => ({
 }));
 
 import processTool from "../process-tool.mts";
+import { verifyAuthenticatedUser } from "../lib/auth";
 import { getDb } from "../lib/db";
 import { lookup } from "node:dns/promises";
 import { extractMetadata } from "../../../src/lib/services/metadata";
@@ -105,6 +114,7 @@ describe("process-tool", () => {
     vi.mocked(getDb).mockReturnValue(
       mockDb as unknown as ReturnType<typeof getDb>,
     );
+    vi.mocked(verifyAuthenticatedUser).mockResolvedValue(null);
     mockContext = createMockContext();
     vi.mocked(lookup).mockResolvedValue([
       { address: "93.184.216.34", family: 4 },
@@ -202,6 +212,29 @@ describe("process-tool", () => {
         submitterName: ["Your name is required"],
         submitterGithubUsername: ["GitHub username is required"],
       });
+    });
+
+    it("rejects a forged authenticated user object", async () => {
+      const req = new Request("https://test.com/api/tools", {
+        method: "POST",
+        body: JSON.stringify({
+          type: "tool",
+          url: "https://example.com/tool",
+          tags: ["test"],
+          ...anonymousAttribution,
+          authenticatedUser: {
+            userId: "00000000-0000-4000-8000-000000000000",
+          },
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const res = await processTool(req, mockContext);
+
+      expect(res.status).toBe(422);
+      const body = (await res.json()) as ErrorResponse;
+      expect(body.details?.authenticatedUser).toBeDefined();
+      expect(verifyAuthenticatedUser).not.toHaveBeenCalled();
     });
 
     it("returns 422 for invalid URL format", async () => {
@@ -318,6 +351,49 @@ describe("process-tool", () => {
   });
 
   describe("successful submission", () => {
+    it("stores verified signed-in attribution instead of submitted spoofing", async () => {
+      vi.mocked(verifyAuthenticatedUser).mockResolvedValue({
+        user: {
+          id: "55555555-5555-4555-8555-555555555555",
+          user_metadata: { full_name: "Verified User" },
+          identities: [
+            {
+              provider: "github",
+              identity_data: { user_name: "verified-user" },
+            },
+          ],
+        },
+        isAdmin: false,
+      } as never);
+      const req = new Request("https://test.com/api/tools", {
+        method: "POST",
+        body: JSON.stringify({
+          type: "tool",
+          url: "https://example.com/signed-in-tool",
+          tags: ["testing"],
+          submitterName: "Spoofed Name",
+          submitterGithubUsername: "spoofed-user",
+        }),
+        headers: {
+          Authorization: "Bearer valid-token",
+          "Content-Type": "application/json",
+        },
+      });
+
+      const res = await processTool(req, mockContext);
+
+      expect(res.status).toBe(201);
+      expect(verifyAuthenticatedUser).toHaveBeenCalledOnce();
+      expect(mockDb.values).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          submittedByUserId: "55555555-5555-4555-8555-555555555555",
+          submitterName: "Verified User",
+          submitterGithubUrl: "https://github.com/verified-user",
+        }),
+      );
+    });
+
     it("returns 201 with public submission status data on success", async () => {
       const req = new Request("https://test.com/api/tools", {
         method: "POST",
