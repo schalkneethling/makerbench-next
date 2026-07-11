@@ -4,7 +4,7 @@ import "./PrivacyPage.css";
  * Privacy policy page.
  */
 export function PrivacyPage() {
-  const lastUpdated = "March 6, 2026";
+  const lastUpdated = "July 11, 2026";
 
   return (
     <article className="PrivacyPage">
@@ -41,8 +41,8 @@ export function PrivacyPage() {
           </li>
         </ul>
         <p>
-          We do not provide a general user account system, and we do not ask for passwords or
-          payment details.
+          You may sign in with Google or GitHub through Supabase Auth. MakerBench does not ask you
+          to create a separate password or provide payment details.
         </p>
       </section>
 
@@ -92,8 +92,9 @@ export function PrivacyPage() {
             serverless functions.
           </li>
           <li>
-            <span className="PrivacyPage-emphasis">Turso:</span> database storage for bookmarks,
-            tags, and submission metadata.
+            <span className="PrivacyPage-emphasis">Supabase:</span> Postgres database storage for
+            bookmarks, tags, submission metadata, and user preferences, plus authentication for
+            Google and GitHub sign-in.
           </li>
           <li>
             <span className="PrivacyPage-emphasis">Browserless:</span> screenshot capture for

@@ -1,130 +1,149 @@
 # Production Deployment
 
-Last updated: February 26, 2026
+Last updated: July 11, 2026
 
-## Overview
+MakerBench is deployed as a Vite static frontend and Netlify Functions backed
+by Supabase Postgres and Supabase Auth. Build settings are defined in
+`netlify.toml`.
 
-MakerBench is deployed as:
+Related runbooks:
 
-- Static frontend bundle (`dist`)
-- Netlify Functions (`netlify/functions`)
-- Turso as the primary database
+- Database details: [../DATABASE_SETUP.md](../DATABASE_SETUP.md)
+- Local development: [local-development.md](./local-development.md)
 
-Build config is defined in `netlify.toml`.
+## Runtime baseline
 
-Runtime and package manager baseline:
+- Node.js 24.x
+- pnpm 11.5.0, pinned by `package.json`
+- Netlify build command: `pnpm build`
+- Static publish directory: `dist`
+- Functions directory: `netlify/functions`
 
-- Node.js 24
-- pnpm
-- Bun is intentionally out of scope for production deployment in this project.
+Bun is not part of the production deployment workflow.
 
 ## Prerequisites
 
-- Netlify site connected to this repository
-- Turso production database created
-- Browserless API key
+- A Netlify site connected to this repository
+- A Supabase production project
+- Supabase Auth providers and redirect URLs configured for the production site
 - Cloudinary credentials
-- (Optional) Sentry DSN
+- A Browserless API key
+- An optional Sentry DSN
 
-## 1. Create/verify production database
+## 1. Configure Supabase Postgres and Auth
 
-Using Turso CLI:
+Use the production Supabase project and obtain its PostgreSQL connection string
+from the Supabase connection details. Use the pooler connection string for
+Netlify Functions when available.
 
-```bash
-turso auth login
-turso db create makerbench-prod
-turso db show --url makerbench-prod
-turso db tokens create makerbench-prod
-```
+Configure the Google and GitHub providers used by the application in Supabase
+Auth. Add the production Netlify site URL to Supabase's allowed redirect URLs.
+The application sends the current browser origin as the OAuth redirect URL.
 
-Save the URL/token securely for Netlify environment variables.
+See [Database setup](../DATABASE_SETUP.md) for the full Supabase and Auth
+setup, including the server-only connection string requirement.
 
 ## 2. Configure Netlify environment variables
 
-In Netlify site settings, add:
+In the Netlify site settings, set these variables for every production deploy
+context that needs them:
 
-- `TURSO_DATABASE_URL`
-- `TURSO_AUTH_TOKEN`
-- `BROWSERLESS_API_KEY`
+- `SUPABASE_DATABASE_URL` - server-only Supabase Postgres connection string
+- `VITE_SUPABASE_URL` - Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` - Supabase anon key
 - `CLOUDINARY_CLOUD_NAME`
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
+- `BROWSERLESS_API_KEY`
 - `SENTRY_DSN` (optional)
 
-Also ensure Netlify provides `CONTEXT` automatically (used by Sentry env tagging).
+The `VITE_` variables must be available during the frontend build and to the
+Functions. The database and service credentials must remain server-side and
+must not be committed or placed in frontend source. Netlify Functions read
+runtime values through `Netlify.env`; Netlify supplies `CONTEXT` automatically.
 
-## 3. Apply schema before deploying code
+Use the required variable names in [`.env.schema`](../.env.schema).
+`SENTRY_DSN` is a separate optional Netlify runtime setting. Do not configure
+legacy database variables for the active deployment.
 
-Important order of operations:
+## 3. Apply migrations before deploying code
 
-1. Apply DB schema changes
-2. Deploy code that depends on them
-
-From a trusted environment with production DB credentials:
-
-```bash
-npx drizzle-kit push
-```
-
-If schema changed:
+From a trusted environment with the production `SUPABASE_DATABASE_URL`
+available, apply the committed PostgreSQL migrations:
 
 ```bash
-npx drizzle-kit generate
-npx drizzle-kit push
+pnpm db:migrate
 ```
 
-## 4. Run pre-deploy quality gates
+For a schema change, generate the migration, review it, commit it, and apply
+it before deploying the dependent application code:
+
+```bash
+pnpm db:generate
+pnpm db:migrate
+```
+
+The migration files and `migrations/postgres/meta/_journal.json` must be
+included in the repository. Do not use `drizzle-kit push`, and do not make
+untracked dashboard changes that bypass the Drizzle migration history.
+
+## 4. Run pre-deploy checks
 
 ```bash
 pnpm lint
 pnpm lint:css
 pnpm typecheck
 pnpm test
-npx vitest --project storybook run   # optional; Storybook interaction tests
+npx vitest --project storybook run
 pnpm build
 ```
 
-Storybook itself is a dev/CI aid — `pnpm build-storybook` is not part of the Netlify production build unless you add a separate publish step.
+Storybook is a development and CI aid. `pnpm build-storybook` is not part of
+the Netlify production build unless a separate publish step is introduced.
 
 ## 5. Deploy
 
-Typical flow is Git-based deployment via Netlify:
+The normal flow is Git-based deployment:
 
-1. Push branch/merge to production branch
-2. Netlify runs `pnpm build`
-3. Netlify publishes `dist` and deploys functions from `netlify/functions`
+1. Merge or push the release commit to the branch connected to production.
+2. Netlify runs `pnpm build`.
+3. Netlify publishes `dist` and deploys Functions from `netlify/functions`.
 
-## 6. Post-deploy verification
+## 6. Verify the deployment
 
-1. Load homepage and `/submit`.
-2. Verify function endpoints:
-   - `GET /api/bookmarks`
-   - `GET /api/bookmarks/search?q=test`
-3. Submit a bookmark and confirm response `201`.
-4. Check function logs in Netlify for runtime errors.
-5. If Sentry enabled, verify events are received.
+1. Load the homepage and `/submit`.
+2. Test Supabase sign-in with a configured provider.
+3. Confirm `GET /api/tools` returns approved tools.
+4. Confirm `GET /api/tools/search?q=test` returns JSON.
+5. Submit a bookmark and confirm a `201` response.
+6. For an authenticated user, verify `/library` and its API requests.
+7. Check Netlify Function logs for runtime errors.
+8. If Sentry is configured, verify that events arrive in the expected project.
 
-## Routing note for SPA paths
+## SPA routing
 
-MakerBench uses client-side routing (`/submit`, `/about`, `/privacy`).
-If deep-link refreshes return 404 in production, add an SPA redirect rule in Netlify:
+`netlify.toml` already redirects all paths to `/index.html` with status `200`
+for client-side routes such as `/submit`, `/about`, and `/privacy`. If a
+production deep-link refresh returns `404`, verify that the deployed Netlify
+configuration includes this redirect:
 
 ```toml
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+from = "/*"
+to = "/index.html"
+status = 200
 ```
 
-## Rollback strategy
+## Rollback
 
-- Use Netlify deploy history to rollback to the previous successful deploy.
-- If rollback is due to schema mismatch, either:
-  - re-deploy matching app version, or
-  - apply forward-compatible schema changes before re-release.
+Use Netlify deploy history to restore the previous successful deploy. If the
+rollback is related to a schema mismatch, deploy the matching application
+version or apply a forward-compatible migration before releasing again.
 
-## Security and secrets
+## Security
 
-- Never commit `.env`.
-- Rotate Turso, Browserless, and Cloudinary secrets if exposed.
-- Keep `SENTRY_DSN` optional for non-production environments.
+- Never commit `.env` files, resolved `.env.schema` values, or database URLs.
+- Keep `SUPABASE_DATABASE_URL` server-only and use a pooler connection for
+  serverless workloads when available.
+- Rotate Supabase, Cloudinary, Browserless, and Sentry credentials if exposed.
+- Keep `SENTRY_DSN` optional in non-production environments.

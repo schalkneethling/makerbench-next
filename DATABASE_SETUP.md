@@ -1,49 +1,106 @@
-# Database Setup (Turso)
+# Database Setup (Supabase Postgres)
 
-Last updated: February 26, 2026
+Last updated: July 11, 2026
 
-This document covers Turso setup only.
-For complete app setup and deployment, see:
+MakerBench uses Supabase Postgres as its canonical database and Supabase Auth
+for Google and GitHub sign-in. Netlify Functions connect to Postgres through
+Drizzle, while the browser uses the Supabase URL and anon key for auth.
 
-- Local runbook: [docs/local-development.md](./docs/local-development.md)
-- Production runbook: [docs/production-deployment.md](./docs/production-deployment.md)
+For the complete workflows, see:
+
+- Local development: [docs/local-development.md](./docs/local-development.md)
+- Production deployment: [docs/production-deployment.md](./docs/production-deployment.md)
 
 ## Prerequisites
 
-- Turso CLI: https://docs.turso.tech/cli/installation
-- Turso account: https://turso.tech
+- A Supabase project with access to its database and Auth settings
+- Node.js 24.x
+- pnpm 11.5.0, as pinned by `package.json`
+- The repository's Varlock and 1Password setup for resolving `.env.schema`
 
-## Create a database
+## Create or select the Supabase project
+
+1. Create a Supabase project, or select the existing MakerBench project.
+2. In the Supabase dashboard, open the database connection details and copy a
+   PostgreSQL connection string. Use the Supabase pooler connection string for
+   serverless workloads when available.
+3. Keep the connection string server-only. It must only be provided as
+   `SUPABASE_DATABASE_URL` and must never be bundled into the Vite client.
+
+## Configure Supabase Auth
+
+The application calls Supabase Auth with the `google` and `github` providers.
+Enable and configure those providers in the Supabase dashboard if they are
+needed for the environment.
+
+In Supabase Auth URL configuration, allow the application origins used by the
+environment:
+
+- The local origin printed by `netlify dev`
+- The production Netlify site URL
+
+The application sends the current browser origin as the OAuth redirect URL.
+
+## Environment variables
+
+`.env.schema` is the source of truth for required local variable names and the
+checked-in Varlock/1Password references. Use the exact names below:
+
+| Variable | Scope | Purpose |
+| --- | --- | --- |
+| `SUPABASE_DATABASE_URL` | Server only | Supabase Postgres connection string |
+| `VITE_SUPABASE_URL` | Client and server | Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Client and server | Supabase anon key for browser auth and server JWT verification |
+| `CLOUDINARY_CLOUD_NAME` | Server only | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Server only | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Server only | Cloudinary API secret |
+| `BROWSERLESS_API_KEY` | Server only | Browserless screenshot API key |
+
+`SENTRY_DSN` is a separate optional server-side setting supported by the
+Functions; it is not required by `.env.schema`. Netlify supplies `CONTEXT`
+automatically for Sentry environment tagging. Do not add `VITE_` to server-only
+secrets, and use the required variable names in `.env.schema` for the active
+application setup.
+
+## Apply the database schema
+
+Install dependencies and apply the committed PostgreSQL migrations from the
+project root:
 
 ```bash
-turso auth login
-turso db create makerbench-db
-turso db show --url makerbench-db
-turso db tokens create makerbench-db
+pnpm install
+pnpm db:migrate
 ```
 
-Use the returned values for:
+Drizzle Kit reads `SUPABASE_DATABASE_URL` through `drizzle.config.ts`. The
+migrations live in `migrations/postgres/`, and the journal in
+`migrations/postgres/meta/` is part of the migration history.
 
-- `TURSO_DATABASE_URL`
-- `TURSO_AUTH_TOKEN`
-
-## Apply schema
-
-From the project root:
+When `src/db/schema.ts` changes:
 
 ```bash
-npx drizzle-kit push
+pnpm db:generate
+pnpm db:migrate
 ```
 
-If `src/db/schema.ts` changed:
+Review the generated SQL, commit the migration and its journal metadata, and
+apply it to the target Supabase project before deploying code that depends on
+it. Do not use `drizzle-kit push` for the active workflow; schema changes must
+be represented by committed migrations.
+
+## Historical Turso import
+
+Turso is no longer the active database. The repository retains
+`scripts/import-makerbench-turso.ts` only to import historical Turso export
+data into the current Postgres schema when needed.
+
+The package script performs a dry run by default:
 
 ```bash
-npx drizzle-kit generate
-npx drizzle-kit push
+pnpm migrate:makerbench-turso --source=./makerbench-export.json
 ```
 
-## Environment variable usage
-
-- Drizzle Kit reads from `process.env` (see `drizzle.config.ts`).
-- Netlify Functions read from `Netlify.env.get(...)`.
-- Do not use `VITE_` prefixes for these database variables.
+After reviewing the dry-run output, `--execute` writes to the configured
+Supabase Postgres database. Treat the export as untrusted input, keep database
+credentials out of the export and command history, and do not use the Turso
+CLI for normal development or deployment.
