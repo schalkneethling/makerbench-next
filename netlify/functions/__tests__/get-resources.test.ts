@@ -37,6 +37,7 @@ vi.mock("../lib/db", () => ({
 
 import getResources from "../get-resources.mts";
 import { getDb } from "../lib/db";
+import { getPgQuery } from "./test-utils";
 
 function createMockContext(): Context {
   return {
@@ -129,6 +130,24 @@ describe("get-resources", () => {
             tags: ["automation"],
             status: "approved",
           },
+          {
+            id: "stack-item-pending",
+            public_stack_id: "stack-1",
+            url: "https://example.com/pending-child",
+            title: "Pending Child",
+            description: null,
+            tags: [],
+            status: "pending",
+          },
+          {
+            id: "stack-item-rejected",
+            public_stack_id: "stack-1",
+            url: "https://example.com/rejected-child",
+            title: "Rejected Child",
+            description: null,
+            tags: [],
+            status: "rejected",
+          },
         ],
       });
 
@@ -174,6 +193,15 @@ describe("get-resources", () => {
       hasMore: true,
     });
     expect(mockDb.execute).toHaveBeenCalledTimes(3);
+
+    const pageSql = getPgQuery(mockDb.execute.mock.calls[0]?.[0]).sql;
+    const countSql = getPgQuery(mockDb.execute.mock.calls[1]?.[0]).sql;
+    const childrenSql = getPgQuery(mockDb.execute.mock.calls[2]?.[0]).sql;
+    expect(pageSql).toContain("where public_listings.status = 'approved'");
+    expect(pageSql).toContain("where public_stacks.status = 'approved'");
+    expect(countSql).toContain("public_listings where status = 'approved'");
+    expect(countSql).toContain("public_stacks where status = 'approved'");
+    expect(childrenSql).toContain("and public_stack_items.status = 'approved'");
   });
 
   it("does not query stack items when the page contains no stacks", async () => {

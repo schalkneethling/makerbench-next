@@ -30,6 +30,7 @@ vi.mock("../lib/db", () => ({
 
 import searchBookmarks from "../search-bookmarks.mts";
 import { getDb } from "../lib/db";
+import { getPgQuery } from "./test-utils";
 
 function createMockContext(): Context {
   return {
@@ -194,6 +195,19 @@ describe("search-bookmarks", () => {
       const body = (await res.json()) as SuccessResponse<SearchResultsData>;
       expect(body.data.bookmarks).toHaveLength(1);
       expect(body.data.pagination.hasMore).toBe(false);
+    });
+
+    it("limits public search results to approved tools", async () => {
+      mockDb.offset.mockResolvedValueOnce([]);
+
+      await searchBookmarks(
+        new Request("https://test.com/api/tools/search?q=moderated"),
+        mockContext,
+      );
+
+      const query = getPgQuery(mockDb.where.mock.calls[0]?.[0]);
+      expect(query.sql).toContain('"tool_listings"."status" = $1');
+      expect(query.params[0]).toBe("approved");
     });
   });
 });

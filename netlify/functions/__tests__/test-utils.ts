@@ -1,5 +1,9 @@
 import type { Context } from "@netlify/functions";
+import type { SQL } from "drizzle-orm";
+import { PgDialect } from "drizzle-orm/pg-core";
 import { vi } from "vitest";
+
+const pgDialect = new PgDialect();
 
 export function createMockContext(): Context {
   return {
@@ -26,4 +30,8 @@ export function createMockDb() {
     limit: vi.fn().mockResolvedValue([]),
     orderBy: vi.fn().mockResolvedValue([]),
   };
+}
+
+export function getPgQuery(query: unknown) {
+  return pgDialect.sqlToQuery(query as SQL);
 }
