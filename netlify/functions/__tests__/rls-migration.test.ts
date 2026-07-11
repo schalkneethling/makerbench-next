@@ -17,15 +17,16 @@ const existingPolicies = readFileSync(
   "utf8",
 );
 
-/** Extracts a single policy statement from the established policy migration. */
-function policySql(name: string): string {
-  const start = existingPolicies.indexOf(`CREATE POLICY "${name}"`);
-  const end = existingPolicies.indexOf("--> statement-breakpoint", start);
+/** Extracts one statement from a Drizzle SQL migration. */
+function migrationStatement(sql: string, statementStart: string): string {
+  const start = sql.indexOf(statementStart);
+  const end = sql.indexOf("--> statement-breakpoint", start);
 
-  return existingPolicies.slice(start, end === -1 ? undefined : end);
+  expect(start).toBeGreaterThanOrEqual(0);
+  return sql.slice(start, end === -1 ? undefined : end);
 }
 
-describe("RLS migration boundaries", () => {
+describe("RLS migration SQL contract", () => {
   it("enables RLS for the resources and moderation tables used by current routes", () => {
     for (const table of [
       "resources",
@@ -40,9 +41,61 @@ describe("RLS migration boundaries", () => {
     }
   });
 
-  it("requires an authenticated database actor before creating a shared resource", () => {
-    expect(rlsMigration).toMatch(
-      /CREATE POLICY "authenticated users can create resources"[\s\S]*FOR INSERT[\s\S]*WITH CHECK \(auth\.uid\(\) IS NOT NULL\);/,
+  it("drops the broad resource policy and declares exact catalog and owner visibility", () => {
+    expect(rlsMigration).toContain(
+      'DROP POLICY IF EXISTS "resources are public"\n  ON public.resources;',
+    );
+    expect(rlsMigration).not.toContain('CREATE POLICY "resources are public"');
+
+    const selectPolicy = migrationStatement(
+      rlsMigration,
+      'CREATE POLICY "resource owners and public catalog can read resources"',
+    );
+
+    expect(selectPolicy).toContain("FOR SELECT\n  TO anon, authenticated");
+    expect(selectPolicy).toMatch(
+      /FROM public\.tool_listings[\s\S]*tool_listings\.resource_id = resources\.id[\s\S]*tool_listings\.status = 'approved'/,
+    );
+    expect(selectPolicy).toMatch(
+      /FROM public\.public_listings[\s\S]*public_listings\.resource_id = resources\.id[\s\S]*public_listings\.status = 'approved'/,
+    );
+    expect(selectPolicy).toMatch(
+      /FROM public\.public_stacks[\s\S]*public_stacks\.resource_id = resources\.id[\s\S]*public_stacks\.status = 'approved'/,
+    );
+    expect(selectPolicy).toMatch(
+      /FROM public\.public_stack_items[\s\S]*public_stack_items\.resource_id = resources\.id[\s\S]*public_stack_items\.status = 'approved'/,
+    );
+    expect(selectPolicy).toMatch(
+      /FROM public\.bookmarks[\s\S]*bookmarks\.resource_id = resources\.id[\s\S]*bookmarks\.user_id = auth\.uid\(\)/,
+    );
+    expect(selectPolicy.match(/\bEXISTS \(/g)).toHaveLength(5);
+    expect(selectPolicy.match(/\bOR EXISTS \(/g)).toHaveLength(4);
+    expect(selectPolicy).not.toContain("public.is_admin()");
+    expect(selectPolicy).not.toContain("NOT EXISTS");
+    expect(selectPolicy).not.toMatch(/USING\s*\(\s*true\s*\)/i);
+    expect(selectPolicy).not.toMatch(/\bOR\s+true\b/i);
+  });
+
+  it("targets authenticated resource inserts and grants only required table privileges", () => {
+    const insertPolicy = migrationStatement(
+      rlsMigration,
+      'CREATE POLICY "authenticated users can create resources"',
+    );
+
+    expect(insertPolicy).toContain("FOR INSERT\n  TO authenticated");
+    expect(insertPolicy).toContain("WITH CHECK (auth.uid() IS NOT NULL)");
+    expect(insertPolicy).not.toContain("TO anon");
+    expect(rlsMigration).toContain(
+      "REVOKE ALL PRIVILEGES ON TABLE public.resources\n  FROM anon, authenticated;",
+    );
+    expect(rlsMigration).toContain(
+      "GRANT SELECT ON TABLE public.resources\n  TO anon, authenticated;",
+    );
+    expect(rlsMigration).toContain(
+      "GRANT INSERT ON TABLE public.resources\n  TO authenticated;",
+    );
+    expect(rlsMigration).not.toMatch(
+      /GRANT (?:UPDATE|DELETE|ALL PRIVILEGES) ON TABLE public\.resources\s+TO (?:anon|authenticated)/i,
     );
   });
 
@@ -58,7 +111,9 @@ describe("RLS migration boundaries", () => {
       "owners and admins can delete public stack items",
       "owners and admins can update public stack items",
     ]) {
-      expect(policySql(policy)).toContain("public.is_admin()");
+      expect(
+        migrationStatement(existingPolicies, `CREATE POLICY "${policy}"`),
+      ).toContain("public.is_admin()");
     }
   });
 });
