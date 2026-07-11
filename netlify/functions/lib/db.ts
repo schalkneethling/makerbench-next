@@ -2,14 +2,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 
 import * as schema from "../../../src/db/schema";
-
-function getEnv(key: string): string | undefined {
-  if (typeof Netlify !== "undefined" && Netlify?.env) {
-    return Netlify.env.get(key) ?? undefined;
-  }
-
-  return process.env[key];
-}
+import { getEnv } from "./env";
 
 function createDbClient() {
   const connectionString = getEnv("SUPABASE_DATABASE_URL") ?? getEnv("DATABASE_URL");

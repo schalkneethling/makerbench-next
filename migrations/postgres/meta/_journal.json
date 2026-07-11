@@ -57,6 +57,20 @@
       "when": 1783799427633,
       "tag": "0007_kind_sentinel",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1783802614827,
+      "tag": "0008_flat_proteus",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1783804190694,
+      "tag": "0009_rich_supernaut",
+      "breakpoints": true
     }
   ]
 }

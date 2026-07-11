@@ -23,6 +23,7 @@ function jsonResponse<T>(body: ApiResponse<T>, status: number): Response {
     status,
     headers: {
       "Content-Type": "application/json",
+      "X-Content-Type-Options": "nosniff",
     },
   });
 }
@@ -76,6 +77,17 @@ export function conflict(error: string): Response {
   return jsonResponse({ success: false, error }, 409);
 }
 
+/** Generic rate-limit response; it intentionally reveals no enforcement details. */
+export function tooManyRequests(): Response {
+  return jsonResponse(
+    {
+      success: false,
+      error: "Too many submission attempts. Please try again later.",
+    },
+    429,
+  );
+}
+
 /**
  * Not found error (404)
  */
@@ -97,6 +109,11 @@ export function serviceUnavailable(error: string): Response {
   return jsonResponse({ success: false, error }, 503);
 }
 
+/** Generic dependency failure response with no internal implementation details. */
+export function dependencyUnavailable(): Response {
+  return serviceUnavailable("Service temporarily unavailable");
+}
+
 /**
  * Method not allowed (405)
  */
@@ -110,6 +127,7 @@ export function methodNotAllowed(allowed: string[]): Response {
       status: 405,
       headers: {
         "Content-Type": "application/json",
+        "X-Content-Type-Options": "nosniff",
         Allow: allowed.join(", "),
       },
     },

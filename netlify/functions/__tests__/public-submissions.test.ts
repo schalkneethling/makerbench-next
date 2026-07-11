@@ -14,6 +14,12 @@ vi.mock("../lib/db", () => ({
   getDb: vi.fn(),
 }));
 
+vi.mock("../lib/sentry", () => ({
+  initSentry: vi.fn(),
+  captureError: vi.fn(),
+  flushSentry: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("../../../src/lib/services/metadata", () => ({
   extractMetadata: vi.fn(),
 }));
@@ -33,11 +39,16 @@ vi.mock("node:dns/promises", () => ({
 import publicSubmissions from "../public-submissions.mts";
 import { verifyAuthenticatedUser } from "../lib/auth";
 import { getDb } from "../lib/db";
+import { captureError, flushSentry } from "../lib/sentry";
+import { createSubmissionRateLimitKey } from "../lib/submission-rate-limit";
 import { lookup } from "node:dns/promises";
 import { captureScreenshot } from "../../../src/lib/services/screenshot";
 import { uploadScreenshot } from "../../../src/lib/services/cloudinary";
 import { extractMetadata } from "../../../src/lib/services/metadata";
-import { createMockContext } from "./test-utils";
+import { TEST_SUBMISSION_RATE_LIMIT_SECRET } from "../../../src/test/rate-limit-fixtures";
+import { createMockContext, getPgQuery } from "./test-utils";
+
+const RATE_LIMIT_SECRET = TEST_SUBMISSION_RATE_LIMIT_SECRET;
 
 interface SubmissionCreated {
   submittedItemId: string;
@@ -48,6 +59,7 @@ interface SubmissionCreated {
 
 function createMockDb() {
   return {
+    execute: vi.fn().mockResolvedValue({ rows: [{ attempt_count: 1 }] }),
     insert: vi.fn().mockReturnThis(),
     values: vi.fn().mockReturnThis(),
     onConflictDoUpdate: vi.fn().mockReturnThis(),
@@ -56,12 +68,17 @@ function createMockDb() {
   };
 }
 
-function createSubmissionRequest(body: unknown, token?: string): Request {
+function createSubmissionRequest(
+  body: unknown,
+  token?: string,
+  additionalHeaders: Record<string, string> = {},
+): Request {
   return new Request("https://test.com/api/submissions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...additionalHeaders,
     },
     body: JSON.stringify(body),
   });
@@ -168,6 +185,57 @@ describe("public-submissions", () => {
     expect(res.status).toBe(422);
     const body = (await res.json()) as ErrorResponse;
     expect(body.details?.authenticatedUser).toBeDefined();
+  });
+
+  it("ignores spoofed client IP headers and keys anonymous requests from context.ip", async () => {
+    const mockDb = createMockDb();
+    mockDb.execute
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [{ attempt_count: 1 }] });
+    mockDb.returning
+      .mockResolvedValueOnce([{ id: "11111111-1111-4111-8111-111111111111" }])
+      .mockResolvedValueOnce([{ id: "22222222-2222-4222-8222-222222222222" }]);
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+    const context = { ...createMockContext(), ip: "198.51.100.24" };
+
+    const res = await publicSubmissions(
+      createSubmissionRequest(
+        {
+          type: "resource",
+          url: "https://example.com/header-spoof-test",
+          tags: ["security"],
+          submitterName: "Ada",
+          submitterGithubUsername: "ada-lovelace",
+        },
+        undefined,
+        {
+          "X-Forwarded-For": "203.0.113.99",
+          "X-Nf-Client-Connection-Ip": "203.0.113.100",
+        },
+      ),
+      context,
+    );
+
+    expect(res.status).toBe(201);
+    const admissionQuery = mockDb.execute.mock.calls
+      .map(([query]) => getPgQuery(query))
+      .find(({ sql }) => sql.includes("INSERT INTO"));
+    const contextKey = createSubmissionRateLimitKey(
+      { authenticated: null, clientIp: context.ip },
+      RATE_LIMIT_SECRET,
+    );
+    const spoofedKeys = ["203.0.113.99", "203.0.113.100"].map((clientIp) =>
+      createSubmissionRateLimitKey(
+        { authenticated: null, clientIp },
+        RATE_LIMIT_SECRET,
+      ),
+    );
+    expect(admissionQuery?.params).toContain(contextKey);
+    for (const spoofedKey of spoofedKeys) {
+      expect(admissionQuery?.params).not.toContain(spoofedKey);
+    }
   });
 
   it("stores signed-in attribution for public resource listings", async () => {
@@ -305,6 +373,51 @@ describe("public-submissions", () => {
     expect(body.details?.tags).toBeDefined();
   });
 
+  it("fails closed with a generic response for missing or invalid limit configuration", async () => {
+    const originalGet = Netlify.env.get;
+    const request = createSubmissionRequest({
+      type: "resource",
+      url: "https://example.com/resource",
+      tags: ["css"],
+    });
+
+    try {
+      Netlify.env.get = vi.fn((key: string) =>
+        key === "SUBMISSION_RATE_LIMIT_SECRET" ? undefined : originalGet(key),
+      );
+      const missingResponse = await publicSubmissions(
+        request,
+        createMockContext(),
+      );
+      expect(missingResponse.status).toBe(503);
+      await expect(missingResponse.json()).resolves.toEqual({
+        success: false,
+        error: "Service temporarily unavailable",
+      });
+
+      Netlify.env.get = vi.fn((key: string) =>
+        key === "SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS"
+          ? "zero"
+          : originalGet(key),
+      );
+      const invalidResponse = await publicSubmissions(
+        createSubmissionRequest({
+          type: "resource",
+          url: "https://example.com/other-resource",
+          tags: ["css"],
+        }),
+        createMockContext(),
+      );
+      expect(invalidResponse.status).toBe(503);
+      await expect(invalidResponse.json()).resolves.toEqual({
+        success: false,
+        error: "Service temporarily unavailable",
+      });
+    } finally {
+      Netlify.env.get = originalGet;
+    }
+  });
+
   it("rejects article as a separate public submission type", async () => {
     const res = await publicSubmissions(
       createSubmissionRequest({
@@ -360,6 +473,76 @@ describe("public-submissions", () => {
     expect(res.status).toBe(409);
     const body = (await res.json()) as ErrorResponse;
     expect(body.error).toContain("already been submitted");
+  });
+
+  it("rejects throttled requests before metadata or moderation inserts", async () => {
+    const mockDb = createMockDb();
+    mockDb.execute.mockResolvedValue({ rows: [] });
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+
+    const res = await publicSubmissions(
+      createSubmissionRequest({
+        type: "resource",
+        url: "https://example.com/resource",
+        tags: ["css"],
+      }),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(429);
+    const body = (await res.json()) as ErrorResponse;
+    expect(body).toEqual({
+      success: false,
+      error: "Too many submission attempts. Please try again later.",
+    });
+    expect(body.error).not.toMatch(/5|3600|limit|window/i);
+    expect(extractMetadata).not.toHaveBeenCalled();
+    expect(captureScreenshot).not.toHaveBeenCalled();
+    expect(mockDb.insert).not.toHaveBeenCalled();
+  });
+
+  it("fails closed on limiter datastore errors without logging identity material", async () => {
+    const mockDb = createMockDb();
+    mockDb.execute.mockRejectedValueOnce(
+      new Error("rate limit datastore unavailable"),
+    );
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+    const context = { ...createMockContext(), ip: "198.51.100.25" };
+
+    const res = await publicSubmissions(
+      createSubmissionRequest({
+        type: "resource",
+        url: "https://example.com/dependency-error",
+        tags: ["security"],
+      }),
+      context,
+    );
+
+    expect(res.status).toBe(503);
+    await expect(res.json()).resolves.toEqual({
+      success: false,
+      error: "Service temporarily unavailable",
+    });
+    expect(captureError).toHaveBeenCalledWith(expect.any(Error), {
+      function: "public-submissions",
+      dependency: "submission-rate-limit-store",
+    });
+    expect(flushSentry).toHaveBeenCalledOnce();
+    const captured = JSON.stringify(vi.mocked(captureError).mock.calls);
+    expect(captured).not.toContain(context.ip);
+    expect(captured).not.toContain(
+      createSubmissionRateLimitKey(
+        { authenticated: null, clientIp: context.ip },
+        RATE_LIMIT_SECRET,
+      ),
+    );
+    expect(extractMetadata).not.toHaveBeenCalled();
+    expect(captureScreenshot).not.toHaveBeenCalled();
+    expect(mockDb.insert).not.toHaveBeenCalled();
   });
 
   it("rejects invalid bearer tokens instead of silently dropping attribution", async () => {

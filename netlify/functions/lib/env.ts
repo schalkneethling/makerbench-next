@@ -22,13 +22,28 @@ export class MissingEnvironmentError extends Error {
   }
 }
 
+/** Error type used when environment values fail their feature-specific contract. */
+export class InvalidEnvironmentError extends Error {
+  readonly invalidKeys: string[];
+
+  constructor(invalidKeys: string[]) {
+    super("Environment variables are invalid");
+    this.name = "InvalidEnvironmentError";
+    this.invalidKeys = invalidKeys;
+  }
+}
+
+/** Reads a server environment value from the Netlify runtime. */
+export function getEnv(key: string): string | undefined {
+  return Netlify.env.get(key) ?? undefined;
+}
+
 /**
  * Throws when one or more required environment variables are missing.
  */
 export function assertRequiredEnv(requiredKeys: readonly string[]): void {
   const missingKeys = requiredKeys.filter((key) => {
-    const value =
-      typeof Netlify !== "undefined" && Netlify?.env ? Netlify.env.get(key) : process.env[key];
+    const value = getEnv(key);
 
     return !value || value.trim() === "";
   });
@@ -43,6 +58,11 @@ export function assertRequiredEnv(requiredKeys: readonly string[]): void {
  */
 export function isMissingEnvironmentError(error: unknown): error is MissingEnvironmentError {
   return error instanceof MissingEnvironmentError;
+}
+
+/** Type guard for invalid environment errors. */
+export function isInvalidEnvironmentError(error: unknown): error is InvalidEnvironmentError {
+  return error instanceof InvalidEnvironmentError;
 }
 
 /**
@@ -66,6 +86,23 @@ export async function handleMissingEnvironmentError(
   captureError(error, {
     function: functionName,
     missingKeys: error.missingKeys,
+  });
+  await flushSentry();
+  return serviceUnavailable(getServiceUnavailableMessage());
+}
+
+/** Maps invalid environment values to the same safe client response as missing values. */
+export async function handleInvalidEnvironmentError(
+  error: unknown,
+  functionName: string,
+): Promise<Response> {
+  if (!isInvalidEnvironmentError(error)) {
+    throw error;
+  }
+
+  captureError(error, {
+    function: functionName,
+    invalidKeys: error.invalidKeys,
   });
   await flushSentry();
   return serviceUnavailable(getServiceUnavailableMessage());

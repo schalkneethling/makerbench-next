@@ -1,3 +1,4 @@
+import type { Context } from "@netlify/functions";
 import type { BaseIssue } from "valibot";
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
@@ -9,16 +10,28 @@ import {
   verifyAuthenticatedUser,
 } from "./auth";
 import { getDb } from "./db";
-import { assertRequiredEnv, handleMissingEnvironmentError } from "./env";
+import {
+  assertRequiredEnv,
+  handleInvalidEnvironmentError,
+  handleMissingEnvironmentError,
+} from "./env";
 import {
   conflict,
   created,
+  dependencyUnavailable,
   methodNotAllowed,
   serverError,
+  tooManyRequests,
   unauthorized,
   validationError,
 } from "./responses";
 import { captureError, flushSentry, initSentry } from "./sentry";
+import {
+  consumeSubmissionRateLimit,
+  createSubmissionRateLimitKey,
+  getSubmissionRateLimitConfig,
+  type SubmissionRateLimitConfig,
+} from "./submission-rate-limit";
 import { normalizeUrl, parseAndNormalizeUrl } from "./url";
 import {
   publicListingsTable,
@@ -64,6 +77,7 @@ const BLOCKED_IPV4_RANGES: readonly [
 type PublicListingSubmissionType = Exclude<PublicSubmissionType, "tool">;
 
 interface PublicSubmissionOptions {
+  context: Context;
   endpointName: string;
   allowedTypes?: readonly PublicSubmissionType[];
   rejectedTypeDetails?: Record<string, string[]>;
@@ -491,6 +505,39 @@ export async function handlePublicSubmission(
     !options.allowedTypes.includes(validation.output.type)
   ) {
     return validationError("Validation failed", options.rejectedTypeDetails);
+  }
+
+  let rateLimitConfig: SubmissionRateLimitConfig;
+  let keyHash: string;
+  try {
+    rateLimitConfig = getSubmissionRateLimitConfig();
+    keyHash = createSubmissionRateLimitKey(
+      {
+        authenticated,
+        clientIp: options.context.ip,
+      },
+      rateLimitConfig.secret,
+    );
+  } catch (error) {
+    return handleInvalidEnvironmentError(error, options.endpointName);
+  }
+
+  try {
+    const allowed = await consumeSubmissionRateLimit(keyHash, rateLimitConfig);
+
+    if (!allowed) {
+      return tooManyRequests();
+    }
+  } catch {
+    captureError(
+      new Error("Submission rate limit datastore operation failed"),
+      {
+        function: options.endpointName,
+        dependency: "submission-rate-limit-store",
+      },
+    );
+    await flushSentry();
+    return dependencyUnavailable();
   }
 
   const normalizedUrl = parseAndNormalizeUrl(validation.output.url);
