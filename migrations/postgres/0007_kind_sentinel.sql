@@ -33,8 +33,11 @@ CREATE POLICY "resource owners and public catalog can read resources"
     OR EXISTS (
       SELECT 1
       FROM public.public_stack_items
+      INNER JOIN public.public_stacks
+        ON public_stacks.id = public_stack_items.public_stack_id
       WHERE public_stack_items.resource_id = resources.id
         AND public_stack_items.status = 'approved'
+        AND public_stacks.status = 'approved'
     )
     OR EXISTS (
       SELECT 1

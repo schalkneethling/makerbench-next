@@ -63,7 +63,7 @@ describe("RLS migration SQL contract", () => {
       /FROM public\.public_stacks[\s\S]*public_stacks\.resource_id = resources\.id[\s\S]*public_stacks\.status = 'approved'/,
     );
     expect(selectPolicy).toMatch(
-      /FROM public\.public_stack_items[\s\S]*public_stack_items\.resource_id = resources\.id[\s\S]*public_stack_items\.status = 'approved'/,
+      /FROM public\.public_stack_items\s+INNER JOIN public\.public_stacks\s+ON public_stacks\.id = public_stack_items\.public_stack_id\s+WHERE public_stack_items\.resource_id = resources\.id\s+AND public_stack_items\.status = 'approved'\s+AND public_stacks\.status = 'approved'/,
     );
     expect(selectPolicy).toMatch(
       /FROM public\.bookmarks[\s\S]*bookmarks\.resource_id = resources\.id[\s\S]*bookmarks\.user_id = auth\.uid\(\)/,
