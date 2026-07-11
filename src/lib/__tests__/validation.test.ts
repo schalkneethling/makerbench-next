@@ -151,7 +151,7 @@ describe("Validation Schemas", () => {
       ).toBe(true);
     });
 
-    it("should validate optional authenticated user context", () => {
+    it("should reject client-supplied authenticated user context", () => {
       const result = validatePublicSubmissionRequest({
         type: "resource",
         url: "https://example.com/resource",
@@ -161,7 +161,7 @@ describe("Validation Schemas", () => {
         },
       });
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBe(false);
     });
 
     it("should reject unsupported public submission types", () => {
@@ -184,18 +184,6 @@ describe("Validation Schemas", () => {
       expect(result.success).toBe(false);
     });
 
-    it("should reject invalid authenticated user ids", () => {
-      const result = validatePublicSubmissionRequest({
-        type: "resource",
-        url: "https://example.com/resource",
-        tags: ["reference"],
-        authenticatedUser: {
-          userId: "not-a-user-id",
-        },
-      });
-
-      expect(result.success).toBe(false);
-    });
   });
 
   describe("validatePublicSubmissionResponse", () => {

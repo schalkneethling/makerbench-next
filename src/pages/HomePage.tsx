@@ -378,7 +378,9 @@ export function HomePage() {
         isLoading={isLoading && tools.length === 0}
         emptyTitle={isFiltering ? "No matching tools" : "No tools yet"}
         emptyDescription={
-          isFiltering ? "Try adjusting your search or filters." : "Be the first to submit a tool!"
+          isFiltering
+            ? "Try adjusting your search or filters."
+            : "Be the first to submit a resource!"
         }
       />
 

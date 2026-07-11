@@ -2,9 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ErrorResponse, SuccessResponse } from "../lib/responses";
 
-vi.mock("../lib/auth", () => ({
-  verifyAuthenticatedUser: vi.fn(),
-}));
+vi.mock("../lib/auth", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../lib/auth")>();
+  return {
+    ...actual,
+    verifyAuthenticatedUser: vi.fn(),
+  };
+});
 
 vi.mock("../lib/db", () => ({
   getDb: vi.fn(),
@@ -128,6 +132,44 @@ describe("public-submissions", () => {
     );
   });
 
+  it("requires anonymous attribution with structured field errors", async () => {
+    const res = await publicSubmissions(
+      createSubmissionRequest({
+        type: "resource",
+        url: "https://example.com/resource",
+        tags: ["css"],
+      }),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(422);
+    const body = (await res.json()) as ErrorResponse;
+    expect(body.details).toEqual({
+      submitterName: ["Your name is required"],
+      submitterGithubUsername: ["GitHub username is required"],
+    });
+  });
+
+  it("rejects a client-supplied authenticated user object", async () => {
+    const res = await publicSubmissions(
+      createSubmissionRequest({
+        type: "resource",
+        url: "https://example.com/resource",
+        tags: ["css"],
+        submitterName: "Ada",
+        submitterGithubUsername: "ada",
+        authenticatedUser: {
+          userId: "00000000-0000-4000-8000-000000000000",
+        },
+      }),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(422);
+    const body = (await res.json()) as ErrorResponse;
+    expect(body.details?.authenticatedUser).toBeDefined();
+  });
+
   it("stores signed-in attribution for public resource listings", async () => {
     const mockDb = createMockDb();
     mockDb.returning
@@ -137,7 +179,53 @@ describe("public-submissions", () => {
       mockDb as unknown as ReturnType<typeof getDb>,
     );
     vi.mocked(verifyAuthenticatedUser).mockResolvedValue({
-      user: { id: "55555555-5555-4555-8555-555555555555" },
+      user: {
+        id: "55555555-5555-4555-8555-555555555555",
+        user_metadata: { full_name: "Verified User" },
+        identities: [
+          {
+            provider: "github",
+            identity_data: { user_name: "verified-user" },
+          },
+        ],
+      },
+      isAdmin: false,
+    } as never);
+
+    const res = await publicSubmissions(
+      createSubmissionRequest(
+        {
+          type: "resource",
+          url: "https://example.com/resource",
+          tags: ["css"],
+          submitterName: "Spoofed Name",
+          submitterGithubUsername: "spoofed-user",
+        },
+        "valid-token",
+      ),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(201);
+    expect(verifyAuthenticatedUser).toHaveBeenCalledOnce();
+    expect(mockDb.values).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        contentKind: "resource",
+        submittedByUserId: "55555555-5555-4555-8555-555555555555",
+        submitterName: "Verified User",
+        submitterGithubUrl: "https://github.com/verified-user",
+      }),
+    );
+  });
+
+  it("requires signed-in users to supply attribution the verified user cannot resolve", async () => {
+    vi.mocked(verifyAuthenticatedUser).mockResolvedValue({
+      user: {
+        id: "55555555-5555-4555-8555-555555555555",
+        user_metadata: {},
+        identities: [],
+      },
       isAdmin: false,
     } as never);
 
@@ -153,15 +241,12 @@ describe("public-submissions", () => {
       createMockContext(),
     );
 
-    expect(res.status).toBe(201);
-    expect(verifyAuthenticatedUser).toHaveBeenCalledOnce();
-    expect(mockDb.values).toHaveBeenNthCalledWith(
-      2,
-      expect.objectContaining({
-        contentKind: "resource",
-        submittedByUserId: "55555555-5555-4555-8555-555555555555",
-      }),
-    );
+    expect(res.status).toBe(422);
+    const body = (await res.json()) as ErrorResponse;
+    expect(body.details).toEqual({
+      submitterName: ["Your name is required"],
+      submitterGithubUsername: ["GitHub username is required"],
+    });
   });
 
   it("routes tool submissions to tool listings", async () => {
@@ -183,6 +268,8 @@ describe("public-submissions", () => {
         type: "tool",
         url: "https://example.com/tool",
         tags: ["ai"],
+        submitterName: "Ada",
+        submitterGithubUsername: "ada",
       }),
       createMockContext(),
     );
@@ -264,6 +351,8 @@ describe("public-submissions", () => {
         type: "resource",
         url: "https://example.com/resource",
         tags: ["css"],
+        submitterName: "Ada",
+        submitterGithubUsername: "ada",
       }),
       createMockContext(),
     );

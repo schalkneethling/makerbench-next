@@ -12,7 +12,7 @@ test.describe("Header", () => {
         - link "Maker Bench":
           - /url: /
         - navigation "Primary":
-          - link "Submit Tool":
+          - link "Submit Resource":
             - /url: /submit
     `);
   });

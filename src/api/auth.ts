@@ -6,6 +6,7 @@ const authUserSchema = v.object({
   id: v.string(),
   email: v.nullable(v.string()),
   displayName: v.nullable(v.string()),
+  githubUsername: v.nullable(v.string()),
   avatarUrl: v.nullable(v.string()),
 });
 

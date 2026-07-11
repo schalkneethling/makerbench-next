@@ -2,7 +2,12 @@ import type { BaseIssue } from "valibot";
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 
-import { type AuthenticatedUser, verifyAuthenticatedUser } from "./auth";
+import {
+  getVerifiedDisplayName,
+  getVerifiedGithubUsername,
+  type AuthenticatedUser,
+  verifyAuthenticatedUser,
+} from "./auth";
 import { getDb } from "./db";
 import { assertRequiredEnv, handleMissingEnvironmentError } from "./env";
 import {
@@ -266,6 +271,42 @@ function normalizeSubmitterName(
   return submitterName && submitterName.length > 0 ? submitterName : undefined;
 }
 
+/** Resolves attribution from a verified identity before accepting public form fields. */
+function resolveSubmissionAttribution(
+  submission: PublicSubmissionRequest,
+  authenticated: AuthenticatedUser | null,
+): Pick<SubmissionContext, "normalizedSubmitterGithubUrl" | "normalizedSubmitterName"> {
+  const githubUsername = authenticated
+    ? getVerifiedGithubUsername(authenticated.user)
+    : null;
+
+  return {
+    normalizedSubmitterName:
+      (authenticated ? getVerifiedDisplayName(authenticated.user) : null) ??
+      normalizeSubmitterName(submission),
+    normalizedSubmitterGithubUrl: githubUsername
+      ? `https://github.com/${githubUsername}`
+      : normalizeSubmitterGithubUrl(submission),
+  };
+}
+
+/** Returns structured errors when the resolved public attribution is incomplete. */
+function getAttributionValidationDetails(
+  attribution: Pick<SubmissionContext, "normalizedSubmitterGithubUrl" | "normalizedSubmitterName">,
+): Record<string, string[]> | null {
+  const details: Record<string, string[]> = {};
+
+  if (!attribution.normalizedSubmitterName) {
+    details.submitterName = ["Your name is required"];
+  }
+
+  if (!attribution.normalizedSubmitterGithubUrl) {
+    details.submitterGithubUsername = ["GitHub username is required"];
+  }
+
+  return Object.keys(details).length > 0 ? details : null;
+}
+
 function isPublicListingSubmission(
   submission: PublicSubmissionRequest,
 ): submission is PublicSubmissionRequest & {
@@ -473,12 +514,15 @@ export async function handlePublicSubmission(
     });
   }
 
+  const attribution = resolveSubmissionAttribution(validation.output, authenticated);
+  const attributionDetails = getAttributionValidationDetails(attribution);
+  if (attributionDetails) {
+    return validationError("Validation failed", attributionDetails);
+  }
+
   const submissionContext: SubmissionContext = {
     authenticated,
-    normalizedSubmitterGithubUrl: normalizeSubmitterGithubUrl(
-      validation.output,
-    ),
-    normalizedSubmitterName: normalizeSubmitterName(validation.output),
+    ...attribution,
     normalizedUrl: publicUrl,
     submission: validation.output,
     tags,

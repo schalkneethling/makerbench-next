@@ -15,7 +15,7 @@ Runtime/package manager decision:
 
 Core functionality is implemented:
 
-- Submit a tool URL with tags (stored as `pending` until moderation exists)
+- Submit a tool or resource URL with tags for moderation (stored as `pending`)
 - Extract metadata (title/description/OG image)
 - Capture screenshot fallback with Browserless when OG image is missing
 - Store fallback screenshots in Cloudinary
@@ -89,7 +89,8 @@ Package manager note: this repository pins pnpm via `packageManager` in `package
 
 Public:
 
-- `POST /api/tools` — submit a tool (stored as `pending`)
+- `POST /api/submissions` — submit a tool or resource for moderation (stored as `pending`)
+- `POST /api/tools` — compatibility endpoint for tool-only submissions
 - `GET /api/tools` — list approved tools (paginated)
 - `GET /api/tools/search` — search/filter approved tools
 - `GET /api/tools/tags` — tag cloud with usage counts

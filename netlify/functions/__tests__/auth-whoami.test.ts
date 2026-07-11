@@ -19,6 +19,7 @@ interface WhoamiBody {
       id: string;
       email: string | null;
       displayName: string | null;
+      githubUsername: string | null;
       avatarUrl: string | null;
     };
     isAdmin: boolean;
@@ -53,8 +54,16 @@ describe("auth-whoami", () => {
               email: "test@example.com",
               user_metadata: {
                 full_name: "Test User",
+                user_name: "spoofed-user",
                 avatar_url: "https://example.com/avatar.png",
               },
+              app_metadata: { provider: "github" },
+              identities: [
+                {
+                  provider: "github",
+                  identity_data: { user_name: "test-user" },
+                },
+              ],
             },
           },
           error: null,
@@ -76,6 +85,7 @@ describe("auth-whoami", () => {
         id: "user-1",
         email: "test@example.com",
         displayName: "Test User",
+        githubUsername: "test-user",
         avatarUrl: "https://example.com/avatar.png",
       },
       isAdmin: true,
@@ -110,5 +120,36 @@ describe("auth-whoami", () => {
 
     const body = (await res.json()) as WhoamiBody;
     expect(body.data.isAdmin).toBe(false);
+  });
+
+  it("does not expose user-editable GitHub metadata without a trusted identity", async () => {
+    const mockDb = createMockDb();
+    vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
+    vi.mocked(createClient).mockReturnValue({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({
+          data: {
+            user: {
+              id: "user-1",
+              email: "test@example.com",
+              user_metadata: { user_name: "spoofed-user" },
+              app_metadata: { provider: "github" },
+              identities: [],
+            },
+          },
+          error: null,
+        }),
+      },
+    } as never);
+
+    const res = await authWhoami(
+      new Request("https://test.com/api/auth/whoami", {
+        headers: { Authorization: "Bearer token-1" },
+      }),
+      createMockContext(),
+    );
+
+    const body = (await res.json()) as WhoamiBody;
+    expect(body.data.user.githubUsername).toBeNull();
   });
 });

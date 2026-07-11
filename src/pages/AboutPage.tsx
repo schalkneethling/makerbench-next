@@ -11,28 +11,28 @@ export function AboutPage() {
       <section>
         <h2 className="heading-2xl">What MakerBench Is</h2>
         <p>
-          MakerBench is a curated directory of tools for makers, developers, and teams building
-          products on the web. The goal is simple: make it easier to discover useful tools without
-          turning the site into a noisy list of everything on the internet.
+          MakerBench is a curated directory of tools and resources for makers, developers, and
+          teams building products on the web. The goal is simple: make useful links easier to
+          discover without turning the site into a noisy list of everything on the internet.
         </p>
       </section>
 
       <section>
         <h2 className="heading-2xl">How It Works</h2>
         <p>
-          Tools can be submitted by the community and are reviewed before they appear in the
-          directory. Each approved listing includes the tool metadata we can reliably collect,
-          relevant tags, and a screenshot or image so visitors can quickly evaluate whether it is
+          Tools and resources can be submitted by the community and are reviewed before they appear
+          in the catalog. Each approved listing includes the metadata we can reliably collect,
+          relevant tags, and an image when available so visitors can quickly evaluate whether it is
           worth exploring.
         </p>
       </section>
 
       <section>
-        <h2 className="heading-2xl">Contributing Tools</h2>
+        <h2 className="heading-2xl">Contributing Resources</h2>
         <p>
-          If you know a tool that belongs here, use the <a href="/submit">submission form</a>. A
-          good submission starts with the tool URL and a small set of accurate tags. You can also
-          include your name and GitHub username if you want credit shown on the card.
+          If you know a tool, article, guide, reference, or other resource that belongs here, use
+          the <a href="/submit">submission form</a>. Choose whether it is a tool or resource, then
+          add its URL and a small set of accurate tags.
         </p>
         <p>
           Submissions are reviewed before publication so the directory stays useful, consistent, and
