@@ -1,4 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import type { SQL } from "drizzle-orm";
+import { PgDialect } from "drizzle-orm/pg-core";
 
 vi.mock("../lib/db", () => ({
   getDb: vi.fn(),
@@ -83,32 +85,9 @@ function createExecuteDb(rows: unknown[]) {
   };
 }
 
-function getSqlText(query: unknown): string {
-  if (!query || typeof query !== "object") {
-    return "";
-  }
-
-  if ("value" in query && Array.isArray(query.value)) {
-    return query.value.join("");
-  }
-
-  const queryChunks = (query as { queryChunks?: unknown[] }).queryChunks ?? [];
-
-  return queryChunks.map(getSqlText).join("");
-}
-
-function getSqlParams(query: unknown): unknown[] {
-  if (!query || typeof query !== "object") {
-    return [];
-  }
-
-  if ("value" in query && !Array.isArray(query.value)) {
-    return [query.value];
-  }
-
-  const queryChunks = (query as { queryChunks?: unknown[] }).queryChunks ?? [];
-
-  return queryChunks.flatMap(getSqlParams);
+/** Serializes a Drizzle SQL object with PostgreSQL placeholders and params. */
+function serializePostgresQuery(query: unknown) {
+  return new PgDialect().sqlToQuery(query as SQL);
 }
 
 describe("admin-moderation", () => {
@@ -165,15 +144,17 @@ describe("admin-moderation", () => {
     expect(getDb).not.toHaveBeenCalled();
   });
 
+  // The database is mocked at this layer, so this protects PostgreSQL query
+  // construction rather than exercising result filtering against a real DB.
   it.each(["tool", "resource", "stack", "stack-item"] as const)(
-    "passes the %s moderation type filter to the pending-items query",
+    "constructs the pending-items SQL for the %s moderation type filter",
     async (type) => {
       const mockDb = createExecuteDb([]);
       vi.mocked(getDb).mockReturnValue(
         mockDb as unknown as ReturnType<typeof getDb>,
       );
 
-      const res = await adminModeration(
+      await adminModeration(
         new Request(
           `https://test.com/api/admin/moderation?type=${encodeURIComponent(type)}`,
           {
@@ -183,11 +164,16 @@ describe("admin-moderation", () => {
         createMockContext(),
       );
 
-      expect(res.status).toBe(200);
       expect(mockDb.execute).toHaveBeenCalledTimes(1);
-      const query = mockDb.execute.mock.calls[0]?.[0];
-      expect(getSqlText(query)).toContain("where type = ");
-      expect(getSqlParams(query)).toEqual([type]);
+      const query = serializePostgresQuery(mockDb.execute.mock.calls[0]?.[0]);
+      const lastUnionIndex = query.sql.lastIndexOf("union all");
+
+      expect(query.sql).toContain("where type = $1");
+      expect(lastUnionIndex).toBeGreaterThan(-1);
+      expect(query.sql.indexOf("where type = $1")).toBeGreaterThan(
+        lastUnionIndex,
+      );
+      expect(query.params).toEqual([type]);
     },
   );
 
@@ -404,7 +390,9 @@ describe("admin-moderation", () => {
         status,
       });
       expect(mockDb.execute).toHaveBeenCalledTimes(1);
-      const sqlText = getSqlText(mockDb.execute.mock.calls[0]?.[0]);
+      const sqlText = serializePostgresQuery(
+        mockDb.execute.mock.calls[0]?.[0],
+      ).sql;
       expect(sqlText).toContain(`update ${expectedTable}`);
       expect(sqlText).toContain("and status = 'pending'");
       for (const expectedSqlPart of expectedSqlParts) {
@@ -485,12 +473,12 @@ describe("admin-moderation", () => {
     const body = (await res.json()) as ErrorBody;
     expect(body.error).toBe("Moderation item is already approved");
     expect(mockDb.execute).toHaveBeenCalledTimes(2);
-    expect(getSqlText(mockDb.execute.mock.calls[0]?.[0])).toContain(
-      "and status = 'pending'",
-    );
-    expect(getSqlText(mockDb.execute.mock.calls[1]?.[0])).toContain(
-      "from public_stacks",
-    );
+    expect(
+      serializePostgresQuery(mockDb.execute.mock.calls[0]?.[0]).sql,
+    ).toContain("and status = 'pending'");
+    expect(
+      serializePostgresQuery(mockDb.execute.mock.calls[1]?.[0]).sql,
+    ).toContain("from public_stacks");
   });
 
   it("returns 404 when a moderation item does not exist", async () => {
