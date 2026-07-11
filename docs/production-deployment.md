@@ -62,8 +62,9 @@ Functions. The database and service credentials must remain server-side and
 must not be committed or placed in frontend source. Netlify Functions read
 runtime values through `Netlify.env`; Netlify supplies `CONTEXT` automatically.
 
-Use the names in [`.env.schema`](../.env.schema). Do not configure legacy
-database variables for the active deployment.
+Use the required variable names in [`.env.schema`](../.env.schema).
+`SENTRY_DSN` is a separate optional Netlify runtime setting. Do not configure
+legacy database variables for the active deployment.
 
 ## 3. Apply migrations before deploying code
 

@@ -43,8 +43,8 @@ The application sends the current browser origin as the OAuth redirect URL.
 
 ## Environment variables
 
-`.env.schema` is the source of truth for local variable names and the checked-in
-Varlock/1Password references. Use the exact names below:
+`.env.schema` is the source of truth for required local variable names and the
+checked-in Varlock/1Password references. Use the exact names below:
 
 | Variable | Scope | Purpose |
 | --- | --- | --- |
@@ -56,10 +56,11 @@ Varlock/1Password references. Use the exact names below:
 | `CLOUDINARY_API_SECRET` | Server only | Cloudinary API secret |
 | `BROWSERLESS_API_KEY` | Server only | Browserless screenshot API key |
 
-`SENTRY_DSN` is an optional server-side variable supported by the Functions.
-Netlify supplies `CONTEXT` automatically for Sentry environment tagging. Do
-not add `VITE_` to server-only secrets, and use the variable names in
-`.env.schema` for the active application setup.
+`SENTRY_DSN` is a separate optional server-side setting supported by the
+Functions; it is not required by `.env.schema`. Netlify supplies `CONTEXT`
+automatically for Sentry environment tagging. Do not add `VITE_` to server-only
+secrets, and use the required variable names in `.env.schema` for the active
+application setup.
 
 ## Apply the database schema
 

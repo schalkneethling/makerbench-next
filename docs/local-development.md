@@ -30,10 +30,11 @@ Netlify builds.
 
 ## 2. Configure environment variables
 
-Use [`.env.schema`](../.env.schema) as the canonical list of local variables.
-Resolve its Varlock/1Password references using the repository's normal local
-environment workflow before starting Netlify Dev or running Drizzle commands.
-Do not commit resolved secrets or create a second checked-in environment file.
+Use [`.env.schema`](../.env.schema) as the canonical list of required local
+variables managed through Varlock. Resolve its Varlock/1Password references
+using the repository's normal local environment workflow before starting
+Netlify Dev or running Drizzle commands. Do not commit resolved secrets or
+create a second checked-in environment file.
 
 The required names are:
 
@@ -45,10 +46,10 @@ The required names are:
 - `CLOUDINARY_API_SECRET`
 - `BROWSERLESS_API_KEY`
 
-`SENTRY_DSN` is optional and is read by the Functions when configured. The
-`VITE_` variables are exposed to the browser by Vite; the database and service
-credentials are server-side values. Netlify Functions read their values from
-`Netlify.env`.
+`SENTRY_DSN` is a separate optional setting read by the Functions when
+configured; it is not required by `.env.schema`. The `VITE_` variables are
+exposed to the browser by Vite; the database and service credentials are
+server-side values. Netlify Functions read their values from `Netlify.env`.
 
 ## 3. Apply Supabase migrations
 
