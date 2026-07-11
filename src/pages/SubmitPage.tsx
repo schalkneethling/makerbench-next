@@ -76,7 +76,7 @@ function getFormErrors(issues: readonly v.BaseIssue<unknown>[]): FormErrors {
 
 /** Public tool and resource submission form. */
 export function SubmitPage() {
-  const { identity, accessToken, isAuthenticated } = useAuth();
+  const { identity, accessToken, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const { submit, isSubmitting, error, response, reset } = usePublicSubmission({
     accessToken: accessToken ?? undefined,
   });
@@ -84,6 +84,7 @@ export function SubmitPage() {
   const hasVerifiedGithubUsername = Boolean(identity?.user.githubUsername?.trim());
   const requireName = !hasVerifiedName;
   const requireGithubUsername = !hasVerifiedGithubUsername;
+  const isFormDisabled = isAuthLoading || isSubmitting;
 
   const [submissionType, setSubmissionType] = useState<PublicSubmissionType | "">("");
   const [url, setUrl] = useState("");
@@ -95,6 +96,10 @@ export function SubmitPage() {
   /** Handles form submission after client-side contract validation. */
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
+
+    if (isAuthLoading) {
+      return;
+    }
 
     const result = v.safeParse(
       getSubmissionFormSchema(requireName, requireGithubUsername),
@@ -139,7 +144,9 @@ export function SubmitPage() {
   return (
     <div className="SubmitPage">
       <header className="SubmitPage-header">
-        <h1 className="SubmitPage-title heading-2xl">Submit a Resource</h1>
+        <h1 id="submit-page-title" className="SubmitPage-title heading-2xl">
+          Submit a Resource
+        </h1>
         <p className="SubmitPage-description body-base">
           Share a useful tool or resource with the community for review.
         </p>
@@ -166,10 +173,22 @@ export function SubmitPage() {
         </Alert>
       ) : null}
 
-      <form className="SubmitPage-form" onSubmit={handleSubmit} noValidate>
+      <form
+        className="SubmitPage-form"
+        onSubmit={handleSubmit}
+        noValidate
+        aria-labelledby="submit-page-title"
+        aria-busy={isAuthLoading}
+      >
+        {isAuthLoading ? (
+          <p className="SubmitPage-authStatus body-base" role="status">
+            Checking your session…
+          </p>
+        ) : null}
+
         <fieldset
           className="SubmitPage-fieldset SubmitPage-typeFieldset"
-          disabled={isSubmitting}
+          disabled={isFormDisabled}
           aria-describedby={formErrors.type ? "submission-type-error" : undefined}
         >
           <legend className="SubmitPage-legend ui-label">What are you submitting?</legend>
@@ -211,7 +230,7 @@ export function SubmitPage() {
           ) : null}
         </fieldset>
 
-        <fieldset className="SubmitPage-fieldset" disabled={isSubmitting}>
+        <fieldset className="SubmitPage-fieldset" disabled={isFormDisabled}>
           <legend className="visually-hidden">Submission details</legend>
 
           <TextInput
@@ -243,8 +262,8 @@ export function SubmitPage() {
           />
         </fieldset>
 
-        {(requireName || requireGithubUsername) ? (
-          <fieldset className="SubmitPage-fieldset" disabled={isSubmitting}>
+        {!isAuthLoading && (requireName || requireGithubUsername) ? (
+          <fieldset className="SubmitPage-fieldset" disabled={isFormDisabled}>
             <legend className="SubmitPage-legend ui-label">Your details</legend>
 
             {requireName ? (
@@ -282,7 +301,12 @@ export function SubmitPage() {
         ) : null}
 
         <div className="SubmitPage-actions">
-          <Button type="submit" variant="primary" isLoading={isSubmitting}>
+          <Button
+            type="submit"
+            variant="primary"
+            isLoading={isSubmitting}
+            disabled={isAuthLoading}
+          >
             {isSubmitting ? "Submitting…" : "Submit Resource"}
           </Button>
         </div>

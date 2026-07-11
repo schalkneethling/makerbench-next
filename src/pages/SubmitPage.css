@@ -32,6 +32,11 @@
   gap: var(--size-32);
 }
 
+.SubmitPage-authStatus {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
 .SubmitPage-fieldset {
   border: none;
   display: flex;

@@ -3,29 +3,31 @@ import { test, expect } from "@playwright/test";
 test.describe("SubmitPage", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/submit");
+    await expect(page.getByRole("button", { name: "Submit Resource" })).toBeEnabled();
   });
 
   test("has an accessible resource submission form", async ({ page }) => {
     await expect(page.locator(".SubmitPage")).toMatchAriaSnapshot(`
       - heading "Submit a Resource" [level=1]
       - paragraph: Share a useful tool or resource with the community for review.
-      - group "What are you submitting?":
-        - radio "Tool"
-        - text: Tool A developer or maker tool.
-        - radio "Resource"
-        - text: Resource An article, guide, reference, or other useful link.
-      - group "Submission details":
-        - text: URL * The main URL for the submission
-        - textbox "URL"
-        - text: Tags * Add 1-10 tags. Use commas or press Enter between tags.
-        - textbox "Tags"
-        - text: 0/10 tags
-      - group "Your details":
-        - text: Your name * Used to credit your submission
-        - textbox "Your name"
-        - text: GitHub username * Used to link your attribution to your GitHub profile
-        - textbox "GitHub username"
-      - button "Submit Resource"
+      - form "Submit a Resource":
+        - group "What are you submitting?":
+          - radio "Tool"
+          - text: Tool A developer or maker tool.
+          - radio "Resource"
+          - text: Resource An article, guide, reference, or other useful link.
+        - group "Submission details":
+          - text: URL * The main URL for the submission
+          - textbox "URL"
+          - text: Tags * Add 1-10 tags. Use commas or press Enter between tags.
+          - textbox "Tags"
+          - text: 0/10 tags
+        - group "Your details":
+          - text: Your name * Used to credit your submission
+          - textbox "Your name"
+          - text: GitHub username * Used to link your attribution to your GitHub profile
+          - textbox "GitHub username"
+        - button "Submit Resource"
     `);
   });
 

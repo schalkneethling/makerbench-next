@@ -30,6 +30,52 @@ beforeEach(() => {
 });
 
 describe("SubmitPage", () => {
+  it("holds attribution requirements until auth resolves to a signed-in identity", () => {
+    vi.mocked(useAuth).mockReturnValue({
+      ...authDefaults,
+      isLoading: true,
+    });
+    const { rerender } = render(<SubmitPage />);
+
+    expect(screen.getByRole("status")).toHaveTextContent("Checking your session…");
+    expect(screen.getByRole("form", { name: "Submit a Resource" })).toHaveAttribute(
+      "aria-busy",
+      "true",
+    );
+    expect(screen.getByRole("radio", { name: "Tool" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Submit Resource" })).toBeDisabled();
+    expect(screen.queryByRole("textbox", { name: "Your name" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "GitHub username" })).not.toBeInTheDocument();
+
+    vi.mocked(useAuth).mockReturnValue({
+      ...authDefaults,
+      identity: {
+        user: {
+          id: "user-1",
+          email: "ada@example.com",
+          displayName: "Ada Lovelace",
+          githubUsername: "ada-lovelace",
+          avatarUrl: null,
+        },
+        isAdmin: false,
+      },
+      accessToken: "verified-token",
+      isAuthenticated: true,
+      isLoading: false,
+    });
+    rerender(<SubmitPage />);
+
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.getByRole("form", { name: "Submit a Resource" })).toHaveAttribute(
+      "aria-busy",
+      "false",
+    );
+    expect(screen.getByRole("radio", { name: "Tool" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Submit Resource" })).toBeEnabled();
+    expect(screen.queryByRole("textbox", { name: "Your name" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "GitHub username" })).not.toBeInTheDocument();
+  });
+
   it("requires a binary type and anonymous attribution", async () => {
     const user = userEvent.setup();
     render(<SubmitPage />);
