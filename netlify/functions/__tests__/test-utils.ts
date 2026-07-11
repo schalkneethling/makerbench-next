@@ -1,5 +1,9 @@
 import type { Context } from "@netlify/functions";
+import type { SQL } from "drizzle-orm";
+import { PgDialect } from "drizzle-orm/pg-core";
 import { vi } from "vitest";
+
+const pgDialect = new PgDialect();
 
 export function createMockContext(): Context {
   return {
@@ -26,4 +30,21 @@ export function createMockDb() {
     limit: vi.fn().mockResolvedValue([]),
     orderBy: vi.fn().mockResolvedValue([]),
   };
+}
+
+export function getPgQuery(query: unknown) {
+  return pgDialect.sqlToQuery(query as SQL);
+}
+
+export function getSqlText(query: unknown): string {
+  if (!query || typeof query !== "object") {
+    return "";
+  }
+
+  if ("value" in query && Array.isArray(query.value)) {
+    return query.value.join("");
+  }
+
+  const queryChunks = (query as { queryChunks?: unknown[] }).queryChunks ?? [];
+  return queryChunks.map(getSqlText).join("");
 }

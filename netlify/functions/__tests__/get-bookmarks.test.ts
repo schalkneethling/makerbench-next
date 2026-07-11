@@ -30,6 +30,7 @@ vi.mock("../lib/db", () => ({
 
 import getBookmarks from "../get-bookmarks.mts";
 import { getDb } from "../lib/db";
+import { getPgQuery } from "./test-utils";
 
 function createMockContext(): Context {
   return {
@@ -173,6 +174,16 @@ describe("get-bookmarks", () => {
       expect(body.data.bookmarks[0].tags).toHaveLength(1);
       expect(body.data.pagination.total).toBeNull();
       expect(body.data.pagination.hasMore).toBe(true);
+    });
+
+    it("limits public browse results to approved tools", async () => {
+      mockDb.offset.mockResolvedValueOnce([]);
+
+      await getBookmarks(new Request("https://test.com/api/tools"), mockContext);
+
+      const query = getPgQuery(mockDb.where.mock.calls[0]?.[0]);
+      expect(query.sql).toContain('"tool_listings"."status" = $1');
+      expect(query.params).toEqual(["approved"]);
     });
 
     it("caps limit at MAX_LIMIT (100)", async () => {

@@ -37,6 +37,7 @@ vi.mock("../lib/db", () => ({
 
 import searchResources from "../search-resources.mts";
 import { getDb } from "../lib/db";
+import { getSqlText } from "./test-utils";
 
 function createMockContext(): Context {
   return {
@@ -140,6 +141,15 @@ describe("search-resources", () => {
       hasMore: true,
     });
     expect(mockDb.execute).toHaveBeenCalledTimes(3);
+
+    const pageSql = getSqlText(mockDb.execute.mock.calls[0]?.[0]);
+    const countSql = getSqlText(mockDb.execute.mock.calls[1]?.[0]);
+    const childrenSql = getSqlText(mockDb.execute.mock.calls[2]?.[0]);
+    expect(pageSql).toContain("where public_listings.status = 'approved'");
+    expect(pageSql).toContain("where public_stacks.status = 'approved'");
+    expect(countSql).toContain("where public_listings.status = 'approved'");
+    expect(countSql).toContain("where public_stacks.status = 'approved'");
+    expect(childrenSql).toContain("and public_stack_items.status = 'approved'");
   });
 
   it("does not hydrate non-approved stack item rows", async () => {

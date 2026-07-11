@@ -22,7 +22,6 @@ interface UseResourcesReturn extends UseResourcesState {
 }
 
 export function useResources(): UseResourcesReturn {
-  const hasFetched = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
   const activeRequestIdRef = useRef(0);
   const [state, setState] = useState<UseResourcesState>({
@@ -130,11 +129,16 @@ export function useResources(): UseResourcesReturn {
   }, [cancelActiveRequest]);
 
   useEffect(() => {
-    if (!hasFetched.current) {
-      hasFetched.current = true;
-      void fetch();
-    }
+    let isActive = true;
+
+    queueMicrotask(() => {
+      if (isActive) {
+        void fetch();
+      }
+    });
+
     return () => {
+      isActive = false;
       cancelActiveRequest();
     };
   }, [cancelActiveRequest, fetch]);

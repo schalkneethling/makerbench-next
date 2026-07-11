@@ -1,5 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const playwrightPort = process.env.PLAYWRIGHT_PORT ?? "5173";
+const playwrightBaseUrl = `http://localhost:${playwrightPort}`;
+
 /**
  * Playwright configuration for MakerBench e2e and component testing.
  * @see https://playwright.dev/docs/test-configuration
@@ -13,7 +16,7 @@ export default defineConfig({
   reporter: "html",
 
   use: {
-    baseURL: "http://localhost:5173",
+    baseURL: playwrightBaseUrl,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
@@ -42,8 +45,8 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: "pnpm dev",
-    url: "http://localhost:5173",
+    command: `pnpm dev --port ${playwrightPort}`,
+    url: playwrightBaseUrl,
     reuseExistingServer: !process.env.CI,
   },
 });
