@@ -48,14 +48,7 @@ CREATE POLICY "resource owners and public catalog can read resources"
   );--> statement-breakpoint
 DROP POLICY IF EXISTS "authenticated users can create resources"
   ON public.resources;--> statement-breakpoint
-CREATE POLICY "authenticated users can create resources"
-  ON public.resources
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (auth.uid() IS NOT NULL);--> statement-breakpoint
 REVOKE ALL PRIVILEGES ON TABLE public.resources
   FROM anon, authenticated;--> statement-breakpoint
 GRANT SELECT ON TABLE public.resources
-  TO anon, authenticated;--> statement-breakpoint
-GRANT INSERT ON TABLE public.resources
-  TO authenticated;
+  TO anon, authenticated;

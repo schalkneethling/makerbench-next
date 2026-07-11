@@ -76,26 +76,22 @@ describe("RLS migration SQL contract", () => {
     expect(selectPolicy).not.toMatch(/\bOR\s+true\b/i);
   });
 
-  it("targets authenticated resource inserts and grants only required table privileges", () => {
-    const insertPolicy = migrationStatement(
-      rlsMigration,
+  it("removes direct resource inserts and grants only required read privileges", () => {
+    expect(rlsMigration).toContain(
+      'DROP POLICY IF EXISTS "authenticated users can create resources"\n  ON public.resources;',
+    );
+    expect(rlsMigration).not.toContain(
       'CREATE POLICY "authenticated users can create resources"',
     );
-
-    expect(insertPolicy).toContain("FOR INSERT\n  TO authenticated");
-    expect(insertPolicy).toContain("WITH CHECK (auth.uid() IS NOT NULL)");
-    expect(insertPolicy).not.toContain("TO anon");
+    expect(rlsMigration).not.toContain("FOR INSERT");
     expect(rlsMigration).toContain(
       "REVOKE ALL PRIVILEGES ON TABLE public.resources\n  FROM anon, authenticated;",
     );
     expect(rlsMigration).toContain(
       "GRANT SELECT ON TABLE public.resources\n  TO anon, authenticated;",
     );
-    expect(rlsMigration).toContain(
-      "GRANT INSERT ON TABLE public.resources\n  TO authenticated;",
-    );
     expect(rlsMigration).not.toMatch(
-      /GRANT (?:UPDATE|DELETE|ALL PRIVILEGES) ON TABLE public\.resources\s+TO (?:anon|authenticated)/i,
+      /GRANT (?:INSERT|UPDATE|DELETE|ALL PRIVILEGES) ON TABLE public\.resources\s+TO (?:anon|authenticated)/i,
     );
   });
 
