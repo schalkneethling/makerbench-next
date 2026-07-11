@@ -106,4 +106,88 @@ describe("usePublicSubmission", () => {
     expect(result.current.error).toBeNull();
     expect(result.current.response).toBeNull();
   });
+
+  it("keeps the newer response when it supersedes an older delayed request", async () => {
+    let olderRequestStarted = false;
+    server.use(
+      http.post("/api/submissions", async ({ request }) => {
+        const body = (await request.json()) as { url: string; type: string };
+        const isOlderRequest = body.url.endsWith("/older");
+        if (isOlderRequest) {
+          olderRequestStarted = true;
+          await delay(100);
+        }
+
+        return HttpResponse.json(
+          {
+            success: true,
+            data: {
+              submittedItemId: isOlderRequest
+                ? "22222222-2222-4222-8222-222222222222"
+                : "33333333-3333-4333-8333-333333333333",
+              type: body.type,
+              status: "pending",
+              message: "Submission received for review.",
+            },
+          },
+          { status: 201 },
+        );
+      }),
+    );
+    const { result } = renderHook(() => usePublicSubmission());
+    let olderSubmission!: Promise<unknown>;
+    let newerResponse!: Awaited<ReturnType<typeof result.current.submit>>;
+
+    act(() => {
+      olderSubmission = result.current.submit({
+        type: "resource",
+        url: "https://example.com/older",
+        tags: ["testing"],
+      });
+    });
+    await waitFor(() => expect(olderRequestStarted).toBe(true));
+
+    await act(async () => {
+      newerResponse = await result.current.submit({
+        type: "resource",
+        url: "https://example.com/newer",
+        tags: ["testing"],
+      });
+    });
+    await expect(olderSubmission).resolves.toBeNull();
+
+    expect(newerResponse?.submittedItemId).toBe("33333333-3333-4333-8333-333333333333");
+    expect(result.current.response).toEqual(newerResponse);
+    expect(result.current.isSubmitting).toBe(false);
+    expect(result.current.error).toBeNull();
+  });
+
+  it("aborts on unmount without applying stale response or error state", async () => {
+    let requestSignal: AbortSignal | undefined;
+    server.use(
+      http.post("/api/submissions", async ({ request }) => {
+        requestSignal = request.signal;
+        await delay("infinite");
+        return HttpResponse.json({});
+      }),
+    );
+    const { result, unmount } = renderHook(() => usePublicSubmission());
+    let submission!: Promise<unknown>;
+
+    act(() => {
+      submission = result.current.submit({
+        type: "tool",
+        url: "https://example.com/tool",
+        tags: ["testing"],
+      });
+    });
+    await waitFor(() => expect(requestSignal).toBeDefined());
+
+    unmount();
+
+    await expect(submission).resolves.toBeNull();
+    expect(requestSignal?.aborted).toBe(true);
+    expect(result.current.error).toBeNull();
+    expect(result.current.response).toBeNull();
+  });
 });

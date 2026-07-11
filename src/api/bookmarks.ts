@@ -232,8 +232,16 @@ export async function getTags(
 }
 
 export async function submitBookmark(data: BookmarkRequest): Promise<SubmitBookmarkResponse> {
+  const { submitterGithubUsername, submitterGithubUrl, ...submission } = data;
+
   try {
-    return await submitPublicSubmission({ ...data, type: "tool" });
+    return await submitPublicSubmission({
+      ...submission,
+      type: "tool",
+      submitterGithubUrl: submitterGithubUsername
+        ? `https://github.com/${submitterGithubUsername}`
+        : submitterGithubUrl,
+    });
   } catch (error) {
     if (error instanceof PublicSubmissionApiError) {
       throw new BookmarkApiError(error.message, error.status, error.details);

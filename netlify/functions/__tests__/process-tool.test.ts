@@ -215,8 +215,8 @@ describe("process-tool", () => {
       const req = new Request("https://test.com/api/tools", {
         method: "POST",
         body: JSON.stringify({
-          type: "article",
-          url: "https://example.com/article",
+          type: "resource",
+          url: "https://example.com/resource",
           tags: ["test"],
         }),
         headers: { "Content-Type": "application/json" },
