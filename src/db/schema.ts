@@ -31,7 +31,7 @@ export const resourcesTable = pgTable("resources", {
   pageTitle: text("page_title").notNull(),
   metaDescription: text("meta_description").default("").notNull(),
   ...timestamps,
-});
+}).enableRLS();
 
 export const toolListingsTable = pgTable(
   "tool_listings",
@@ -72,7 +72,7 @@ export const toolListingsTable = pgTable(
     index("idx_tool_listings_status_created").on(table.status, table.createdAt),
     uniqueIndex("unique_tool_listing_resource").on(table.resourceId),
   ],
-);
+).enableRLS();
 
 export const bookmarksTable = pgTable(
   "bookmarks",
@@ -159,7 +159,7 @@ export const publicListingsTable = pgTable(
       sql`${table.contentKind} in ('article', 'resource')`,
     ),
   ],
-);
+).enableRLS();
 
 export const publicStacksTable = pgTable(
   "public_stacks",
@@ -204,7 +204,7 @@ export const publicStacksTable = pgTable(
     index("idx_public_stacks_owner").on(table.ownerUserId, table.createdAt),
     index("idx_public_stacks_resource").on(table.resourceId),
   ],
-);
+).enableRLS();
 
 export const publicStackItemsTable = pgTable(
   "public_stack_items",
@@ -255,7 +255,7 @@ export const publicStackItemsTable = pgTable(
     ),
     index("idx_public_stack_items_resource").on(table.resourceId),
   ],
-);
+).enableRLS();
 
 export const userRolesTable = pgTable(
   "user_roles",
