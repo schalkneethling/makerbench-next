@@ -48,6 +48,7 @@ interface SubmissionCreated {
 
 function createMockDb() {
   return {
+    execute: vi.fn().mockResolvedValue({ rows: [{ attempt_count: 1 }] }),
     insert: vi.fn().mockReturnThis(),
     values: vi.fn().mockReturnThis(),
     onConflictDoUpdate: vi.fn().mockReturnThis(),
@@ -305,6 +306,51 @@ describe("public-submissions", () => {
     expect(body.details?.tags).toBeDefined();
   });
 
+  it("fails closed with a generic response for missing or invalid limit configuration", async () => {
+    const originalGet = Netlify.env.get;
+    const request = createSubmissionRequest({
+      type: "resource",
+      url: "https://example.com/resource",
+      tags: ["css"],
+    });
+
+    try {
+      Netlify.env.get = vi.fn((key: string) =>
+        key === "SUBMISSION_RATE_LIMIT_SECRET" ? undefined : originalGet(key),
+      );
+      const missingResponse = await publicSubmissions(
+        request,
+        createMockContext(),
+      );
+      expect(missingResponse.status).toBe(503);
+      await expect(missingResponse.json()).resolves.toEqual({
+        success: false,
+        error: "Service temporarily unavailable",
+      });
+
+      Netlify.env.get = vi.fn((key: string) =>
+        key === "SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS"
+          ? "zero"
+          : originalGet(key),
+      );
+      const invalidResponse = await publicSubmissions(
+        createSubmissionRequest({
+          type: "resource",
+          url: "https://example.com/other-resource",
+          tags: ["css"],
+        }),
+        createMockContext(),
+      );
+      expect(invalidResponse.status).toBe(503);
+      await expect(invalidResponse.json()).resolves.toEqual({
+        success: false,
+        error: "Service temporarily unavailable",
+      });
+    } finally {
+      Netlify.env.get = originalGet;
+    }
+  });
+
   it("rejects article as a separate public submission type", async () => {
     const res = await publicSubmissions(
       createSubmissionRequest({
@@ -360,6 +406,34 @@ describe("public-submissions", () => {
     expect(res.status).toBe(409);
     const body = (await res.json()) as ErrorResponse;
     expect(body.error).toContain("already been submitted");
+  });
+
+  it("rejects throttled requests before metadata or moderation inserts", async () => {
+    const mockDb = createMockDb();
+    mockDb.execute.mockResolvedValue({ rows: [] });
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+
+    const res = await publicSubmissions(
+      createSubmissionRequest({
+        type: "resource",
+        url: "https://example.com/resource",
+        tags: ["css"],
+      }),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(429);
+    const body = (await res.json()) as ErrorResponse;
+    expect(body).toEqual({
+      success: false,
+      error: "Too many submission attempts. Please try again later.",
+    });
+    expect(body.error).not.toMatch(/5|3600|limit|window/i);
+    expect(extractMetadata).not.toHaveBeenCalled();
+    expect(captureScreenshot).not.toHaveBeenCalled();
+    expect(mockDb.insert).not.toHaveBeenCalled();
   });
 
   it("rejects invalid bearer tokens instead of silently dropping attribution", async () => {

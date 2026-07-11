@@ -55,6 +55,9 @@ context that needs them:
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
 - `BROWSERLESS_API_KEY`
+- `SUBMISSION_RATE_LIMIT_SECRET` - server-only HMAC secret (32+ characters)
+- `SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS` - positive integer, at most 1000
+- `SUBMISSION_RATE_LIMIT_WINDOW_SECONDS` - positive integer, at most 86400
 - `SENTRY_DSN` (optional)
 
 The `VITE_` variables must be available during the frontend build and to the

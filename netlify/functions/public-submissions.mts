@@ -2,8 +2,9 @@ import type { Config, Context } from "@netlify/functions";
 
 import { handlePublicSubmission } from "./lib/submissions";
 
-export default async (req: Request, _context: Context) => {
+export default async (req: Request, context: Context) => {
   return await handlePublicSubmission(req, {
+    context,
     endpointName: "public-submissions",
   });
 };

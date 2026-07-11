@@ -229,6 +229,26 @@ The server always resolves attribution authoritatively. Verified display-name an
 
 Functions call `validate*()` helpers, and the frontend reuses the shared schemas for form validation. Client validation improves feedback but does not replace server enforcement.
 
+### Public submission rate limiting
+
+`/api/submissions` and legacy `/api/tools` use the same durable PostgreSQL
+fixed-window limiter before URL resolution, metadata fetches, screenshots, or
+moderation-row creation. Authenticated requests are keyed by the verified
+Supabase user ID. Anonymous requests use Netlify Functions
+[`context.ip`](https://docs.netlify.com/build/functions/api/#ip), which Netlify
+documents as the client IP address; request headers and client-provided
+fingerprints are deliberately ignored.
+
+The database stores only `HMAC-SHA-256(secret, "user:<id>" | "ip:<address>")`,
+the window start, and an attempt count. It never stores a raw IP or submission
+payload. The counter update is one atomic Postgres `INSERT ... ON CONFLICT ...
+WHERE` statement, so concurrent requests cannot exceed the configured limit.
+The table has RLS and no `anon` or `authenticated` privileges; only trusted
+server-side database access can use it. This reduces privacy exposure but does
+not make IP-based limits a perfect identity signal (shared NATs and rotating
+addresses remain a tradeoff). Rotate the HMAC secret only deliberately: doing
+so resets anonymous rate-limit continuity.
+
 ### External service integrations
 
 **Metadata extraction** (`src/lib/services/metadata.ts`):
@@ -319,17 +339,18 @@ erDiagram
     }
 ```
 
-| Table                | Purpose                                                          |
-| -------------------- | ---------------------------------------------------------------- |
-| `resources`          | Canonical URL identity shared across all listing types           |
-| `tool_listings`      | Public tool submissions with moderation status and preview image |
-| `bookmarks`          | Per-user personal bookmarks (private library)                    |
-| `public_listings`    | Moderated resource submissions and migrated community resources  |
-| `public_stacks`      | Curated multi-item resource stacks                               |
-| `public_stack_items` | Items within a public stack                                      |
-| `user_roles`         | Admin role assignments                                           |
-| `user_preferences`   | User settings (e.g. highlight color)                             |
-| `auth.users`         | Supabase-managed auth users (referenced, not owned)              |
+| Table                           | Purpose                                                          |
+| ------------------------------- | ---------------------------------------------------------------- |
+| `resources`                     | Canonical URL identity shared across all listing types           |
+| `tool_listings`                 | Public tool submissions with moderation status and preview image |
+| `bookmarks`                     | Per-user personal bookmarks (private library)                    |
+| `public_listings`               | Moderated resource submissions and migrated community resources  |
+| `public_stacks`                 | Curated multi-item resource stacks                               |
+| `public_stack_items`            | Items within a public stack                                      |
+| `user_roles`                    | Admin role assignments                                           |
+| `user_preferences`              | User settings (e.g. highlight color)                             |
+| `public_submission_rate_limits` | Server-only HMAC-keyed submission throttle state                 |
+| `auth.users`                    | Supabase-managed auth users (referenced, not owned)              |
 
 `public_listings.content_kind` retains `article | resource` for migrated and existing rows. New public submission input is binary `tool | resource`; articles, guides, and other article-like links are submitted as `resource`, not as a third input type.
 
@@ -468,16 +489,20 @@ Database migrations are applied separately via `pnpm db:migrate` against the tar
 
 ## Environment Variables
 
-Defined in `.env.schema` (Varlock). Key variables:
+Server configuration is defined in `.env.schema` (Varlock) and Netlify
+environment settings. Key variables:
 
-| Variable                 | Scope           | Purpose                                      |
-| ------------------------ | --------------- | -------------------------------------------- |
-| `SUPABASE_DATABASE_URL`  | Server only     | Postgres connection (pooler URL recommended) |
-| `VITE_SUPABASE_URL`      | Client + server | Supabase project URL                         |
-| `VITE_SUPABASE_ANON_KEY` | Client + server | Supabase anon key (JWT verification)         |
-| `CLOUDINARY_*`           | Server only     | Screenshot upload                            |
-| `BROWSERLESS_API_KEY`    | Server only     | Screenshot capture                           |
-| `SENTRY_DSN`             | Server only     | Optional error tracking                      |
+| Variable                               | Scope           | Purpose                                      |
+| -------------------------------------- | --------------- | -------------------------------------------- |
+| `SUPABASE_DATABASE_URL`                | Server only     | Postgres connection (pooler URL recommended) |
+| `VITE_SUPABASE_URL`                    | Client + server | Supabase project URL                         |
+| `VITE_SUPABASE_ANON_KEY`               | Client + server | Supabase anon key (JWT verification)         |
+| `CLOUDINARY_*`                         | Server only     | Screenshot upload                            |
+| `BROWSERLESS_API_KEY`                  | Server only     | Screenshot capture                           |
+| `SUBMISSION_RATE_LIMIT_SECRET`         | Server only     | HMAC key, at least 32 characters             |
+| `SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS`   | Server only     | Attempts permitted in one fixed window       |
+| `SUBMISSION_RATE_LIMIT_WINDOW_SECONDS` | Server only     | Fixed-window duration in seconds             |
+| `SENTRY_DSN`                           | Server only     | Optional error tracking                      |
 
 Server-side functions read secrets via `Netlify.env.get()`. Client-visible vars use the `VITE_` prefix and are bundled by Vite.
 

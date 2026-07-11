@@ -45,11 +45,17 @@ The required names are:
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
 - `BROWSERLESS_API_KEY`
+- `SUBMISSION_RATE_LIMIT_SECRET` - a server-only random secret of at least 32 characters
+- `SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS` - positive integer, at most 1000
+- `SUBMISSION_RATE_LIMIT_WINDOW_SECONDS` - positive integer, at most 86400
 
 `SENTRY_DSN` is a separate optional setting read by the Functions when
 configured; it is not required by `.env.schema`. The `VITE_` variables are
 exposed to the browser by Vite; the database and service credentials are
-server-side values. Netlify Functions read their values from `Netlify.env`.
+server-side values. `SUBMISSION_RATE_LIMIT_SECRET` is intentionally supplied
+through a secure local environment source rather than assigned in
+`.env.schema`; its tuning values are defined there. Netlify Functions read
+their values from `Netlify.env`.
 
 ## 3. Apply Supabase migrations
 

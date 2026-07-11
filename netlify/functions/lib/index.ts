@@ -15,11 +15,17 @@ export {
 } from "./auth";
 export { assertRequiredEnv, handleMissingEnvironmentError } from "./env";
 export {
+  consumeSubmissionRateLimit,
+  createSubmissionRateLimitKey,
+  getSubmissionRateLimitConfig,
+} from "./submission-rate-limit";
+export {
   bookmarksTable,
   resourcesTable,
   toolListingsTable,
   publicListingsTable,
   publicStacksTable,
   publicStackItemsTable,
+  publicSubmissionRateLimitsTable,
   userRolesTable,
 } from "../../../src/db/schema";

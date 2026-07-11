@@ -33,6 +33,10 @@ vi.stubGlobal("Netlify", {
         CLOUDINARY_CLOUD_NAME: "test-cloud",
         CLOUDINARY_API_KEY: "test-api-key",
         CLOUDINARY_API_SECRET: "test-api-secret",
+        SUBMISSION_RATE_LIMIT_SECRET:
+          "test-submission-rate-limit-secret-1234567890",
+        SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS: "5",
+        SUBMISSION_RATE_LIMIT_WINDOW_SECONDS: "3600",
       };
       return testEnv[key];
     },
@@ -45,6 +49,9 @@ vi.stubGlobal("Netlify", {
         "CLOUDINARY_CLOUD_NAME",
         "CLOUDINARY_API_KEY",
         "CLOUDINARY_API_SECRET",
+        "SUBMISSION_RATE_LIMIT_SECRET",
+        "SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS",
+        "SUBMISSION_RATE_LIMIT_WINDOW_SECONDS",
       ];
       return keys.includes(key);
     },

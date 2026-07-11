@@ -4,6 +4,7 @@ import {
   bigint,
   check,
   index,
+  integer,
   pgSchema,
   pgTable,
   text,
@@ -283,6 +284,28 @@ export const userPreferencesTable = pgTable("user_preferences", {
     .notNull(),
   ...timestamps,
 }).enableRLS();
+
+// Server-only abuse-control state. The database migration explicitly revokes
+// browser roles so this keyed, pseudonymous data cannot be queried via Supabase.
+export const publicSubmissionRateLimitsTable = pgTable(
+  "public_submission_rate_limits",
+  {
+    keyHash: text("key_hash").primaryKey(),
+    windowStartedAt: timestamp("window_started_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    attemptCount: integer("attempt_count").default(1).notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    check(
+      "public_submission_rate_limits_attempt_count_check",
+      sql`${table.attemptCount} > 0`,
+    ),
+  ],
+).enableRLS();
 
 export type InsertResource = typeof resourcesTable.$inferInsert;
 export type SelectResource = typeof resourcesTable.$inferSelect;

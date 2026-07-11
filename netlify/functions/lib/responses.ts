@@ -76,6 +76,17 @@ export function conflict(error: string): Response {
   return jsonResponse({ success: false, error }, 409);
 }
 
+/** Generic rate-limit response; it intentionally reveals no enforcement details. */
+export function tooManyRequests(): Response {
+  return jsonResponse(
+    {
+      success: false,
+      error: "Too many submission attempts. Please try again later.",
+    },
+    429,
+  );
+}
+
 /**
  * Not found error (404)
  */
