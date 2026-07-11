@@ -49,10 +49,11 @@ contract test, not executable proof of PostgreSQL actor behavior.
 > `authenticated`, and `service_role` actors. Seed approved and pending tool
 > listings, public listings, stacks, stack items, and bookmarks owned by two
 > users. Verify anonymous approved-catalog visibility, owner-only private
-> resource visibility, denial for another user, authenticated resource insert,
-> denied anon insert, and trusted moderation access. The harness must use a
-> disposable database, run in CI without shared credentials, and fail when a
-> permissive policy or excess grant reopens access.
+> resource visibility, denial for another user, denied direct resource inserts
+> for both `anon` and `authenticated`, successful creation only through the
+> trusted Netlify/BYPASSRLS connection, and trusted moderation access. The
+> harness must use a disposable database, run in CI without shared credentials,
+> and fail when a permissive policy or excess grant reopens access.
 
 Do not create this issue as part of #71.
 
