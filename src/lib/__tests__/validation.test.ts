@@ -104,7 +104,7 @@ describe("Validation Schemas", () => {
   });
 
   describe("validatePublicSubmissionRequest", () => {
-    it.each(["tool", "article", "resource"] as const)(
+    it.each(["tool", "resource"] as const)(
       "should validate %s public submissions",
       (type) => {
         const result = validatePublicSubmissionRequest({
@@ -153,8 +153,8 @@ describe("Validation Schemas", () => {
 
     it("should validate optional authenticated user context", () => {
       const result = validatePublicSubmissionRequest({
-        type: "article",
-        url: "https://example.com/article",
+        type: "resource",
+        url: "https://example.com/resource",
         tags: ["writing"],
         authenticatedUser: {
           userId: "11111111-1111-4111-8111-111111111111",
@@ -169,6 +169,16 @@ describe("Validation Schemas", () => {
         type: "video",
         url: "https://example.com/video",
         tags: ["media"],
+      });
+
+      expect(result.success).toBe(false);
+    });
+
+    it("should reject article as a separate public submission type", () => {
+      const result = validatePublicSubmissionRequest({
+        type: "article",
+        url: "https://example.com/article",
+        tags: ["writing"],
       });
 
       expect(result.success).toBe(false);

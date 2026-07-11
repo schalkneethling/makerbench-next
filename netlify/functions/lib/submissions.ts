@@ -330,7 +330,7 @@ async function createToolSubmission({
   return tool?.id ?? null;
 }
 
-/** Inserts a pending public article/resource listing linked to the shared resource row. */
+/** Inserts a pending public resource listing linked to the shared resource row. */
 async function createPublicListingSubmission({
   authenticated,
   metadata,
@@ -393,8 +393,7 @@ function getSuccessMessage(type: PublicSubmissionType): string {
     return "Tool submitted. It will be reviewed shortly.";
   }
 
-  const label = type === "article" ? "Article" : "Resource";
-  return `${label} submitted. It will be reviewed shortly.`;
+  return "Resource submitted. It will be reviewed shortly.";
 }
 
 /** Formats the generic processing error for the submitted content type. */

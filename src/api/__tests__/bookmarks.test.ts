@@ -132,10 +132,10 @@ function createGetTagsHandler() {
 }
 
 /**
- * Creates the POST /api/tools handler
+ * Creates the POST /api/submissions compatibility handler
  */
 function createSubmitBookmarkHandler() {
-  return http.post(`${API_BASE}/api/tools`, async ({ request }) => {
+  return http.post(`${API_BASE}/api/submissions`, async ({ request }) => {
     const body = (await request.json()) as { type?: string; url?: string; tags?: string[] };
 
     // Validate URL is present

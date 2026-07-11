@@ -5,7 +5,7 @@ import { Alert } from "../components/ui";
 import { TextInput } from "../components/ui";
 import { Button } from "../components/ui";
 import { TagInput } from "../components/forms";
-import { useSubmitBookmark } from "../hooks";
+import { usePublicSubmission } from "../hooks/usePublicSubmission";
 import { bookmarkRequestSchema, type BookmarkRequest } from "../lib/validation";
 
 import "./SubmitPage.css";
@@ -21,7 +21,7 @@ interface FormErrors {
  * Submit page - form for submitting new tools.
  */
 export function SubmitPage() {
-  const { submit, isSubmitting, error, response, reset } = useSubmitBookmark();
+  const { submit, isSubmitting, error, response, reset } = usePublicSubmission();
 
   // Form state
   const [url, setUrl] = useState("");
@@ -81,7 +81,7 @@ export function SubmitPage() {
       submitterGithubUsername: submitterGithubUsername.trim() || undefined,
     };
 
-    const result = await submit(data);
+    const result = await submit({ ...data, type: "tool" });
 
     if (result) {
       // Reset form on success

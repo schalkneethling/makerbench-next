@@ -66,7 +66,7 @@ const optionalGithubUsernameSchema = v.optional(
   ]),
 );
 
-export const publicSubmissionTypeSchema = v.picklist(["tool", "article", "resource"]);
+export const publicSubmissionTypeSchema = v.picklist(["tool", "resource"]);
 export const publicSubmissionStatusSchema = v.picklist(["pending", "approved", "rejected"]);
 
 export const publicSubmissionAuthenticatedUserSchema = v.object({

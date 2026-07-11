@@ -1,10 +1,10 @@
 import * as v from "valibot";
 import {
   apiErrorResponseSchema,
-  publicSubmissionResponseSchema,
   type BookmarkRequest,
   type PublicSubmissionResponseData,
 } from "../lib/validation";
+import { PublicSubmissionApiError, submitPublicSubmission } from "./submissions";
 
 function getBaseUrl(): string {
   if (typeof window !== "undefined") {
@@ -232,35 +232,15 @@ export async function getTags(
 }
 
 export async function submitBookmark(data: BookmarkRequest): Promise<SubmitBookmarkResponse> {
-  const { submitterGithubUsername, submitterGithubUrl, ...rest } = data;
-  const payload = {
-    ...rest,
-    type: "tool",
-    submitterGithubUrl: submitterGithubUsername
-      ? `https://github.com/${submitterGithubUsername}`
-      : submitterGithubUrl,
-  };
+  try {
+    return await submitPublicSubmission({ ...data, type: "tool" });
+  } catch (error) {
+    if (error instanceof PublicSubmissionApiError) {
+      throw new BookmarkApiError(error.message, error.status, error.details);
+    }
 
-  const response = await fetch(`${getBaseUrl()}/api/tools`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const json = await response.json();
-
-  if (!response.ok) {
-    throwApiError(json, response.status);
+    throw error;
   }
-
-  const result = v.safeParse(publicSubmissionResponseSchema, json);
-  if (!result.success) {
-    throw new BookmarkApiError("Invalid response from server", 500);
-  }
-
-  return result.output.data;
 }
 
 export const getTools = getBookmarks;
