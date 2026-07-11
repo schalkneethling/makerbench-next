@@ -41,6 +41,10 @@ describe("Header", () => {
     renderHeader();
 
     expect(screen.getByText("Sign in")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Submit Resource" })).toHaveAttribute(
+      "href",
+      "/submit",
+    );
     expect(screen.queryByRole("link", { name: "Library" })).not.toBeInTheDocument();
   });
 

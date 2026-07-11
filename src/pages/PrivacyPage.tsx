@@ -14,30 +14,33 @@ export function PrivacyPage() {
       <section>
         <h2 className="heading-2xl">Overview</h2>
         <p>
-          MakerBench is a curated tool directory. This policy explains what information we collect,
-          how we use it, and which third-party services help us run the site.
+          MakerBench is a curated directory of tools and resources. This policy explains what
+          information we collect, how we use it, and which third-party services help us run the
+          site.
         </p>
       </section>
 
       <section>
         <h2 className="heading-2xl">Information You Provide</h2>
-        <p>When you submit a tool, we collect the information entered into the submission form:</p>
+        <p>When you submit a resource, we collect the information entered into the submission form:</p>
         <ul>
           <li>
-            <span className="PrivacyPage-emphasis">Tool URL:</span> required so we can review the
-            submitted site.
+            <span className="PrivacyPage-emphasis">Submission type and URL:</span> required so we
+            can route and review the submitted tool or resource.
           </li>
           <li>
             <span className="PrivacyPage-emphasis">Tags:</span> required so we can classify the
             submission.
           </li>
           <li>
-            <span className="PrivacyPage-emphasis">Your name:</span> optional and only used for
-            attribution if the tool is approved.
+            <span className="PrivacyPage-emphasis">Your name:</span> required for signed-out
+            submissions and used for attribution if the submission is approved. Signed-in accounts
+            may provide this through their verified identity.
           </li>
           <li>
-            <span className="PrivacyPage-emphasis">Your GitHub username:</span> optional and only
-            used to link your attribution on an approved listing.
+            <span className="PrivacyPage-emphasis">Your GitHub username:</span> required when it
+            cannot be resolved from a signed-in identity and used to link attribution on an approved
+            listing.
           </li>
         </ul>
         <p>
@@ -49,7 +52,7 @@ export function PrivacyPage() {
       <section>
         <h2 className="heading-2xl">Information We Derive During Review</h2>
         <p>
-          When a tool is submitted, MakerBench may fetch public metadata from the submitted URL,
+          When a tool or resource is submitted, MakerBench may fetch public metadata from its URL,
           such as the page title, description, and preview image. If needed, we may also generate a
           screenshot of the submitted site for the directory card.
         </p>
@@ -75,8 +78,8 @@ export function PrivacyPage() {
       <section>
         <h2 className="heading-2xl">How We Use Information</h2>
         <ul>
-          <li>Review and publish tool submissions</li>
-          <li>Display approved listings and optional submitter attribution</li>
+          <li>Review and publish tool and resource submissions</li>
+          <li>Display approved listings and submitter attribution</li>
           <li>Operate, secure, and improve the site</li>
           <li>Diagnose outages, bugs, and abuse</li>
           <li>Understand overall usage trends through analytics</li>
@@ -141,8 +144,7 @@ export function PrivacyPage() {
         <h2 className="heading-2xl">Your Choices</h2>
         <p>
           If you want a submitted name or GitHub attribution corrected or removed, open an issue in
-          the project repository. If you do not want attribution displayed, do not include the
-          optional attribution fields when submitting a tool.
+          the project repository.
         </p>
       </section>
 

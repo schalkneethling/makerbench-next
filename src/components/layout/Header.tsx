@@ -53,7 +53,7 @@ export function Header() {
               Library
             </LinkButton>
           )}
-          <LinkButton to="/submit">Submit Tool</LinkButton>
+          <LinkButton to="/submit">Submit Resource</LinkButton>
         </nav>
         <div className="Header-auth">
           {isAuthenticated ? (

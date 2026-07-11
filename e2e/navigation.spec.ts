@@ -7,9 +7,9 @@ test.describe("Navigation", () => {
     await expect(page).toHaveURL("/");
   });
 
-  test("Submit Tool link navigates to submit page", async ({ page }) => {
+  test("Submit Resource link navigates to submit page", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("link", { name: "Submit Tool" }).click();
+    await page.getByRole("link", { name: "Submit Resource" }).click();
     await expect(page).toHaveURL("/submit");
   });
 
@@ -34,6 +34,6 @@ test.describe("Route content", () => {
 
   test("submit page has correct heading", async ({ page }) => {
     await page.goto("/submit");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Submit a Tool");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Submit a Resource");
   });
 });

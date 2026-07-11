@@ -40,6 +40,40 @@ beforeEach(() => {
 });
 
 describe("usePublicSubmission", () => {
+  it("forwards the access token to the submission client", async () => {
+    let authorization: string | null = null;
+    server.use(
+      http.post("/api/submissions", ({ request }) => {
+        authorization = request.headers.get("Authorization");
+        return HttpResponse.json(
+          {
+            success: true,
+            data: {
+              submittedItemId,
+              type: "tool",
+              status: "pending",
+              message: "Tool submitted.",
+            },
+          },
+          { status: 201 },
+        );
+      }),
+    );
+    const { result } = renderHook(() =>
+      usePublicSubmission({ accessToken: "verified-token" }),
+    );
+
+    await act(async () => {
+      await result.current.submit({
+        type: "tool",
+        url: "https://example.com/tool",
+        tags: ["testing"],
+      });
+    });
+
+    expect(authorization).toBe("Bearer verified-token");
+  });
+
   it("submits successfully and stores the response", async () => {
     const { result } = renderHook(() => usePublicSubmission());
 

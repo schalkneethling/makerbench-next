@@ -185,6 +185,7 @@ Shared utilities live in `netlify/functions/lib/`:
 
 | Method | Path                    | Function file          | Auth | Description                                |
 | ------ | ----------------------- | ---------------------- | ---- | ------------------------------------------ |
+| `POST` | `/api/submissions`      | `public-submissions.mts` | Optional | Submit a tool or resource for moderation |
 | `POST` | `/api/tools`            | `process-tool.mts`     | No   | Submit tool (stored as `pending`)          |
 | `GET`  | `/api/tools`            | `get-bookmarks.mts`    | No   | List approved tools (paginated)            |
 | `GET`  | `/api/tools/search`     | `search-bookmarks.mts` | No   | Search/filter approved tools               |
@@ -209,13 +210,13 @@ All responses follow a consistent envelope:
 
 Valibot schemas in `src/lib/validation.ts` define:
 
-- Shared public submissions for tools, articles, and resources (`publicSubmissionRequestSchema`, `publicSubmissionResponseSchema`)
+- Shared public submissions for tools and resources (`publicSubmissionRequestSchema`, `publicSubmissionResponseSchema`)
 - Tool submission (`toolSubmissionSchema`)
 - Personal library entries (`personalResourceRequestSchema`)
 - Tag constraints (1–10 tags, max 50 chars each)
 - URL normalization rules (HTTP/HTTPS only, max 2000 chars)
 
-Public submission success responses return a submitted item id, `tool | article | resource` type, moderation status, and message. Functions call `validate*()` helpers; the frontend reuses the same schemas for form validation.
+Public submission success responses return a submitted item id, `tool | resource` type, moderation status, and message. Articles, guides, references, and other non-tool links use the `resource` type. Functions call `validate*()` helpers; the frontend reuses the same schemas for form validation.
 
 ### External service integrations
 

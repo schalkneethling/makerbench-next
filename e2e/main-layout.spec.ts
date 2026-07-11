@@ -13,7 +13,7 @@ test.describe("MainLayout", () => {
       - banner:
         - link "Maker Bench"
         - navigation "Primary":
-          - link "Submit Tool"
+          - link "Submit Resource"
       - main
       - contentinfo:
         - paragraph: /© \\d{4} MakerBench/

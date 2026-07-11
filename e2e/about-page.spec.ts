@@ -7,32 +7,29 @@ test.describe("AboutPage", () => {
     await expect(page.locator("article.AboutPage")).toMatchAriaSnapshot(`
       - article:
         - heading "About MakerBench" [level=1]
-        - heading "Our Mission" [level=2]
-        - paragraph: MakerBench is a curated directory of tools and resources for makers, developers, and creators. We help you discover the right tools to bring your ideas to life, whether you're building a side project, launching a startup, or exploring new technologies.
-        - heading "What We Do" [level=2]
-        - paragraph: "We collect and organize tools across categories like development, design, productivity, marketing, and more. Each tool in our directory includes:"
-        - list:
-          - listitem: A clear description of what the tool does
-          - listitem: Relevant tags to help you find related tools
-          - listitem: Screenshots to see the tool in action
-          - listitem: Direct links to try or learn more
-        - heading "Community-Driven" [level=2]
-        - paragraph: MakerBench is built by makers, for makers. Anyone can submit a tool to the directory. We review each submission to ensure quality and relevance before adding it to the catalog.
+        - heading "What MakerBench Is" [level=2]
+        - paragraph: MakerBench is a curated directory of tools and resources for makers, developers, and teams building products on the web. The goal is simple: make useful links easier to discover without turning the site into a noisy list of everything on the internet.
+        - heading "How It Works" [level=2]
+        - paragraph: Tools and resources can be submitted by the community and are reviewed before they appear in the catalog. Each approved listing includes the metadata we can reliably collect, relevant tags, and an image when available so visitors can quickly evaluate whether it is worth exploring.
+        - heading "Contributing Resources" [level=2]
         - paragraph:
-          - text: Have a tool you love? Share it with the community by
-          - link "submitting it here":
+          - text: If you know a tool, article, guide, reference, or other resource that belongs here, use the
+          - link "submission form":
             - /url: /submit
-          - text: .
-        - heading "Open Source" [level=2]
+          - text: . Choose whether it is a tool or resource, then add its URL and a small set of accurate tags.
+        - paragraph: Submissions are reviewed before publication so the directory stays useful, consistent, and focused.
+        - heading "Contributing Code" [level=2]
         - paragraph:
-          - text: MakerBench is open source and built in the open. We believe in transparency and welcome contributions from the community. You can view the source code, report issues, or contribute improvements on
+          - text: MakerBench is open source. If you want to fix a bug, improve the UI, or tighten the docs, open an issue or pull request on
           - link "GitHub":
             - /url: https://github.com/schalkneethling/makerbench-next
-          - text: .
+          - text: . Small, focused contributions are preferred.
+        - heading "Project Scope" [level=2]
+        - paragraph: MakerBench is intentionally opinionated. The aim is not exhaustive coverage. The aim is a clean, searchable catalogue that helps people find high-signal tools quickly.
         - heading "Contact" [level=2]
         - paragraph:
-          - text: Questions or feedback? Reach out on GitHub at
-          - link "our project repository":
+          - text: Questions, corrections, or feedback can be shared in
+          - link "the project repository":
             - /url: https://github.com/schalkneethling/makerbench-next
           - text: .
     `);
@@ -47,7 +44,7 @@ test.describe("AboutPage", () => {
 
   test("submit link in content navigates correctly", async ({ page }) => {
     await page.goto("/about");
-    await page.getByRole("link", { name: "submitting it here" }).click();
+    await page.getByRole("link", { name: "submission form" }).click();
     await expect(page).toHaveURL("/submit");
   });
 

@@ -45,6 +45,67 @@
   opacity: 0.6;
 }
 
+.SubmitPage-typeFieldset {
+  gap: var(--size-16);
+}
+
+.SubmitPage-typeOptions {
+  display: grid;
+  gap: var(--size-12);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.SubmitPage-typeOption {
+  align-items: flex-start;
+  background: var(--color-surface-raised);
+  border: var(--size-1) solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  gap: var(--size-12);
+  min-block-size: var(--size-80);
+  padding: var(--size-16);
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.SubmitPage-typeOption:has(.SubmitPage-typeInput:checked) {
+  background: var(--color-surface-sunken);
+  border-color: var(--color-border-strong);
+}
+
+.SubmitPage-typeOption:has(.SubmitPage-typeInput:focus-visible) {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: var(--focus-ring-offset-sm);
+}
+
+.SubmitPage-typeInput {
+  accent-color: var(--color-primary);
+  block-size: var(--size-20);
+  flex: 0 0 var(--size-20);
+  inline-size: var(--size-20);
+  margin: 0;
+}
+
+.SubmitPage-typeLabel {
+  color: var(--color-text);
+  display: block;
+  font-weight: var(--font-weight-semibold);
+}
+
+.SubmitPage-typeHint {
+  color: var(--color-text-muted);
+  display: block;
+  margin-block-start: var(--size-4);
+}
+
+.SubmitPage-fieldError {
+  color: var(--color-error);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
 .SubmitPage-legend {
   color: var(--color-text);
   margin-block-end: var(--size-16);
@@ -59,4 +120,10 @@
 .SubmitPage-errorDetails {
   margin-block-start: var(--size-8);
   padding-inline-start: var(--size-20);
+}
+
+@media (width < 30rem) {
+  .SubmitPage-typeOptions {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
