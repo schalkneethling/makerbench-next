@@ -1,5 +1,6 @@
 import { Alert } from "../components/ui/Alert";
 import { Button } from "../components/ui/Button";
+import { SubmissionBlocklist } from "../components/admin/SubmissionBlocklist";
 import {
   moderationTypeLabels,
   moderationTypes,
@@ -71,6 +72,8 @@ export function AdminModerationPage() {
           Review pending tools, resources, stacks, and stack items.
         </p>
       </header>
+
+      <SubmissionBlocklist accessToken={accessToken} />
 
       <div
         className="AdminModerationPage-tabs"

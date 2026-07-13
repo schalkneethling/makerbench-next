@@ -308,6 +308,64 @@ export const publicSubmissionRateLimitsTable = pgTable(
   ],
 ).enableRLS();
 
+// Server-only moderation controls. Browser roles are explicitly revoked in the
+// migration so public clients cannot enumerate enforcement rules or audit data.
+export const publicSubmissionBlocklistTable = pgTable(
+  "public_submission_blocklist",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    matchType: text("match_type", { enum: ["url", "domain"] }).notNull(),
+    value: text("value").notNull(),
+    normalizedValue: text("normalized_value").notNull(),
+    createdBy: uuid("created_by").references(() => authUsersTable.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("unique_public_submission_blocklist_match").on(
+      table.matchType,
+      table.normalizedValue,
+    ),
+    index("idx_public_submission_blocklist_created_at").on(table.createdAt),
+    check(
+      "public_submission_blocklist_value_check",
+      sql`length(btrim(${table.normalizedValue})) > 0`,
+    ),
+  ],
+).enableRLS();
+
+export const publicSubmissionBlocklistEventsTable = pgTable(
+  "public_submission_blocklist_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    blocklistEntryId: uuid("blocklist_entry_id").references(
+      () => publicSubmissionBlocklistTable.id,
+      { onDelete: "set null" },
+    ),
+    normalizedUrl: text("normalized_url").notNull(),
+    matchedType: text("matched_type", { enum: ["url", "domain"] }).notNull(),
+    matchedValue: text("matched_value").notNull(),
+    submittedByUserId: uuid("submitted_by_user_id").references(
+      () => authUsersTable.id,
+      { onDelete: "set null" },
+    ),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("idx_public_submission_blocklist_events_created_at").on(
+      table.createdAt,
+    ),
+    index("idx_public_submission_blocklist_events_entry").on(
+      table.blocklistEntryId,
+    ),
+  ],
+).enableRLS();
+
 export type InsertResource = typeof resourcesTable.$inferInsert;
 export type SelectResource = typeof resourcesTable.$inferSelect;
 export type InsertToolListing = typeof toolListingsTable.$inferInsert;

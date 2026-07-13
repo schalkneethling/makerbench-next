@@ -11,12 +11,80 @@
 .AdminModerationPage-card,
 .AdminModerationPage-cardBody,
 .AdminModerationPage-actions,
-.AdminModerationPage-reason {
+.AdminModerationPage-reason,
+.AdminModerationPage-blocklist,
+.AdminModerationPage-blocklistField {
   display: grid;
 }
 
 .AdminModerationPage-header {
   gap: var(--size-8);
+}
+
+.AdminModerationPage-blocklist {
+  background-color: var(--color-surface-raised);
+  border: var(--border-default);
+  border-radius: var(--radius-md);
+  gap: var(--size-16);
+  padding: var(--size-20);
+}
+
+.AdminModerationPage-blocklistHeader h2,
+.AdminModerationPage-blocklistHeader p {
+  margin: 0;
+}
+
+.AdminModerationPage-blocklistForm {
+  align-items: end;
+  display: grid;
+  gap: var(--size-12);
+}
+
+.AdminModerationPage-blocklistField {
+  gap: var(--size-4);
+}
+
+.AdminModerationPage-blocklistAudit {
+  border-block-start: var(--border-default);
+  padding-block-start: var(--size-16);
+}
+
+.AdminModerationPage-blocklistAudit h3,
+.AdminModerationPage-blocklistAudit p {
+  margin: 0;
+}
+
+.AdminModerationPage-blocklistControl {
+  background-color: var(--color-surface);
+  border: var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font: inherit;
+  min-block-size: 2.75rem;
+  padding-block: var(--size-8);
+  padding-inline: var(--size-12);
+}
+
+.AdminModerationPage-blocklistList {
+  display: grid;
+  gap: var(--size-8);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.AdminModerationPage-blocklistItem {
+  align-items: center;
+  border-block-start: var(--border-default);
+  display: flex;
+  gap: var(--size-12);
+  justify-content: space-between;
+  padding-block-start: var(--size-12);
+}
+
+.AdminModerationPage-blocklistValue {
+  display: block;
+  overflow-wrap: anywhere;
 }
 
 .AdminModerationPage-title,
@@ -136,6 +204,10 @@
 }
 
 @media (width >= 48rem) {
+  .AdminModerationPage-blocklistForm {
+    grid-template-columns: minmax(8rem, 0.25fr) minmax(20rem, 1fr) auto;
+  }
+
   .AdminModerationPage-actions {
     align-items: end;
     grid-template-columns: minmax(20rem, 1fr) auto;

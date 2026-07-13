@@ -16,6 +16,10 @@ const existingPolicies = readFileSync(
   ),
   "utf8",
 );
+const blocklistMigration = readFileSync(
+  new URL("../../../migrations/postgres/0010_lame_rage.sql", import.meta.url),
+  "utf8",
+);
 
 /** Extracts one statement from a Drizzle SQL migration. */
 function migrationStatement(sql: string, statementStart: string): string {
@@ -111,5 +115,21 @@ describe("RLS migration SQL contract", () => {
         migrationStatement(existingPolicies, `CREATE POLICY "${policy}"`),
       ).toContain("public.is_admin()");
     }
+  });
+
+  it("keeps blocklist rules and audit events inaccessible to browser roles", () => {
+    for (const table of [
+      "public_submission_blocklist",
+      "public_submission_blocklist_events",
+    ]) {
+      expect(blocklistMigration).toContain(
+        `ALTER TABLE "${table}" ENABLE ROW LEVEL SECURITY;`,
+      );
+      expect(blocklistMigration).toContain(
+        `REVOKE ALL ON TABLE "${table}" FROM anon, authenticated;`,
+      );
+    }
+
+    expect(blocklistMigration).not.toMatch(/CREATE POLICY|GRANT /i);
   });
 });

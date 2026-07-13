@@ -71,6 +71,13 @@
       "when": 1783804190694,
       "tag": "0009_rich_supernaut",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1783980782994,
+      "tag": "0010_lame_rage",
+      "breakpoints": true
     }
   ]
 }
