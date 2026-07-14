@@ -119,6 +119,25 @@ describe("submission rate limit", () => {
     expect(authenticatedKey).not.toContain(authenticated.user.id);
   });
 
+  it("uses separate HMAC keys for independently throttled features", () => {
+    const authenticated = {
+      user: { id: "11111111-1111-4111-8111-111111111111" },
+      isAdmin: false,
+    } as AuthenticatedUser;
+    const submissionKey = createSubmissionRateLimitKey(
+      { authenticated, clientIp: undefined },
+      config.secret,
+    );
+    const inspectionKey = createSubmissionRateLimitKey(
+      { authenticated, clientIp: undefined },
+      config.secret,
+      "library-inspection",
+    );
+
+    expect(inspectionKey).not.toBe(submissionKey);
+    expect(inspectionKey).toMatch(/^[a-f0-9]{64}$/);
+  });
+
   it("fails closed when anonymous Netlify context has no client IP", () => {
     expect(() =>
       createSubmissionRateLimitKey(

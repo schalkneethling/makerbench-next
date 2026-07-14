@@ -113,6 +113,23 @@ describe("Validation Schemas", () => {
 
       expect(result.success).toBe(true);
     });
+
+    it("should reject oversized metadata overrides", () => {
+      expect(
+        validatePersonalResourceRequest({
+          url: "https://example.com/resource",
+          title: "t".repeat(301),
+          tags: ["react"],
+        }).success,
+      ).toBe(false);
+      expect(
+        validatePersonalResourceRequest({
+          url: "https://example.com/resource",
+          description: "d".repeat(2001),
+          tags: ["react"],
+        }).success,
+      ).toBe(false);
+    });
   });
 
   describe("validateLibraryInspectionRequest", () => {

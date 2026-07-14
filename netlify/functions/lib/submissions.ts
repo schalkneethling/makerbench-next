@@ -1,5 +1,4 @@
 import type { Context } from "@netlify/functions";
-import type { BaseIssue } from "valibot";
 import { sql } from "drizzle-orm";
 
 import {
@@ -38,6 +37,7 @@ import {
   recordSubmissionBlocklistEvent,
 } from "./submission-blocklist";
 import { normalizeUrl, parseAndNormalizeUrl } from "./url";
+import { getValidationDetails } from "./validation";
 import {
   publicListingsTable,
   resourcesTable,
@@ -89,28 +89,6 @@ interface ExistingPublicSubmission extends Record<string, unknown> {
 interface ToolImage {
   imageSource: "og" | "screenshot" | "fallback";
   imageUrl: string;
-}
-
-function getIssueField(issue: BaseIssue<unknown>): string {
-  const path = issue.path
-    ?.map((pathItem) => pathItem.key)
-    .filter(
-      (key): key is string | number =>
-        typeof key === "string" || typeof key === "number",
-    );
-
-  return path && path.length > 0 ? path.join(".") : "form";
-}
-
-function getValidationDetails(
-  issues: readonly BaseIssue<unknown>[],
-): Record<string, string[]> {
-  return issues.reduce<Record<string, string[]>>((details, issue) => {
-    const field = getIssueField(issue);
-    details[field] ??= [];
-    details[field].push(issue.message);
-    return details;
-  }, {});
 }
 
 function requestHasBearerToken(req: Request): boolean {
@@ -228,12 +206,13 @@ async function prepareToolImage(
   let imageUrl: string = FALLBACK_IMAGE;
   let imageSource: ToolImage["imageSource"] = "fallback";
 
-  const publicOgImage = metadata.ogImage
+  const publicOgImageTarget = metadata.ogImage
     ? await resolvePublicHttpUrl(metadata.ogImage)
     : null;
-  if (publicOgImage) {
-    imageUrl = publicOgImage;
+  if (publicOgImageTarget) {
+    imageUrl = publicOgImageTarget.url;
     imageSource = "og";
+    await publicOgImageTarget.dispatcher.close();
   } else {
     const screenshot = await captureScreenshot(normalizedUrl);
     if (screenshot.success && screenshot.buffer) {
@@ -541,13 +520,6 @@ export async function handlePublicSubmission(
     return dependencyUnavailable();
   }
 
-  const publicUrl = await resolvePublicHttpUrl(normalizedUrl);
-  if (!publicUrl) {
-    return validationError("Validation failed", {
-      url: [PUBLIC_URL_ERROR],
-    });
-  }
-
   const tags = normalizeTags(validation.output.tags);
   if (tags.length === 0) {
     return validationError("Validation failed", {
@@ -564,6 +536,14 @@ export async function handlePublicSubmission(
     return validationError("Validation failed", attributionDetails);
   }
 
+  const publicTarget = await resolvePublicHttpUrl(normalizedUrl);
+  if (!publicTarget) {
+    return validationError("Validation failed", {
+      url: [PUBLIC_URL_ERROR],
+    });
+  }
+  const publicUrl = publicTarget.url;
+
   const submissionContext: SubmissionContext = {
     authenticated,
     ...attribution,
@@ -573,7 +553,9 @@ export async function handlePublicSubmission(
   };
 
   try {
-    const metadata = await extractMetadata(publicUrl);
+    const metadata = await extractMetadata(publicUrl, {
+      dispatcher: publicTarget.dispatcher,
+    });
     const toolImage = isPublicListingSubmission(validation.output)
       ? null
       : await prepareToolImage(metadata, publicUrl);
@@ -642,5 +624,7 @@ export async function handlePublicSubmission(
     });
     await flushSentry();
     return serverError(getProcessingErrorMessage(validation.output.type));
+  } finally {
+    await publicTarget.dispatcher.close();
   }
 }

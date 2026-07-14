@@ -70,6 +70,7 @@ async function parseJsonResponse(response: Response): Promise<unknown> {
   }
 }
 
+/** Preserves BookmarkApiError values and wraps unknown failures as status 500 using their message or the fallback. */
 function toBookmarkApiError(
   error: unknown,
   fallbackMessage: string,
@@ -143,28 +144,24 @@ export async function inspectLibraryResource(
   url: string,
   accessToken: string,
 ): Promise<LibraryInspection> {
-  try {
-    const response = await fetch("/api/library/inspect", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ url }),
-    });
-    const json = await parseJsonResponse(response);
+  const response = await fetch("/api/library/inspect", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ url }),
+  });
+  const json = await parseJsonResponse(response);
 
-    if (!response.ok) {
-      throwApiError(json, response.status);
-    }
-
-    const result = v.safeParse(libraryInspectionResponseSchema, json);
-    if (!result.success) {
-      throw new BookmarkApiError("Invalid response from server", 500);
-    }
-
-    return result.output.data;
-  } catch (error) {
-    throw toBookmarkApiError(error, "Failed to inspect this URL");
+  if (!response.ok) {
+    throwApiError(json, response.status);
   }
+
+  const result = v.safeParse(libraryInspectionResponseSchema, json);
+  if (!result.success) {
+    throw new BookmarkApiError("Invalid response from server", 500);
+  }
+
+  return result.output.data;
 }

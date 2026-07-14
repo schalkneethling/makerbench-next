@@ -44,6 +44,9 @@ importers:
       react-router-dom:
         specifier: ^7.15.1
         version: 7.15.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      undici:
+        specifier: ^7.22.0
+        version: 7.22.0
       valibot:
         specifier: ^1.4.2
         version: 1.4.2(typescript@6.0.3)

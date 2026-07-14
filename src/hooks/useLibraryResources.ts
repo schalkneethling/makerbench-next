@@ -171,6 +171,7 @@ export function useLibraryResources(accessToken: string | null) {
 
     return () => {
       requestIdRef.current += 1;
+      inspectionRequestIdRef.current += 1;
     };
   }, [fetchResources]);
 

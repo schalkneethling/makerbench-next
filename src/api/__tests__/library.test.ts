@@ -63,4 +63,13 @@ describe("inspectLibraryResource", () => {
       message: "The page did not expose usable metadata.",
     });
   });
+
+  it("lets unexpected fetch failures propagate to the hook", async () => {
+    const networkError = new TypeError("network unavailable");
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(networkError));
+
+    await expect(
+      inspectLibraryResource("https://example.com/resource", "verified-token"),
+    ).rejects.toBe(networkError);
+  });
 });

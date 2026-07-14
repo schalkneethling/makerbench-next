@@ -37,6 +37,7 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.15.1",
+    "undici": "^7.22.0",
     "valibot": "^1.4.2",
     "varlock": "^1.6.1"
   },

@@ -181,4 +181,42 @@ describe("add-library", () => {
       tags: ["react"],
     });
   });
+
+  it("saves a private library URL without fetching metadata server-side", async () => {
+    const mockDb = createMockDb();
+    mockDb.limit.mockResolvedValueOnce([]);
+    mockDb.returning
+      .mockResolvedValueOnce([
+        {
+          id: "resource-1",
+          pageTitle: "http://127.0.0.1/resource",
+          metaDescription: "",
+        },
+      ])
+      .mockResolvedValueOnce([{ id: "bookmark-1" }]);
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+
+    const response = await addLibrary(
+      new Request("https://test.com/api/library", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: "http://127.0.0.1/resource",
+          tags: ["private"],
+        }),
+      }),
+      createMockContext(),
+    );
+
+    expect(response.status).toBe(201);
+    expect(extractMetadata).not.toHaveBeenCalled();
+    expect(mockDb.values).toHaveBeenNthCalledWith(1, {
+      normalizedUrl: "http://127.0.0.1/resource",
+      canonicalUrl: "http://127.0.0.1/resource",
+      pageTitle: "http://127.0.0.1/resource",
+      metaDescription: "",
+    });
+  });
 });

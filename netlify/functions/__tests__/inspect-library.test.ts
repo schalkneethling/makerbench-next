@@ -10,6 +10,12 @@ vi.mock("../lib/sentry", () => ({
   flushSentry: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("../lib/submission-rate-limit", () => ({
+  getSubmissionRateLimitConfig: vi.fn(),
+  createSubmissionRateLimitKey: vi.fn(),
+  consumeSubmissionRateLimit: vi.fn(),
+}));
+
 vi.mock("../../../src/lib/services/metadata", () => ({
   extractMetadata: vi.fn(),
 }));
@@ -21,6 +27,11 @@ vi.mock("node:dns/promises", () => ({
 import inspectLibrary from "../inspect-library.mts";
 import { verifyAuthenticatedUser } from "../lib/auth";
 import { captureError, flushSentry } from "../lib/sentry";
+import {
+  consumeSubmissionRateLimit,
+  createSubmissionRateLimitKey,
+  getSubmissionRateLimitConfig,
+} from "../lib/submission-rate-limit";
 import { lookup } from "node:dns/promises";
 import { extractMetadata } from "../../../src/lib/services/metadata";
 import { createMockContext } from "./test-utils";
@@ -46,6 +57,13 @@ describe("inspect-library", () => {
     vi.mocked(lookup).mockResolvedValue([
       { address: "93.184.216.34", family: 4 },
     ] as never);
+    vi.mocked(getSubmissionRateLimitConfig).mockReturnValue({
+      secret: "a".repeat(64),
+      maxAttempts: 5,
+      windowSeconds: 3600,
+    });
+    vi.mocked(createSubmissionRateLimitKey).mockReturnValue("inspection-key");
+    vi.mocked(consumeSubmissionRateLimit).mockResolvedValue(true);
   });
 
   it("returns extracted title and description", async () => {
@@ -70,6 +88,7 @@ describe("inspect-library", () => {
     });
     expect(extractMetadata).toHaveBeenCalledWith(
       "https://example.com/resource",
+      { dispatcher: expect.anything() },
     );
   });
 
@@ -144,6 +163,29 @@ describe("inspect-library", () => {
     );
 
     expect(response.status).toBe(401);
+    expect(consumeSubmissionRateLimit).not.toHaveBeenCalled();
+    expect(extractMetadata).not.toHaveBeenCalled();
+  });
+
+  it("rate limits the authenticated user before DNS or metadata work", async () => {
+    vi.mocked(consumeSubmissionRateLimit).mockResolvedValue(false);
+
+    const response = await inspectLibrary(
+      createInspectionRequest({ url: "https://example.com/resource" }),
+      createMockContext(),
+    );
+
+    expect(response.status).toBe(429);
+    expect(createSubmissionRateLimitKey).toHaveBeenCalledWith(
+      expect.objectContaining({
+        authenticated: expect.objectContaining({
+          user: expect.objectContaining({ id: "user-1" }),
+        }),
+      }),
+      "a".repeat(64),
+      "library-inspection",
+    );
+    expect(lookup).not.toHaveBeenCalled();
     expect(extractMetadata).not.toHaveBeenCalled();
   });
 

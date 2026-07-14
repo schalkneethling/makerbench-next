@@ -1,5 +1,4 @@
 import type { Config, Context } from "@netlify/functions";
-import type { BaseIssue } from "valibot";
 import { and, eq } from "drizzle-orm";
 
 import {
@@ -18,30 +17,10 @@ import {
   validationError,
   verifyAuthenticatedUser,
 } from "./lib";
+import { resolvePublicHttpUrl } from "./lib/public-url";
+import { getValidationDetails } from "./lib/validation";
 import { extractMetadata } from "../../src/lib/services/metadata";
 import { validatePersonalResourceRequest } from "../../src/lib/validation";
-
-function getIssueField(issue: BaseIssue<unknown>): string {
-  const path = issue.path
-    ?.map((pathItem) => pathItem.key)
-    .filter(
-      (key): key is string | number =>
-        typeof key === "string" || typeof key === "number",
-    );
-
-  return path && path.length > 0 ? path.join(".") : "form";
-}
-
-function getValidationDetails(
-  issues: readonly BaseIssue<unknown>[],
-): Record<string, string[]> {
-  return issues.reduce<Record<string, string[]>>((details, issue) => {
-    const field = getIssueField(issue);
-    details[field] ??= [];
-    details[field].push(issue.message);
-    return details;
-  }, {});
-}
 
 /** Returns a personal override only when it differs from shared metadata. */
 function getMetadataOverride(
@@ -134,9 +113,14 @@ export default async (req: Request, _context: Context) => {
         return conflict("This resource is already in your library");
       }
     } else {
-      const metadata = await extractMetadata(normalizedUrl);
-      sharedTitle = metadata.title || normalizedUrl;
-      sharedDescription = metadata.description || "";
+      const publicTarget = await resolvePublicHttpUrl(normalizedUrl);
+      const metadata = publicTarget
+        ? await extractMetadata(publicTarget.url, {
+            dispatcher: publicTarget.dispatcher,
+          }).finally(() => publicTarget.dispatcher.close())
+        : null;
+      sharedTitle = metadata?.title || normalizedUrl;
+      sharedDescription = metadata?.description || "";
       const [resource] = await db
         .insert(resourcesTable)
         .values({

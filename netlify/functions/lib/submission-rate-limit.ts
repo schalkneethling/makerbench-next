@@ -92,6 +92,7 @@ export function getSubmissionRateLimitConfig(): SubmissionRateLimitConfig {
 export function createSubmissionRateLimitKey(
   identity: SubmissionRateLimitIdentity,
   secret: string,
+  scope = "submission",
 ): string {
   const subject = identity.authenticated
     ? `user:${identity.authenticated.user.id}`
@@ -101,7 +102,9 @@ export function createSubmissionRateLimitKey(
     throw new InvalidEnvironmentError(["NETLIFY_CONTEXT_IP"]);
   }
 
-  return createHmac("sha256", secret).update(subject).digest("hex");
+  const scopedSubject =
+    scope === "submission" ? subject : `${scope}:${subject}`;
+  return createHmac("sha256", secret).update(scopedSubject).digest("hex");
 }
 
 /** Removes a bounded batch of expired rows older than the retention period. */

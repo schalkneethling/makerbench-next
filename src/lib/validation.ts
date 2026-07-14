@@ -145,8 +145,18 @@ export const bookmarkRequestSchema = v.object({
 
 export const personalResourceRequestSchema = v.object({
   url: resourceUrlSchema,
-  title: v.optional(v.string()),
-  description: v.optional(v.string()),
+  title: v.optional(
+    v.pipe(
+      v.string(),
+      v.maxLength(300, "Title must be 300 characters or less"),
+    ),
+  ),
+  description: v.optional(
+    v.pipe(
+      v.string(),
+      v.maxLength(2000, "Description must be 2000 characters or less"),
+    ),
+  ),
   tags: resourceTagsSchema,
   notes: v.optional(
     v.pipe(
