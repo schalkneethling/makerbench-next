@@ -26,25 +26,29 @@ export type PublicSubmissionResponse = PublicSubmissionResponseData;
 export class PublicSubmissionApiError extends Error {
   status: number;
   details?: Record<string, string[]>;
+  code?: string;
 
   constructor(
     message: string,
     status: number,
     details?: Record<string, string[]>,
+    code?: string,
   ) {
     super(message);
     this.name = "PublicSubmissionApiError";
     this.status = status;
     this.details = details;
+    this.code = code;
   }
 }
 
-function throwApiError(json: unknown, status: number): never {
+function throwApiError(json: unknown, response: Response): never {
   const parsed = v.safeParse(apiErrorResponseSchema, json);
   throw new PublicSubmissionApiError(
     parsed.success ? parsed.output.error : "An unexpected error occurred",
-    status,
+    response.status,
     parsed.success ? parsed.output.details : undefined,
+    response.headers.get("X-MakerBench-Error-Code") ?? undefined,
   );
 }
 
@@ -82,7 +86,7 @@ export async function submitPublicSubmission(
   const json = await parseJsonResponse(response);
 
   if (!response.ok) {
-    throwApiError(json, response.status);
+    throwApiError(json, response);
   }
 
   const result = v.safeParse(publicSubmissionResponseSchema, json);

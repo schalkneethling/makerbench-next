@@ -18,12 +18,17 @@ export type ApiResponse<T> = SuccessResponse<T> | ErrorResponse;
 /**
  * Creates a JSON response with proper headers
  */
-function jsonResponse<T>(body: ApiResponse<T>, status: number): Response {
+function jsonResponse<T>(
+  body: ApiResponse<T>,
+  status: number,
+  additionalHeaders: Record<string, string> = {},
+): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       "Content-Type": "application/json",
       "X-Content-Type-Options": "nosniff",
+      ...additionalHeaders,
     },
   });
 }
@@ -105,13 +110,17 @@ export function serverError(error: string): Response {
 /**
  * Service unavailable error (503)
  */
-export function serviceUnavailable(error: string): Response {
-  return jsonResponse({ success: false, error }, 503);
+export function serviceUnavailable(error: string, diagnosticCode?: string): Response {
+  return jsonResponse(
+    { success: false, error },
+    503,
+    diagnosticCode ? { "X-MakerBench-Error-Code": diagnosticCode } : undefined,
+  );
 }
 
 /** Generic dependency failure response with no internal implementation details. */
-export function dependencyUnavailable(): Response {
-  return serviceUnavailable("Service temporarily unavailable");
+export function dependencyUnavailable(diagnosticCode?: string): Response {
+  return serviceUnavailable("Service temporarily unavailable", diagnosticCode);
 }
 
 /**
