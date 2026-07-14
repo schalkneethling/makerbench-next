@@ -478,7 +478,9 @@ describe("process-tool", () => {
 
       await processTool(req, mockContext);
 
-      expect(extractMetadata).toHaveBeenCalledWith("https://example.com/tool");
+      expect(extractMetadata).toHaveBeenCalledWith("https://example.com/tool", {
+        dispatcher: expect.anything(),
+      });
     });
 
     it("uses OG image when available", async () => {

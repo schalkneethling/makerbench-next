@@ -4,6 +4,8 @@ import {
   addLibraryResource,
   BookmarkApiError,
   getLibraryResources,
+  inspectLibraryResource,
+  type LibraryInspection,
   type LibraryResource,
 } from "../api";
 import type { PersonalResourceRequest } from "../lib/validation";
@@ -15,14 +17,25 @@ interface UseLibraryResourcesState {
   error: BookmarkApiError | null;
 }
 
+interface LibraryInspectionState {
+  isInspecting: boolean;
+  inspectionError: BookmarkApiError | null;
+}
+
 export function useLibraryResources(accessToken: string | null) {
   const requestIdRef = useRef(0);
+  const inspectionRequestIdRef = useRef(0);
   const [state, setState] = useState<UseLibraryResourcesState>({
     resources: [],
     isLoading: false,
     isSaving: false,
     error: null,
   });
+  const [inspectionState, setInspectionState] =
+    useState<LibraryInspectionState>({
+      isInspecting: false,
+      inspectionError: null,
+    });
 
   const fetchResources = useCallback(async () => {
     requestIdRef.current += 1;
@@ -105,6 +118,52 @@ export function useLibraryResources(accessToken: string | null) {
     [accessToken],
   );
 
+  const inspectResource = useCallback(
+    async (url: string): Promise<LibraryInspection | null> => {
+      inspectionRequestIdRef.current += 1;
+      const inspectionRequestId = inspectionRequestIdRef.current;
+
+      if (!accessToken) {
+        setInspectionState({
+          isInspecting: false,
+          inspectionError: new BookmarkApiError("Authentication required", 401),
+        });
+        return null;
+      }
+
+      setInspectionState({ isInspecting: true, inspectionError: null });
+
+      try {
+        const metadata = await inspectLibraryResource(url, accessToken);
+        if (inspectionRequestId !== inspectionRequestIdRef.current) {
+          return null;
+        }
+        setInspectionState({ isInspecting: false, inspectionError: null });
+        return metadata;
+      } catch (error) {
+        if (inspectionRequestId !== inspectionRequestIdRef.current) {
+          return null;
+        }
+        const inspectionError =
+          error instanceof BookmarkApiError
+            ? error
+            : new BookmarkApiError("Failed to inspect this URL", 500);
+        setInspectionState({ isInspecting: false, inspectionError });
+        return null;
+      }
+    },
+    [accessToken],
+  );
+
+  const dismissInspectionError = useCallback(() => {
+    setInspectionState((previous) => ({ ...previous, inspectionError: null }));
+  }, []);
+
+  const resetInspection = useCallback(() => {
+    inspectionRequestIdRef.current += 1;
+    setInspectionState({ isInspecting: false, inspectionError: null });
+  }, []);
+
   useEffect(() => {
     // This effect synchronizes React state with the server-backed library.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -112,12 +171,17 @@ export function useLibraryResources(accessToken: string | null) {
 
     return () => {
       requestIdRef.current += 1;
+      inspectionRequestIdRef.current += 1;
     };
   }, [fetchResources]);
 
   return {
     ...state,
+    ...inspectionState,
     addResource,
+    inspectResource,
+    dismissInspectionError,
+    resetInspection,
     refresh: fetchResources,
   };
 }

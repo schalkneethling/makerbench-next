@@ -447,6 +447,8 @@ describe("public-submissions", () => {
         type: "resource",
         url: "https://example.com/internal",
         tags: ["security"],
+        submitterName: "Ada",
+        submitterGithubUsername: "ada",
       }),
       createMockContext(),
     );

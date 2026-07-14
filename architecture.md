@@ -558,6 +558,9 @@ environment settings. Key variables:
 | `SUBMISSION_RATE_LIMIT_SECRET`         | Server only     | 64-character hexadecimal HMAC key            |
 | `SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS`   | Server only     | Attempts permitted in one fixed window       |
 | `SUBMISSION_RATE_LIMIT_WINDOW_SECONDS` | Server only     | Fixed-window duration in seconds             |
+| `INSPECTION_RATE_LIMIT_SECRET`         | Server only     | Separate 64-character hexadecimal HMAC key   |
+| `INSPECTION_RATE_LIMIT_MAX_ATTEMPTS`   | Server only     | Interactive previews permitted per window    |
+| `INSPECTION_RATE_LIMIT_WINDOW_SECONDS` | Server only     | Preview fixed-window duration in seconds     |
 | `SENTRY_DSN`                           | Server only     | Optional error tracking                      |
 
 Server-side functions read secrets via `Netlify.env.get()`. Client-visible vars use the `VITE_` prefix and are bundled by Vite.

@@ -1,5 +1,4 @@
 import type { Config, Context } from "@netlify/functions";
-import type { BaseIssue } from "valibot";
 import * as v from "valibot";
 
 import {
@@ -17,6 +16,7 @@ import {
   validationError,
 } from "./lib";
 import { verifyAuthenticatedUser } from "./lib/auth";
+import { getValidationDetails } from "./lib/validation";
 import {
   blocklistDeleteRequestSchema,
   blocklistEntryRequestSchema,
@@ -25,15 +25,6 @@ import {
   listSubmissionBlocklistEntries,
   listSubmissionBlocklistEvents,
 } from "./lib/submission-blocklist";
-
-function getValidationDetails(issues: readonly BaseIssue<unknown>[]) {
-  return issues.reduce<Record<string, string[]>>((details, issue) => {
-    const field = issue.path?.map((item) => item.key).join(".") || "form";
-    details[field] ??= [];
-    details[field].push(issue.message);
-    return details;
-  }, {});
-}
 
 async function parseRequest(req: Request): Promise<unknown | Response> {
   try {

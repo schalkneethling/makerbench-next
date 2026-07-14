@@ -13,6 +13,7 @@ import { InvalidEnvironmentError } from "../env";
 import {
   consumeSubmissionRateLimit,
   createSubmissionRateLimitKey,
+  getInspectionRateLimitConfig,
   getSubmissionRateLimitConfig,
   SUBMISSION_RATE_LIMIT_CLEANUP_BATCH_SIZE,
   SUBMISSION_RATE_LIMIT_RETENTION_SECONDS,
@@ -119,6 +120,25 @@ describe("submission rate limit", () => {
     expect(authenticatedKey).not.toContain(authenticated.user.id);
   });
 
+  it("uses separate HMAC keys for independently throttled features", () => {
+    const authenticated = {
+      user: { id: "11111111-1111-4111-8111-111111111111" },
+      isAdmin: false,
+    } as AuthenticatedUser;
+    const submissionKey = createSubmissionRateLimitKey(
+      { authenticated, clientIp: undefined },
+      config.secret,
+    );
+    const inspectionKey = createSubmissionRateLimitKey(
+      { authenticated, clientIp: undefined },
+      config.secret,
+      "library-inspection",
+    );
+
+    expect(inspectionKey).not.toBe(submissionKey);
+    expect(inspectionKey).toMatch(/^[a-f0-9]{64}$/);
+  });
+
   it("fails closed when anonymous Netlify context has no client IP", () => {
     expect(() =>
       createSubmissionRateLimitKey(
@@ -164,12 +184,61 @@ describe("submission rate limit", () => {
     }
   });
 
+  it("reads inspection limits independently from submission limits", () => {
+    const restore = setRateLimitEnvironment({
+      INSPECTION_RATE_LIMIT_SECRET: "b".repeat(64),
+      INSPECTION_RATE_LIMIT_MAX_ATTEMPTS: "30",
+      INSPECTION_RATE_LIMIT_WINDOW_SECONDS: "600",
+      SUBMISSION_RATE_LIMIT_SECRET: config.secret,
+      SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS: "5",
+      SUBMISSION_RATE_LIMIT_WINDOW_SECONDS: "3600",
+    });
+
+    try {
+      expect(getInspectionRateLimitConfig()).toEqual({
+        secret: "b".repeat(64),
+        maxAttempts: 30,
+        windowSeconds: 600,
+      });
+      expect(getSubmissionRateLimitConfig()).toEqual(config);
+    } finally {
+      restore();
+    }
+  });
+
+  it("reports invalid inspection fields through the shared loader", () => {
+    const restore = setRateLimitEnvironment({
+      INSPECTION_RATE_LIMIT_SECRET: "b".repeat(64),
+      INSPECTION_RATE_LIMIT_MAX_ATTEMPTS: "not-a-number",
+      INSPECTION_RATE_LIMIT_WINDOW_SECONDS: "600",
+    });
+
+    try {
+      let thrownError: unknown;
+      try {
+        getInspectionRateLimitConfig();
+      } catch (error) {
+        thrownError = error;
+      }
+
+      expect(thrownError).toBeInstanceOf(InvalidEnvironmentError);
+      expect(thrownError).toMatchObject({
+        invalidKeys: ["INSPECTION_RATE_LIMIT_MAX_ATTEMPTS"],
+      });
+    } finally {
+      restore();
+    }
+  });
+
   it("declares the HMAC secret as sensitive external Varlock config", () => {
     expect(environmentSchema).toContain(
       "# @type=string(isLength=64,matches=/^[0-9A-Fa-f]{64}$/) @sensitive\nSUBMISSION_RATE_LIMIT_SECRET=",
     );
     expect(environmentSchema).not.toContain(
       "# @type=string(isLength=64,matches=/^[0-9A-Fa-f]{64}$/) @sensitive @required\nSUBMISSION_RATE_LIMIT_SECRET=",
+    );
+    expect(environmentSchema).toContain(
+      "# @type=string(isLength=64,matches=/^[0-9A-Fa-f]{64}$/) @sensitive\nINSPECTION_RATE_LIMIT_SECRET=",
     );
   });
 

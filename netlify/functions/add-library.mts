@@ -1,5 +1,4 @@
 import type { Config, Context } from "@netlify/functions";
-import type { BaseIssue } from "valibot";
 import { and, eq } from "drizzle-orm";
 
 import {
@@ -18,24 +17,22 @@ import {
   validationError,
   verifyAuthenticatedUser,
 } from "./lib";
+import { resolvePublicHttpUrl } from "./lib/public-url";
+import { getValidationDetails } from "./lib/validation";
 import { extractMetadata } from "../../src/lib/services/metadata";
 import { validatePersonalResourceRequest } from "../../src/lib/validation";
 
-function getIssueField(issue: BaseIssue<unknown>): string {
-  const path = issue.path
-    ?.map((pathItem) => pathItem.key)
-    .filter((key): key is string | number => typeof key === "string" || typeof key === "number");
+/** Returns a personal override only when it differs from shared metadata. */
+function getMetadataOverride(
+  submittedValue: string | undefined,
+  sharedValue: string,
+): string | null {
+  const normalizedValue = submittedValue?.trim();
+  if (!normalizedValue || normalizedValue === sharedValue) {
+    return null;
+  }
 
-  return path && path.length > 0 ? path.join(".") : "form";
-}
-
-function getValidationDetails(issues: readonly BaseIssue<unknown>[]): Record<string, string[]> {
-  return issues.reduce<Record<string, string[]>>((details, issue) => {
-    const field = getIssueField(issue);
-    details[field] ??= [];
-    details[field].push(issue.message);
-    return details;
-  }, {});
+  return normalizedValue;
 }
 
 export default async (req: Request, _context: Context) => {
@@ -44,7 +41,11 @@ export default async (req: Request, _context: Context) => {
   }
 
   try {
-    assertRequiredEnv(["SUPABASE_DATABASE_URL", "VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY"]);
+    assertRequiredEnv([
+      "SUPABASE_DATABASE_URL",
+      "VITE_SUPABASE_URL",
+      "VITE_SUPABASE_ANON_KEY",
+    ]);
   } catch (error) {
     return handleMissingEnvironmentError(error, "add-library");
   }
@@ -63,7 +64,10 @@ export default async (req: Request, _context: Context) => {
 
   const validation = validatePersonalResourceRequest(body);
   if (!validation.success) {
-    return validationError("Validation failed", getValidationDetails(validation.issues));
+    return validationError(
+      "Validation failed",
+      getValidationDetails(validation.issues),
+    );
   }
 
   const normalizedUrl = parseAndNormalizeUrl(validation.output.url);
@@ -73,17 +77,25 @@ export default async (req: Request, _context: Context) => {
     });
   }
 
-  const tags = [...new Set(validation.output.tags.map((tag) => tag.trim().toLowerCase()))];
+  const tags = [
+    ...new Set(validation.output.tags.map((tag) => tag.trim().toLowerCase())),
+  ];
 
   try {
     const db = getDb();
     const [existingResource] = await db
-      .select({ id: resourcesTable.id })
+      .select({
+        id: resourcesTable.id,
+        pageTitle: resourcesTable.pageTitle,
+        metaDescription: resourcesTable.metaDescription,
+      })
       .from(resourcesTable)
       .where(eq(resourcesTable.normalizedUrl, normalizedUrl))
       .limit(1);
 
     let resourceId = existingResource?.id;
+    let sharedTitle = existingResource?.pageTitle;
+    let sharedDescription = existingResource?.metaDescription;
 
     if (resourceId) {
       const [existingBookmark] = await db
@@ -101,22 +113,35 @@ export default async (req: Request, _context: Context) => {
         return conflict("This resource is already in your library");
       }
     } else {
-      const metadata = await extractMetadata(normalizedUrl);
+      const publicTarget = await resolvePublicHttpUrl(normalizedUrl);
+      const metadata = publicTarget
+        ? await extractMetadata(publicTarget.url, {
+            dispatcher: publicTarget.dispatcher,
+          }).finally(() => publicTarget.dispatcher.close())
+        : null;
+      sharedTitle = metadata?.title || normalizedUrl;
+      sharedDescription = metadata?.description || "";
       const [resource] = await db
         .insert(resourcesTable)
         .values({
           normalizedUrl,
           canonicalUrl: normalizeUrl(validation.output.url),
-          pageTitle: metadata.title || normalizedUrl,
-          metaDescription: metadata.description || "",
+          pageTitle: sharedTitle,
+          metaDescription: sharedDescription,
         })
         .onConflictDoUpdate({
           target: resourcesTable.normalizedUrl,
           set: { normalizedUrl },
         })
-        .returning({ id: resourcesTable.id });
+        .returning({
+          id: resourcesTable.id,
+          pageTitle: resourcesTable.pageTitle,
+          metaDescription: resourcesTable.metaDescription,
+        });
 
       resourceId = resource.id;
+      sharedTitle = resource.pageTitle ?? sharedTitle;
+      sharedDescription = resource.metaDescription ?? sharedDescription;
     }
 
     const [bookmark] = await db
@@ -124,6 +149,14 @@ export default async (req: Request, _context: Context) => {
       .values({
         userId: authenticated.user.id,
         resourceId,
+        titleOverride: getMetadataOverride(
+          validation.output.title,
+          sharedTitle ?? normalizedUrl,
+        ),
+        descriptionOverride: getMetadataOverride(
+          validation.output.description,
+          sharedDescription ?? "",
+        ),
         notes: validation.output.notes ?? "",
         tags,
       })

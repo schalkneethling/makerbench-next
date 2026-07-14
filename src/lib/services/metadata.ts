@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import type { Dispatcher } from "undici";
 
 /**
  * Result of metadata extraction from a URL
@@ -10,7 +11,14 @@ export interface MetadataResult {
   error?: string;
 }
 
-function resolveMetadataUrl(candidateUrl: string | undefined, pageUrl: string): string | null {
+interface MetadataRequestOptions {
+  dispatcher?: Dispatcher;
+}
+
+function resolveMetadataUrl(
+  candidateUrl: string | undefined,
+  pageUrl: string,
+): string | null {
   if (!candidateUrl) {
     return null;
   }
@@ -27,14 +35,18 @@ function resolveMetadataUrl(candidateUrl: string | undefined, pageUrl: string): 
  * @param url - URL to fetch and extract metadata from
  * @returns Extracted metadata or null values with error on failure
  */
-export async function extractMetadata(url: string): Promise<MetadataResult> {
+export async function extractMetadata(
+  url: string,
+  options: MetadataRequestOptions = {},
+): Promise<MetadataResult> {
   try {
     const response = await fetch(url, {
       headers: {
         "User-Agent": "Makerbench/1.0 (Bookmark Metadata Extractor)",
       },
       signal: AbortSignal.timeout(15000), // 15s timeout
-    });
+      dispatcher: options.dispatcher,
+    } as RequestInit & { dispatcher?: Dispatcher });
 
     if (!response.ok) {
       return {
@@ -59,7 +71,10 @@ export async function extractMetadata(url: string): Promise<MetadataResult> {
     const description = ogDescription || metaDescription || null;
 
     // Extract OG image
-    const ogImage = resolveMetadataUrl($('meta[property="og:image"]').attr("content"), url);
+    const ogImage = resolveMetadataUrl(
+      $('meta[property="og:image"]').attr("content"),
+      url,
+    );
 
     return { title, description, ogImage };
   } catch (error) {

@@ -1,5 +1,4 @@
 import type { Config, Context } from "@netlify/functions";
-import type { BaseIssue } from "valibot";
 import * as v from "valibot";
 
 import {
@@ -21,28 +20,7 @@ import {
   type ModerationEntityType,
 } from "./lib/admin-moderation";
 import { verifyAuthenticatedUser } from "./lib/auth";
-
-function getIssueField(issue: BaseIssue<unknown>): string {
-  const path = issue.path
-    ?.map((pathItem) => pathItem.key)
-    .filter(
-      (key): key is string | number =>
-        typeof key === "string" || typeof key === "number",
-    );
-
-  return path && path.length > 0 ? path.join(".") : "form";
-}
-
-function getValidationDetails(
-  issues: readonly BaseIssue<unknown>[],
-): Record<string, string[]> {
-  return issues.reduce<Record<string, string[]>>((details, issue) => {
-    const field = getIssueField(issue);
-    details[field] ??= [];
-    details[field].push(issue.message);
-    return details;
-  }, {});
-}
+import { getValidationDetails } from "./lib/validation";
 
 function parseTypeFilter(req: Request): ModerationEntityType | null | Response {
   const typeParam = new URL(req.url).searchParams.get("type");

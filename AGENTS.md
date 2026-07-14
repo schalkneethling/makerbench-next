@@ -13,6 +13,20 @@ gh issue close <id>   # Complete work
 
 GitHub Issues is the source of truth. See [`ROADMAP.md`](./ROADMAP.md) for milestone context.
 
+## Git workflow
+
+- Before editing, run `git status -sb` and confirm the current branch.
+- Never implement directly on `main`; create or switch to an issue branch first.
+- If work was accidentally started on `main`, create the issue branch immediately and preserve the working tree—do not discard or rewrite changes.
+- Before committing, review the complete diff and stage only files in the requested scope.
+
+## Review feedback
+
+- Verify every finding against the current code before changing it.
+- Fix only findings that still apply; briefly document skipped or inapplicable feedback.
+- Keep review fixes minimal and preserve established behavior unless the finding requires a behavior change.
+- Validate focused coverage for each accepted finding, then run the project-level checks.
+
 ## Collaboration
 
 **Partnership, not order-taking.** Push back when a request contradicts established patterns or adds complexity without clear benefit.
@@ -46,6 +60,14 @@ Consult current docs (Context7 MCP or official URLs) before implementing. Do not
 
 Details: [`architecture.md`](./architecture.md) · [Browserless screenshot API](https://docs.browserless.io/rest-apis/screenshot-api) · [Supabase docs](https://supabase.com/docs)
 
+### Server-side URL fetching
+
+- Treat every user-controlled server-side URL fetch as SSRF-sensitive, including redirects and metadata/image fetches.
+- URL validation before `fetch()` is insufficient: resolve with a bounded timeout, reject non-public addresses, and revalidate/pin DNS in the connection path so rebinding cannot change the destination.
+- Reuse the shared public-URL resolver and pass its dispatcher through the fetch path; close request-scoped dispatchers after the response is consumed.
+- Rate-limit authenticated endpoints before they perform DNS lookup, screenshots, metadata extraction, or other external work. Keep rate-limit keys scoped so one feature cannot exhaust another feature's quota.
+- Fail closed on DNS timeout, lookup failure, mixed public/private answers, or connection-time revalidation failure.
+
 ## Database migrations (Supabase Postgres)
 
 **Schema must reach production before code that depends on new columns.**
@@ -70,6 +92,8 @@ Env: `.env.schema` (Varlock). Local setup: [`docs/local-development.md`](./docs/
 ## Validation and API patterns
 
 **Valibot only** — no hand-rolled validation. Schemas live in `src/lib/validation.ts`; infer types with `v.InferOutput`.
+
+Persisted user-controlled strings must have explicit maximum lengths in their Valibot schemas, including optional override fields.
 
 | Use Valibot                      | Use plain TS types    |
 | -------------------------------- | --------------------- |
@@ -131,10 +155,15 @@ React 19 · Vite SPA (not Next.js RSC). React Compiler enabled — avoid manual 
 
 **React 19:** prefer Actions/`useActionState` for forms, `use()` where appropriate, refs as regular props (no `forwardRef`). Skip Server Components guidance — not applicable here.
 
+Async hooks that use request IDs for stale-response protection must invalidate every relevant request ID during effect cleanup so unmounts and dependency changes cannot update stale state.
+
 **Naming:** no single-letter variables except `a`/`b` in sort comparators.
 
 ## Code style
 
 - JSDoc on functions/classes — concise, clear
 - Search codebase before new components/styles; reuse tokens and patterns
+- Before adding a function, search for equivalent behavior and extend or parameterize an existing utility when the abstraction remains cohesive.
+- Do not duplicate orchestration, validation, parsing, or error aggregation across features. Extract shared, well-tested utilities and keep feature-specific differences explicit through typed configuration.
+- Test shared utilities at their behavioral boundaries and retain focused call-site tests that prove each consumer supplies the correct configuration.
 - Barrel files (`index.ts` re-exports): curated public API only, not every directory

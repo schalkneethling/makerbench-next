@@ -17,6 +17,7 @@ export { assertRequiredEnv, handleMissingEnvironmentError } from "./env";
 export {
   consumeSubmissionRateLimit,
   createSubmissionRateLimitKey,
+  getInspectionRateLimitConfig,
   getSubmissionRateLimitConfig,
 } from "./submission-rate-limit";
 export {

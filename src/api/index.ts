@@ -37,10 +37,12 @@ export {
 export {
   addLibraryResource,
   getLibraryResources,
+  inspectLibraryResource,
   type AddLibraryResourceResponse,
   type LibraryResource,
   type LibraryResponse,
   type LibraryTag,
+  type LibraryInspection,
 } from "./library";
 
 export {

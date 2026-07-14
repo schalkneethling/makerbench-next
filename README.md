@@ -87,6 +87,9 @@ Required for full local functionality:
 - `SUBMISSION_RATE_LIMIT_SECRET` — server-only 64-character hexadecimal HMAC secret
 - `SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS`
 - `SUBMISSION_RATE_LIMIT_WINDOW_SECONDS`
+- `INSPECTION_RATE_LIMIT_SECRET` — separate server-only 64-character hexadecimal HMAC secret
+- `INSPECTION_RATE_LIMIT_MAX_ATTEMPTS`
+- `INSPECTION_RATE_LIMIT_WINDOW_SECONDS`
 - `SENTRY_DSN` (optional)
 
 Package manager note: this repository pins pnpm via `packageManager` in `package.json` so Netlify Corepack resolves the exact pnpm version during builds.
