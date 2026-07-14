@@ -84,6 +84,17 @@ function createMockContext(): Context {
  * Creates a mock database with chainable query methods
  */
 function createMockDb() {
+  const transactionDb = {
+    execute: vi.fn().mockResolvedValue({ rows: [] }),
+    insert: vi.fn().mockReturnThis(),
+    values: vi.fn().mockReturnThis(),
+    onConflictDoUpdate: vi.fn().mockReturnThis(),
+    onConflictDoNothing: vi.fn().mockReturnThis(),
+    returning: vi
+      .fn()
+      .mockResolvedValueOnce([{ id: RESOURCE_ID }])
+      .mockResolvedValueOnce([{ id: TOOL_LISTING_ID }]),
+  };
   const mockDb = {
     execute: vi.fn().mockResolvedValue({ rows: [{ attempt_count: 1 }] }),
     select: vi.fn().mockReturnThis(),
@@ -102,7 +113,14 @@ function createMockDb() {
     leftJoin: vi.fn().mockReturnThis(),
     orderBy: vi.fn().mockReturnThis(),
     offset: vi.fn().mockReturnThis(),
+    transaction: vi.fn(),
+    transactionDb,
   };
+  mockDb.transaction.mockImplementation(
+    async (
+      callback: (transaction: ReturnType<typeof getDb>) => Promise<unknown>,
+    ) => await callback(transactionDb as unknown as ReturnType<typeof getDb>),
+  );
   return mockDb;
 }
 
@@ -384,8 +402,8 @@ describe("process-tool", () => {
 
   describe("duplicate detection", () => {
     it("returns 409 for duplicate URL", async () => {
-      mockDb.returning.mockReset();
-      mockDb.returning
+      mockDb.transactionDb.returning.mockReset();
+      mockDb.transactionDb.returning
         .mockResolvedValueOnce([{ id: "existing-resource-id" }])
         .mockResolvedValueOnce([]);
 
@@ -442,7 +460,7 @@ describe("process-tool", () => {
 
       expect(res.status).toBe(201);
       expect(verifyAuthenticatedUser).toHaveBeenCalledOnce();
-      expect(mockDb.values).toHaveBeenNthCalledWith(
+      expect(mockDb.transactionDb.values).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({
           submittedByUserId: "55555555-5555-4555-8555-555555555555",
@@ -473,7 +491,7 @@ describe("process-tool", () => {
       expect(body.data.type).toBe("tool");
       expect(body.data.status).toBe("pending");
       expect(body.data.message).toContain("submitted");
-      expect(mockDb.values).toHaveBeenNthCalledWith(
+      expect(mockDb.transactionDb.values).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({
           submittedByUserId: undefined,
@@ -553,7 +571,7 @@ describe("process-tool", () => {
 
       await processTool(req, mockContext);
 
-      expect(mockDb.values).toHaveBeenNthCalledWith(
+      expect(mockDb.transactionDb.values).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({
           imageUrl: "https://cloudinary.com/screenshot.png",
@@ -606,7 +624,8 @@ describe("process-tool", () => {
       await processTool(req, mockContext);
 
       // Verify insert was called (tags are processed internally)
-      expect(mockDb.insert).toHaveBeenCalled();
+      expect(mockDb.transactionDb.insert).toHaveBeenCalled();
+      expect(mockDb.insert).not.toHaveBeenCalled();
     });
   });
 });

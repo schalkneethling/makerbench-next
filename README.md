@@ -5,13 +5,13 @@ MakerBench is a curated bookmarking platform for developer and maker tools, reso
 ## Requirements
 
 - Node.js 24.x
-- pnpm (unversioned by policy)
+- pnpm 11.5.0, as pinned by `package.json`
 
 Runtime/package manager decision:
 
 - Netlify Functions run on Node.js, so Bun is intentionally not part of this deployment workflow.
 
-## Current Status (May 2026)
+## Current Status (July 2026)
 
 Core functionality is implemented:
 
@@ -23,6 +23,8 @@ Core functionality is implemented:
 - Browse and search approved tools (`/`, `/tools`)
 - Browse and search public resources and stacks (`/resources`)
 - Personal bookmark library with Google/GitHub sign-in (`/library`)
+- Admin moderation for tools, resources, stacks, and stack items
+- Submission rate limiting, private URL/domain blocklisting, and duplicate detection
 - Filter by tags with URL-synced state
 - Responsive React UI with routing (`/submit`, `/about`, `/privacy`)
 - Storybook component workshop with colocated stories and Vitest interaction tests (see [Storybook](#storybook) below)
@@ -48,6 +50,7 @@ pnpm lint
 pnpm lint:css
 pnpm typecheck
 pnpm build
+npx playwright test --project=chromium
 pnpm storybook          # component workshop at http://localhost:6006
 pnpm build-storybook    # static Storybook build
 ```
@@ -81,6 +84,9 @@ Required for full local functionality:
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
 - `BROWSERLESS_API_KEY`
+- `SUBMISSION_RATE_LIMIT_SECRET` — server-only 64-character hexadecimal HMAC secret
+- `SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS`
+- `SUBMISSION_RATE_LIMIT_WINDOW_SECONDS`
 - `SENTRY_DSN` (optional)
 
 Package manager note: this repository pins pnpm via `packageManager` in `package.json` so Netlify Corepack resolves the exact pnpm version during builds.
@@ -103,6 +109,11 @@ Authenticated (Bearer token):
 - `GET /api/library` — list personal bookmarks
 - `POST /api/library` — add a URL to personal library
 
+Admin (admin Bearer token):
+
+- `GET`/`PATCH /api/admin/moderation` — list and review pending submissions
+- `GET`/`POST`/`DELETE /api/admin/blocklist` — manage private submission blocklist rules
+
 See [architecture.md](./architecture.md) for request/response shapes and data flows.
 
 ## Issue Tracking
@@ -115,4 +126,5 @@ Open backlog is tracked in GitHub Issues:
 - Architecture (includes testing and Storybook): [architecture.md](./architecture.md)
 - Local setup: [docs/local-development.md](./docs/local-development.md)
 - Production deployment: [docs/production-deployment.md](./docs/production-deployment.md)
+- Launch checklist: [docs/launch-checklist.md](./docs/launch-checklist.md)
 - Database setup: [DATABASE_SETUP.md](./DATABASE_SETUP.md)

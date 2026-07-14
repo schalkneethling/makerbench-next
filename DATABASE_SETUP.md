@@ -1,6 +1,6 @@
 # Database Setup (Supabase Postgres)
 
-Last updated: July 11, 2026
+Last updated: July 14, 2026
 
 MakerBench uses Supabase Postgres as its canonical database and Supabase Auth
 for Google and GitHub sign-in. Netlify Functions connect to Postgres through
@@ -46,15 +46,18 @@ The application sends the current browser origin as the OAuth redirect URL.
 `.env.schema` is the source of truth for required local variable names and the
 checked-in Varlock/1Password references. Use the exact names below:
 
-| Variable | Scope | Purpose |
-| --- | --- | --- |
-| `SUPABASE_DATABASE_URL` | Server only | Supabase Postgres connection string |
-| `VITE_SUPABASE_URL` | Client and server | Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | Client and server | Supabase anon key for browser auth and server JWT verification |
-| `CLOUDINARY_CLOUD_NAME` | Server only | Cloudinary cloud name |
-| `CLOUDINARY_API_KEY` | Server only | Cloudinary API key |
-| `CLOUDINARY_API_SECRET` | Server only | Cloudinary API secret |
-| `BROWSERLESS_API_KEY` | Server only | Browserless screenshot API key |
+| Variable                               | Scope             | Purpose                                                        |
+| -------------------------------------- | ----------------- | -------------------------------------------------------------- |
+| `SUPABASE_DATABASE_URL`                | Server only       | Supabase Postgres connection string                            |
+| `VITE_SUPABASE_URL`                    | Client and server | Supabase project URL                                           |
+| `VITE_SUPABASE_ANON_KEY`               | Client and server | Supabase anon key for browser auth and server JWT verification |
+| `CLOUDINARY_CLOUD_NAME`                | Server only       | Cloudinary cloud name                                          |
+| `CLOUDINARY_API_KEY`                   | Server only       | Cloudinary API key                                             |
+| `CLOUDINARY_API_SECRET`                | Server only       | Cloudinary API secret                                          |
+| `BROWSERLESS_API_KEY`                  | Server only       | Browserless screenshot API key                                 |
+| `SUBMISSION_RATE_LIMIT_SECRET`         | Server only       | 64-character hexadecimal HMAC secret                           |
+| `SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS`   | Server only       | Attempts allowed per fixed window                              |
+| `SUBMISSION_RATE_LIMIT_WINDOW_SECONDS` | Server only       | Fixed-window duration in seconds                               |
 
 `SENTRY_DSN` is a separate optional server-side setting supported by the
 Functions; it is not required by `.env.schema`. Netlify supplies `CONTEXT`
@@ -87,6 +90,23 @@ Review the generated SQL, commit the migration and its journal metadata, and
 apply it to the target Supabase project before deploying code that depends on
 it. Do not use `drizzle-kit push` for the active workflow; schema changes must
 be represented by committed migrations.
+
+## Configure the first admin
+
+Admin users are identified by a `public.user_roles` row with `role = 'admin'`.
+Because browser roles cannot promote themselves, add the first row from a
+trusted Supabase SQL editor or equivalent privileged connection, using the UUID
+of an existing verified `auth.users` account:
+
+```sql
+insert into public.user_roles (user_id, role)
+values ('<auth-user-uuid>', 'admin')
+on conflict (user_id, role) do nothing;
+```
+
+Sign in as that user and verify `GET /api/auth/whoami` returns
+`isAdmin: true`. Subsequent role changes must also use a trusted database
+context.
 
 ## Historical Turso import
 

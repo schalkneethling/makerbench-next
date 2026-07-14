@@ -1,6 +1,6 @@
 # Production Deployment
 
-Last updated: July 11, 2026
+Last updated: July 14, 2026
 
 MakerBench is deployed as a Vite static frontend and Netlify Functions backed
 by Supabase Postgres and Supabase Auth. Build settings are defined in
@@ -10,6 +10,7 @@ Related runbooks:
 
 - Database details: [../DATABASE_SETUP.md](../DATABASE_SETUP.md)
 - Local development: [local-development.md](./local-development.md)
+- Launch checklist: [launch-checklist.md](./launch-checklist.md)
 
 ## Runtime baseline
 
@@ -29,6 +30,7 @@ Bun is not part of the production deployment workflow.
 - Cloudinary credentials
 - A Browserless API key
 - An optional Sentry DSN
+- At least one verified Supabase user assigned the `admin` role
 
 ## 1. Configure Supabase Postgres and Auth
 
@@ -106,6 +108,7 @@ pnpm lint:css
 pnpm typecheck
 pnpm test
 npx vitest --project storybook run
+npx playwright test --project=chromium
 pnpm build
 ```
 
@@ -122,14 +125,18 @@ The normal flow is Git-based deployment:
 
 ## 6. Verify the deployment
 
-1. Load the homepage and `/submit`.
-2. Test Supabase sign-in with a configured provider.
-3. Confirm `GET /api/tools` returns approved tools.
-4. Confirm `GET /api/tools/search?q=test` returns JSON.
-5. Submit a bookmark and confirm a `201` response.
-6. For an authenticated user, verify `/library` and its API requests.
-7. Check Netlify Function logs for runtime errors.
-8. If Sentry is configured, verify that events arrive in the expected project.
+1. Load the homepage, `/resources`, and `/submit`.
+2. Test anonymous submission and Supabase sign-in; confirm new public
+   submissions return `201` with `pending` status.
+3. Repeat a submitted URL across both public kinds and confirm the expected
+   status-aware `409` response.
+4. Sign in as an admin, verify `/admin/moderation`, and approve or reject a test
+   item. Confirm only approved content appears publicly.
+5. Add a temporary blocklist rule, confirm a matching submission receives the
+   generic rejection and creates a private audit event, then remove the rule.
+6. Verify `/library` remains private to the authenticated user.
+7. Confirm the public list and search APIs return approved content.
+8. Check Netlify Function logs and, when configured, Sentry for new errors.
 
 ## SPA routing
 
@@ -147,9 +154,10 @@ status = 200
 
 ## Rollback
 
-Use Netlify deploy history to restore the previous successful deploy. If the
-rollback is related to a schema mismatch, deploy the matching application
-version or apply a forward-compatible migration before releasing again.
+Use Netlify deploy history to restore the previous successful deploy. Database
+migrations are not rolled back by a Netlify restore; deploy a compatible
+application version or apply a reviewed forward migration. Rotating
+`SUBMISSION_RATE_LIMIT_SECRET` resets rate-limit continuity for all identities.
 
 ## Security
 
