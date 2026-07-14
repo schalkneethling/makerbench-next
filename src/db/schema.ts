@@ -334,6 +334,10 @@ export const publicSubmissionBlocklistTable = pgTable(
       "public_submission_blocklist_value_check",
       sql`length(btrim(${table.normalizedValue})) > 0`,
     ),
+    check(
+      "public_submission_blocklist_match_type_check",
+      sql`${table.matchType} in ('url', 'domain')`,
+    ),
   ],
 ).enableRLS();
 

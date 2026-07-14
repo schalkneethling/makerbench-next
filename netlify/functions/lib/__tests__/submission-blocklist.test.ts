@@ -5,11 +5,13 @@ vi.mock("../db", () => ({
 }));
 
 import {
+  findSubmissionBlocklistMatch,
   normalizeBlocklistValue,
   recordSubmissionBlocklistEvent,
   submissionMatchesBlocklistRule,
 } from "../submission-blocklist";
 import { getDb } from "../db";
+import { getPgQuery } from "../../__tests__/test-utils";
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -39,6 +41,49 @@ describe("submission blocklist normalization", () => {
 });
 
 describe("submission blocklist matching", () => {
+  it("finds underscore-containing domain rules using a literal LIKE suffix", async () => {
+    const rule = {
+      id: "11111111-1111-4111-8111-111111111111",
+      matchType: "domain" as const,
+      normalizedValue: "under_score.example.com",
+    };
+    const mockDb = {
+      select: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue([rule]),
+    };
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+
+    await expect(
+      findSubmissionBlocklistMatch(
+        "https://docs.under_score.example.com/resource",
+      ),
+    ).resolves.toEqual(rule);
+
+    const query = getPgQuery(mockDb.where.mock.calls[0][0]);
+    expect(query.sql).toContain("replace(");
+    expect(query.sql).toContain("escape chr(92)");
+  });
+
+  it("returns null when the database query has no matching rule", async () => {
+    const mockDb = {
+      select: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue([]),
+    };
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+
+    await expect(
+      findSubmissionBlocklistMatch("https://allowed.example.com"),
+    ).resolves.toBeNull();
+  });
+
   it("matches exact URLs after normalization but preserves meaningful queries", () => {
     const rule = {
       matchType: "url" as const,

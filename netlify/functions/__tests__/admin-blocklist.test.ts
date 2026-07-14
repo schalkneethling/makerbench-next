@@ -38,7 +38,8 @@ const entry = {
   createdAt: new Date("2026-07-14T08:00:00.000Z"),
 };
 
-function createRequest(method: string, body?: unknown) {
+/** Creates an admin blocklist Request with the given method and optional body. */
+function createRequest(method: string, body?: unknown): Request {
   return new Request("https://test.com/api/admin/blocklist", {
     method,
     headers: {

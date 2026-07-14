@@ -4,8 +4,10 @@ import * as v from "valibot";
 
 import {
   badRequest,
+  captureError,
   conflict,
   created,
+  flushSentry,
   forbidden,
   methodNotAllowed,
   notFound,
@@ -110,7 +112,11 @@ export default async (req: Request, _context: Context) => {
       ? ok({ id: parsed.output.id })
       : notFound("Blocklist rule not found");
   } catch (error) {
-    console.error("[admin-blocklist]", error);
+    captureError(error, {
+      function: "admin-blocklist",
+      requestId: _context.requestId,
+    });
+    await flushSentry();
     return serverError("An error occurred while managing the blocklist");
   }
 };

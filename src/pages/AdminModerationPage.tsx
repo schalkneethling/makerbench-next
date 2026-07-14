@@ -73,7 +73,7 @@ export function AdminModerationPage() {
         </p>
       </header>
 
-      <SubmissionBlocklist accessToken={accessToken} />
+      <SubmissionBlocklist accessToken={accessToken} isAdmin={isAdmin} />
 
       <div
         className="AdminModerationPage-tabs"

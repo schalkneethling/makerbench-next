@@ -77,6 +77,27 @@ describe("submission blocklist API", () => {
     });
   });
 
+  it("throws a typed error when creating a rule fails", async () => {
+    server.use(
+      http.post(`${API_BASE}/api/admin/blocklist`, () =>
+        HttpResponse.json(
+          { success: false, error: "This blocklist rule already exists" },
+          { status: 409 },
+        ),
+      ),
+    );
+
+    await expect(
+      createSubmissionBlocklistRule("admin-token", {
+        matchType: "domain",
+        value: "example.com",
+      }),
+    ).rejects.toMatchObject({
+      status: 409,
+      message: "This blocklist rule already exists",
+    });
+  });
+
   it("sends authenticated delete requests", async () => {
     let authorization: string | null = null;
     let requestBody: unknown;

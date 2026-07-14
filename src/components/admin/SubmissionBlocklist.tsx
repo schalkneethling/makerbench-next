@@ -1,15 +1,20 @@
 import type { FormEvent } from "react";
 
+import type { BlocklistMatchType } from "../../api/admin";
 import { useAdminBlocklist } from "../../hooks/useAdminBlocklist";
 import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
 
 interface SubmissionBlocklistProps {
   accessToken: string | null;
+  isAdmin: boolean;
 }
 
 /** Admin controls for listing, adding, and removing private submission rules. */
-export function SubmissionBlocklist({ accessToken }: SubmissionBlocklistProps) {
+export function SubmissionBlocklist({
+  accessToken,
+  isAdmin,
+}: SubmissionBlocklistProps) {
   const {
     addEntry,
     entries,
@@ -25,7 +30,7 @@ export function SubmissionBlocklist({ accessToken }: SubmissionBlocklistProps) {
     setValue,
     successMessage,
     value,
-  } = useAdminBlocklist({ accessToken, isAdmin: true });
+  } = useAdminBlocklist({ accessToken, isAdmin });
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -74,7 +79,7 @@ export function SubmissionBlocklist({ accessToken }: SubmissionBlocklistProps) {
             className="AdminModerationPage-blocklistControl"
             value={matchType}
             onChange={(event) =>
-              setMatchType(event.target.value as "url" | "domain")
+              setMatchType(event.target.value as BlocklistMatchType)
             }
           >
             <option value="domain">Domain</option>
@@ -128,6 +133,7 @@ export function SubmissionBlocklist({ accessToken }: SubmissionBlocklistProps) {
                 variant="secondary"
                 disabled={pendingEntryId !== null}
                 isLoading={pendingEntryId === entry.id}
+                aria-label={`Remove ${entry.matchType} rule ${entry.normalizedValue}`}
                 onClick={() => void removeEntry(entry)}
               >
                 Remove

@@ -119,7 +119,7 @@ export async function findSubmissionBlocklistMatch(
               publicSubmissionBlocklistTable.normalizedValue,
               normalizedDomain,
             ),
-            sql`${normalizedDomain} like ('%.' || ${publicSubmissionBlocklistTable.normalizedValue})`,
+            sql`${normalizedDomain} like ('%.' || replace(${publicSubmissionBlocklistTable.normalizedValue}, '_', chr(92) || '_')) escape chr(92)`,
           ),
         ),
       ),

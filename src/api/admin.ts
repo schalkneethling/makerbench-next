@@ -2,6 +2,14 @@ import * as v from "valibot";
 
 import { BookmarkApiError } from "./bookmarks";
 
+function getBaseUrl(): string {
+  if (typeof window !== "undefined") {
+    return "";
+  }
+
+  return process.env.API_BASE_URL || "http://localhost:8888";
+}
+
 const moderationEntityTypeSchema = v.picklist([
   "tool",
   "resource",
@@ -132,7 +140,7 @@ export async function getModerationQueue(
   }
 
   const response = await fetch(
-    `/api/admin/moderation?${searchParams.toString()}`,
+    `${getBaseUrl()}/api/admin/moderation?${searchParams.toString()}`,
     {
       headers: getAuthHeaders(accessToken),
       signal,
@@ -156,7 +164,7 @@ export async function reviewModerationItem(
   accessToken: string,
   data: ReviewModerationItemData,
 ): Promise<ModerationReviewResult> {
-  const response = await fetch("/api/admin/moderation", {
+  const response = await fetch(`${getBaseUrl()}/api/admin/moderation`, {
     method: "PATCH",
     headers: {
       ...getAuthHeaders(accessToken),
@@ -183,7 +191,7 @@ export async function getSubmissionBlocklist(
   accessToken: string,
   signal?: AbortSignal,
 ): Promise<{ entries: BlocklistEntry[]; recentEvents: BlocklistEvent[] }> {
-  const response = await fetch("/api/admin/blocklist", {
+  const response = await fetch(`${getBaseUrl()}/api/admin/blocklist`, {
     headers: getAuthHeaders(accessToken),
     signal,
   });
@@ -206,7 +214,7 @@ export async function createSubmissionBlocklistRule(
   accessToken: string,
   data: { matchType: BlocklistMatchType; value: string },
 ): Promise<BlocklistEntry> {
-  const response = await fetch("/api/admin/blocklist", {
+  const response = await fetch(`${getBaseUrl()}/api/admin/blocklist`, {
     method: "POST",
     headers: {
       ...getAuthHeaders(accessToken),
@@ -233,7 +241,7 @@ export async function deleteSubmissionBlocklistRule(
   accessToken: string,
   id: string,
 ): Promise<void> {
-  const response = await fetch("/api/admin/blocklist", {
+  const response = await fetch(`${getBaseUrl()}/api/admin/blocklist`, {
     method: "DELETE",
     headers: {
       ...getAuthHeaders(accessToken),

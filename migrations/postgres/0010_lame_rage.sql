@@ -16,7 +16,8 @@ CREATE TABLE "public_submission_blocklist" (
 	"normalized_value" text NOT NULL,
 	"created_by" uuid,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "public_submission_blocklist_value_check" CHECK (length(btrim("public_submission_blocklist"."normalized_value")) > 0)
+	CONSTRAINT "public_submission_blocklist_value_check" CHECK (length(btrim("public_submission_blocklist"."normalized_value")) > 0),
+	CONSTRAINT "public_submission_blocklist_match_type_check" CHECK ("public_submission_blocklist"."match_type" in ('url', 'domain'))
 );
 --> statement-breakpoint
 ALTER TABLE "public_submission_blocklist" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint

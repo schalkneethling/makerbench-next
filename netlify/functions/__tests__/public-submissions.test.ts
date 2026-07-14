@@ -501,6 +501,37 @@ describe("public-submissions", () => {
     expect(mockDb.insert).not.toHaveBeenCalled();
   });
 
+  it("fails closed when the submission blocklist store is unavailable", async () => {
+    vi.mocked(findSubmissionBlocklistMatch).mockRejectedValueOnce(
+      new Error("blocklist datastore unavailable"),
+    );
+
+    try {
+      const res = await publicSubmissions(
+        createSubmissionRequest({
+          type: "resource",
+          url: "https://example.com/dependency-error",
+          tags: ["security"],
+        }),
+        createMockContext(),
+      );
+
+      expect(res.status).toBe(503);
+      await expect(res.json()).resolves.toEqual({
+        success: false,
+        error: "Service temporarily unavailable",
+      });
+      expect(captureError).toHaveBeenCalledWith(expect.any(Error), {
+        function: "public-submissions",
+        dependency: "submission-blocklist-store",
+      });
+      expect(flushSentry).toHaveBeenCalledOnce();
+      expect(extractMetadata).not.toHaveBeenCalled();
+    } finally {
+      vi.mocked(findSubmissionBlocklistMatch).mockResolvedValue(null);
+    }
+  });
+
   it("returns a clear duplicate conflict", async () => {
     const mockDb = createMockDb();
     mockDb.returning

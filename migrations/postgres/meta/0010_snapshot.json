@@ -1201,6 +1201,10 @@
         "public_submission_blocklist_value_check": {
           "name": "public_submission_blocklist_value_check",
           "value": "length(btrim(\"public_submission_blocklist\".\"normalized_value\")) > 0"
+        },
+        "public_submission_blocklist_match_type_check": {
+          "name": "public_submission_blocklist_match_type_check",
+          "value": "\"public_submission_blocklist\".\"match_type\" in ('url', 'domain')"
         }
       },
       "isRLSEnabled": true
