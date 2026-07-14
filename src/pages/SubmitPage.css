@@ -127,6 +127,11 @@
   padding-inline-start: var(--size-20);
 }
 
+.SubmitPage-errorDiagnostic {
+  color: var(--color-text-muted);
+  margin-block: var(--size-8) 0;
+}
+
 @media (width < 30rem) {
   .SubmitPage-typeOptions {
     grid-template-columns: minmax(0, 1fr);

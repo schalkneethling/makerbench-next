@@ -395,6 +395,9 @@ describe("public-submissions", () => {
         createMockContext(),
       );
       expect(missingResponse.status).toBe(503);
+      expect(missingResponse.headers.get("X-MakerBench-Error-Code")).toBe(
+        "submission-rate-limit-configuration-unavailable",
+      );
       await expect(missingResponse.json()).resolves.toEqual({
         success: false,
         error: "Service temporarily unavailable",
@@ -414,6 +417,9 @@ describe("public-submissions", () => {
         createMockContext(),
       );
       expect(invalidResponse.status).toBe(503);
+      expect(invalidResponse.headers.get("X-MakerBench-Error-Code")).toBe(
+        "submission-rate-limit-configuration-unavailable",
+      );
       await expect(invalidResponse.json()).resolves.toEqual({
         success: false,
         error: "Service temporarily unavailable",
@@ -508,6 +514,9 @@ describe("public-submissions", () => {
       );
 
       expect(res.status).toBe(503);
+      expect(res.headers.get("X-MakerBench-Error-Code")).toBe(
+        "submission-blocklist-store-unavailable",
+      );
       await expect(res.json()).resolves.toEqual({
         success: false,
         error: "Service temporarily unavailable",
@@ -778,6 +787,9 @@ describe("public-submissions", () => {
     );
 
     expect(res.status).toBe(503);
+    expect(res.headers.get("X-MakerBench-Error-Code")).toBe(
+      "submission-rate-limit-store-unavailable",
+    );
     await expect(res.json()).resolves.toEqual({
       success: false,
       error: "Service temporarily unavailable",

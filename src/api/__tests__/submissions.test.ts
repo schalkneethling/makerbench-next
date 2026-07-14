@@ -124,6 +124,35 @@ describe("submitPublicSubmission", () => {
     });
   });
 
+  it("preserves safe diagnostic codes from unavailable submission responses", async () => {
+    server.use(
+      http.post(`${API_BASE}/api/submissions`, () =>
+        HttpResponse.json(
+          { success: false, error: "Service temporarily unavailable" },
+          {
+            status: 503,
+            headers: {
+              "X-MakerBench-Error-Code": "submission-rate-limit-store-unavailable",
+            },
+          },
+        ),
+      ),
+    );
+
+    await expect(
+      submitPublicSubmission({
+        type: "resource",
+        url: "https://example.com/reference",
+        tags: ["testing"],
+      }),
+    ).rejects.toMatchObject({
+      name: "PublicSubmissionApiError",
+      status: 503,
+      message: "Service temporarily unavailable",
+      code: "submission-rate-limit-store-unavailable",
+    });
+  });
+
   it("rejects malformed success payloads with a typed error", async () => {
     server.use(
       http.post(`${API_BASE}/api/submissions`, () =>

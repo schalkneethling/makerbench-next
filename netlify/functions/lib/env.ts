@@ -78,6 +78,7 @@ export function getServiceUnavailableMessage(): string {
 export async function handleMissingEnvironmentError(
   error: unknown,
   functionName: string,
+  diagnosticCode = "service-configuration-unavailable",
 ): Promise<Response> {
   if (!isMissingEnvironmentError(error)) {
     throw error;
@@ -88,13 +89,14 @@ export async function handleMissingEnvironmentError(
     missingKeys: error.missingKeys,
   });
   await flushSentry();
-  return serviceUnavailable(getServiceUnavailableMessage());
+  return serviceUnavailable(getServiceUnavailableMessage(), diagnosticCode);
 }
 
 /** Maps invalid environment values to the same safe client response as missing values. */
 export async function handleInvalidEnvironmentError(
   error: unknown,
   functionName: string,
+  diagnosticCode = "service-configuration-unavailable",
 ): Promise<Response> {
   if (!isInvalidEnvironmentError(error)) {
     throw error;
@@ -105,5 +107,5 @@ export async function handleInvalidEnvironmentError(
     invalidKeys: error.invalidKeys,
   });
   await flushSentry();
-  return serviceUnavailable(getServiceUnavailableMessage());
+  return serviceUnavailable(getServiceUnavailableMessage(), diagnosticCode);
 }

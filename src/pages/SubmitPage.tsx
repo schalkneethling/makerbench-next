@@ -76,7 +76,13 @@ function getFormErrors(issues: readonly v.BaseIssue<unknown>[]): FormErrors {
 
 /** Public tool and resource submission form. */
 export function SubmitPage() {
-  const { identity, accessToken, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const {
+    identity,
+    accessToken,
+    isAdmin,
+    isAuthenticated,
+    isLoading: isAuthLoading,
+  } = useAuth();
   const { submit, isSubmitting, error, response, reset } = usePublicSubmission({
     accessToken: accessToken ?? undefined,
   });
@@ -85,6 +91,7 @@ export function SubmitPage() {
   const requireName = !hasVerifiedName;
   const requireGithubUsername = !hasVerifiedGithubUsername;
   const isFormDisabled = isAuthLoading || isSubmitting;
+  const canSeeDiagnostics = isAdmin || import.meta.env.DEV;
 
   const [submissionType, setSubmissionType] = useState<PublicSubmissionType | "">("");
   const [url, setUrl] = useState("");
@@ -169,6 +176,11 @@ export function SubmitPage() {
                 </li>
               ))}
             </ul>
+          ) : null}
+          {canSeeDiagnostics && error.code ? (
+            <p className="SubmitPage-errorDiagnostic body-sm">
+              Diagnostic code: <code>{error.code}</code>
+            </p>
           ) : null}
         </Alert>
       ) : null}

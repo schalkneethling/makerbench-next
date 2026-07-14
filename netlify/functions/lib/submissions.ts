@@ -109,7 +109,11 @@ async function getOptionalAuthenticatedUser(
   try {
     assertRequiredEnv(["VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY"]);
   } catch (error) {
-    return handleMissingEnvironmentError(error, endpointName);
+    return handleMissingEnvironmentError(
+      error,
+      endpointName,
+      "submission-auth-configuration-unavailable",
+    );
   }
 
   const authenticated = await verifyAuthenticatedUser(req);
@@ -414,7 +418,11 @@ export async function handlePublicSubmission(
   try {
     assertRequiredEnv(["SUPABASE_DATABASE_URL"]);
   } catch (error) {
-    return handleMissingEnvironmentError(error, options.endpointName);
+    return handleMissingEnvironmentError(
+      error,
+      options.endpointName,
+      "submission-database-configuration-unavailable",
+    );
   }
 
   const authenticated = await getOptionalAuthenticatedUser(
@@ -459,7 +467,11 @@ export async function handlePublicSubmission(
       rateLimitConfig.secret,
     );
   } catch (error) {
-    return handleInvalidEnvironmentError(error, options.endpointName);
+    return handleInvalidEnvironmentError(
+      error,
+      options.endpointName,
+      "submission-rate-limit-configuration-unavailable",
+    );
   }
 
   try {
@@ -477,7 +489,7 @@ export async function handlePublicSubmission(
       },
     );
     await flushSentry();
-    return dependencyUnavailable();
+    return dependencyUnavailable("submission-rate-limit-store-unavailable");
   }
 
   const normalizedUrl = parseAndNormalizeUrl(validation.output.url);
@@ -503,7 +515,7 @@ export async function handlePublicSubmission(
       dependency: "submission-blocklist-store",
     });
     await flushSentry();
-    return dependencyUnavailable();
+    return dependencyUnavailable("submission-blocklist-store-unavailable");
   }
 
   try {
@@ -517,7 +529,7 @@ export async function handlePublicSubmission(
       dependency: "submission-store",
     });
     await flushSentry();
-    return dependencyUnavailable();
+    return dependencyUnavailable("submission-store-unavailable");
   }
 
   const tags = normalizeTags(validation.output.tags);
