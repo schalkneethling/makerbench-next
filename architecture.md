@@ -1,6 +1,6 @@
 # MakerBench Architecture
 
-Last updated: July 11, 2026
+Last updated: July 14, 2026
 
 This document is the canonical technical reference for how MakerBench is structured, how data flows through the system, and what is planned next.
 
@@ -79,16 +79,16 @@ makerbench-next/
 - **Routing:** React Router v7 in `src/App.tsx` wraps all pages in `MainLayout` and `AuthProvider`.
 - **Pages:**
 
-| Route         | Page            | Purpose                                   |
-| ------------- | --------------- | ----------------------------------------- |
-| `/`, `/tools` | `HomePage`      | Browse and search approved tools          |
-| `/resources`  | `ResourcesPage` | Browse and search public resources/stacks |
-| `/library`    | `LibraryPage`   | Authenticated personal bookmark library   |
-| `/submit`     | `SubmitPage`    | Submit a tool or resource for moderation  |
-| `/admin/moderation` | `AdminModerationPage` | Review pending public listings (admin) |
-| `/about`      | `AboutPage`     | About the project                         |
-| `/privacy`    | `PrivacyPage`   | Privacy policy                            |
-| `*`           | `NotFoundPage`  | 404                                       |
+| Route               | Page                  | Purpose                                   |
+| ------------------- | --------------------- | ----------------------------------------- |
+| `/`, `/tools`       | `HomePage`            | Browse and search approved tools          |
+| `/resources`        | `ResourcesPage`       | Browse and search public resources/stacks |
+| `/library`          | `LibraryPage`         | Authenticated personal bookmark library   |
+| `/submit`           | `SubmitPage`          | Submit a tool or resource for moderation  |
+| `/admin/moderation` | `AdminModerationPage` | Review pending public listings (admin)    |
+| `/about`            | `AboutPage`           | About the project                         |
+| `/privacy`          | `PrivacyPage`         | Privacy policy                            |
+| `*`                 | `NotFoundPage`        | 404                                       |
 
 ### Component organization
 
@@ -162,7 +162,9 @@ sequenceDiagram
 
 - Client: `@supabase/supabase-js` in `src/lib/supabase.ts`; `AuthProvider` in `src/hooks/AuthProvider.tsx`
 - Server: `verifyAuthenticatedUser()` in `netlify/functions/lib/auth.ts` validates Bearer tokens and loads admin role from `user_roles`
-- Protected endpoints: `POST /api/library`, `GET /api/library` (personal bookmarks)
+- Protected endpoints: `GET/POST /api/library` require a signed-in user;
+  `/api/admin/moderation` and `/api/admin/blocklist` additionally require the
+  verified `admin` role.
 - Optional-auth endpoint: `POST /api/submissions` accepts no token or a Bearer token. An invalid supplied token is rejected rather than treated as anonymous.
 - Submission identity: `GET /api/auth/whoami` exposes only verified display-name and GitHub metadata. `SubmitPage` waits for this lookup before deciding which attribution inputs are missing.
 
@@ -177,31 +179,33 @@ Each API endpoint is a standalone `.mts` file exporting:
 
 Shared utilities live in `netlify/functions/lib/`:
 
-| Module         | Responsibility                                            |
-| -------------- | --------------------------------------------------------- |
-| `db.ts`        | Drizzle client (pg Pool, max 1 connection per invocation) |
-| `auth.ts`      | JWT verification, admin role lookup                       |
-| `responses.ts` | Standard `{ success, data \| error }` JSON helpers        |
-| `env.ts`       | Required env assertions, missing-env error handling       |
-| `url.ts`       | URL parsing and normalization                             |
-| `sentry.ts`    | Optional error capture and flush                          |
-| `tags.ts`      | Tag normalization helpers                                 |
+| Module                    | Responsibility                                            |
+| ------------------------- | --------------------------------------------------------- |
+| `db.ts`                   | Drizzle client (pg Pool, max 1 connection per invocation) |
+| `auth.ts`                 | JWT verification, admin role lookup                       |
+| `responses.ts`            | Standard `{ success, data \| error }` JSON helpers        |
+| `env.ts`                  | Required env assertions, missing-env error handling       |
+| `url.ts`                  | URL parsing and normalization                             |
+| `sentry.ts`               | Optional error capture and flush                          |
+| `tags.ts`                 | Tag normalization helpers                                 |
+| `submission-blocklist.ts` | Private URL/domain rules and redacted audit events        |
 
 ### API surface
 
-| Method      | Path                    | Function file            | Auth            | Description                                    |
-| ----------- | ----------------------- | ------------------------ | --------------- | ---------------------------------------------- |
-| `POST`      | `/api/submissions`      | `public-submissions.mts` | Optional Bearer | Submit a tool or resource as `pending`         |
-| `POST`      | `/api/tools`            | `process-tool.mts`       | Optional Bearer | Legacy compatibility route; accepts tools only |
-| `GET`       | `/api/tools`            | `get-bookmarks.mts`      | No              | List approved tools (paginated)                |
-| `GET`       | `/api/tools/search`     | `search-bookmarks.mts`   | No              | Search/filter approved tools                   |
-| `GET`       | `/api/tools/tags`       | `get-tags.mts`           | No              | Tag cloud with usage counts                    |
-| `GET`       | `/api/resources`        | `get-resources.mts`      | No              | List approved public resources/stacks          |
-| `GET`       | `/api/resources/search` | `search-resources.mts`   | No              | Search public resources/stacks                 |
-| `GET`       | `/api/library`          | `get-library.mts`        | Bearer          | List user's personal bookmarks                 |
-| `POST`      | `/api/library`          | `add-library.mts`        | Bearer          | Add a URL to the personal library              |
-| `GET`       | `/api/auth/whoami`      | `auth-whoami.mts`        | Bearer          | Return verified identity and admin flag        |
-| `GET/PATCH` | `/api/admin/moderation` | `admin-moderation.mts`   | Admin Bearer    | List or review pending moderation items        |
+| Method            | Path                    | Function file            | Auth            | Description                                              |
+| ----------------- | ----------------------- | ------------------------ | --------------- | -------------------------------------------------------- |
+| `POST`            | `/api/submissions`      | `public-submissions.mts` | Optional Bearer | Submit a tool or resource as `pending`                   |
+| `POST`            | `/api/tools`            | `process-tool.mts`       | Optional Bearer | Legacy compatibility route; accepts tools only           |
+| `GET`             | `/api/tools`            | `get-bookmarks.mts`      | No              | List approved tools (paginated)                          |
+| `GET`             | `/api/tools/search`     | `search-bookmarks.mts`   | No              | Search/filter approved tools                             |
+| `GET`             | `/api/tools/tags`       | `get-tags.mts`           | No              | Tag cloud with usage counts                              |
+| `GET`             | `/api/resources`        | `get-resources.mts`      | No              | List approved public resources/stacks                    |
+| `GET`             | `/api/resources/search` | `search-resources.mts`   | No              | Search public resources/stacks                           |
+| `GET`             | `/api/library`          | `get-library.mts`        | Bearer          | List user's personal bookmarks                           |
+| `POST`            | `/api/library`          | `add-library.mts`        | Bearer          | Add a URL to the personal library                        |
+| `GET`             | `/api/auth/whoami`      | `auth-whoami.mts`        | Bearer          | Return verified identity and admin flag                  |
+| `GET/PATCH`       | `/api/admin/moderation` | `admin-moderation.mts`   | Admin Bearer    | List or review pending moderation items                  |
+| `GET/POST/DELETE` | `/api/admin/blocklist`  | `admin-blocklist.mts`    | Admin Bearer    | Manage private submission blocklist rules and audit data |
 
 All responses follow a consistent envelope:
 
@@ -263,6 +267,21 @@ admission statement's serialized PostgreSQL semantics and persisted counts,
 but it does not test concurrent connections, network latency, connection-pool
 scheduling, or multiple server processes.
 
+### Public submission safety checks
+
+After rate-limit admission, the server normalizes the URL and checks a private
+admin-managed blocklist. Exact URLs and domains, including their subdomains,
+can be blocked. A match returns a generic rejection and records a redacted audit
+event; blocklist rules and events have RLS enabled and no browser-role grants.
+Datastore failures fail closed with a generic `503`.
+
+The server then checks the normalized URL across both `tool_listings` and
+`public_listings`, regardless of the requested kind. Existing submissions
+return a `409` before public URL resolution, metadata fetching, screenshots, or
+moderation-row creation; pending and approved rows include status-aware
+guidance. This does not affect authenticated personal-library saves, whose
+uniqueness remains scoped to each user.
+
 ### External service integrations
 
 **Metadata extraction** (`src/lib/services/metadata.ts`):
@@ -311,6 +330,7 @@ erDiagram
     resources ||--o| public_listings : "has"
     bookmarks ||--o| public_stacks : "root of"
     public_stacks ||--o{ public_stack_items : "contains"
+    public_submission_blocklist ||--o{ public_submission_blocklist_events : "records"
 
     resources {
         uuid id PK
@@ -353,18 +373,20 @@ erDiagram
     }
 ```
 
-| Table                           | Purpose                                                          |
-| ------------------------------- | ---------------------------------------------------------------- |
-| `resources`                     | Canonical URL identity shared across all listing types           |
-| `tool_listings`                 | Public tool submissions with moderation status and preview image |
-| `bookmarks`                     | Per-user personal bookmarks (private library)                    |
-| `public_listings`               | Moderated resource submissions and migrated community resources  |
-| `public_stacks`                 | Curated multi-item resource stacks                               |
-| `public_stack_items`            | Items within a public stack                                      |
-| `user_roles`                    | Admin role assignments                                           |
-| `user_preferences`              | User settings (e.g. highlight color)                             |
-| `public_submission_rate_limits` | Server-only HMAC-keyed submission throttle state                 |
-| `auth.users`                    | Supabase-managed auth users (referenced, not owned)              |
+| Table                                | Purpose                                                          |
+| ------------------------------------ | ---------------------------------------------------------------- |
+| `resources`                          | Canonical URL identity shared across all listing types           |
+| `tool_listings`                      | Public tool submissions with moderation status and preview image |
+| `bookmarks`                          | Per-user personal bookmarks (private library)                    |
+| `public_listings`                    | Moderated resource submissions and migrated community resources  |
+| `public_stacks`                      | Curated multi-item resource stacks                               |
+| `public_stack_items`                 | Items within a public stack                                      |
+| `user_roles`                         | Admin role assignments                                           |
+| `user_preferences`                   | User settings (e.g. highlight color)                             |
+| `public_submission_rate_limits`      | Server-only HMAC-keyed submission throttle state                 |
+| `public_submission_blocklist`        | Private normalized URL/domain rules managed by admins            |
+| `public_submission_blocklist_events` | Redacted audit events for rejected submission attempts           |
+| `auth.users`                         | Supabase-managed auth users (referenced, not owned)              |
 
 `public_listings.content_kind` retains `article | resource` for migrated and existing rows. New public submission input is binary `tool | resource`; articles, guides, and other article-like links are submitted as `resource`, not as a third input type.
 
@@ -390,29 +412,49 @@ sequenceDiagram
     Auth-->>Browser: Verified identity or anonymous state
     Browser->>API: Optional Bearer + { type: tool|resource, url, tags, missing attribution }
     API->>API: Verify supplied token and validate (Valibot)
-    API->>API: Prefer verified identity, then form attribution; require name + GitHub
-    API->>API: Normalize URL and tags
+    API->>DB: Consume rate-limit attempt (fail closed)
+    API->>API: Normalize URL
+    API->>DB: Check URL/domain blocklist
+    API->>DB: Check tool and resource submissions for normalized URL
+    alt Existing public submission
+        API-->>Browser: 409 status-aware conflict
+    end
+    API->>API: Resolve public HTTP URL
+    API->>API: Normalize tags; resolve and require attribution
     API->>Site: Fetch HTML for metadata
     Site-->>API: HTML
     API->>API: Extract title, description, og:image
-    API->>DB: Upsert canonical resource
 
     alt type is tool
         alt OG image exists
-            API->>DB: Insert tool_listings row (pending, imageSource=og)
+            API->>API: Prepare tool image (imageSource=og)
         else No OG image
             API->>Shot: Capture screenshot
             alt Screenshot success
                 Shot-->>API: Image bytes
                 API->>Img: Upload
                 Img-->>API: Hosted URL
-                API->>DB: Insert tool_listings row (pending, imageSource=screenshot)
+                API->>API: Prepare tool image (imageSource=screenshot)
             else Screenshot failed
-                API->>DB: Insert tool_listings row (pending, imageSource=fallback)
+                API->>API: Prepare fallback tool image
             end
         end
-    else type is resource
-        API->>DB: Insert public_listings row (pending, contentKind=resource)
+    end
+
+    API->>DB: Begin transaction
+    API->>DB: Acquire transaction-scoped advisory lock for normalized URL
+    API->>DB: Recheck tool and resource submissions while lock is held
+    alt Duplicate found during locked recheck
+        API->>DB: End transaction without inserts
+        API-->>Browser: 409 status-aware conflict
+    else No duplicate
+        API->>DB: Upsert canonical resource
+        alt type is tool
+            API->>DB: Insert tool_listings row (pending, prepared image source)
+        else type is resource
+            API->>DB: Insert public_listings row (pending, contentKind=resource)
+        end
+        API->>DB: Commit transaction
     end
 
     API-->>Browser: 201 { submittedItemId, type, status: pending }
@@ -528,37 +570,40 @@ Provide it through a secure external process environment or Netlify setting.
 
 ## Current Gaps and Roadmap
 
-| Area                       | Status                                                                                                             |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Public submission pipeline | Implemented for binary `tool | resource` routing with required attribution and `pending` status                    |
-| Public browse/search       | Implemented                                                                                                        |
-| Personal library (auth)    | Implemented                                                                                                        |
-| Public resources/stacks    | Implemented                                                                                                        |
-| Moderation API + admin UI  | Implemented for tools, public resources, stacks, and stack items                                                   |
-| Algolia search             | Planned post-MVP                                                                                                   |
+| Area                       | Status                                                                                              |
+| -------------------------- | --------------------------------------------------------------------------------------------------- |
+| Public submission pipeline | Implemented for binary `tool \| resource` routing with required attribution and `pending` status    |
+| Public browse/search       | Implemented                                                                                         |
+| Personal library (auth)    | Implemented                                                                                         |
+| Public resources/stacks    | Implemented                                                                                         |
+| Moderation API + admin UI  | Implemented for tools, public resources, stacks, and stack items                                    |
+| Submission safety controls | Implemented with durable rate limiting, private blocklisting/audit, and cross-kind duplicate checks |
+| Algolia search             | Planned post-MVP                                                                                    |
 
 See [ROADMAP.md](./ROADMAP.md) and [GitHub Issues](https://github.com/schalkneethling/makerbench-next/issues) for active backlog.
 
 ## Source Pointers
 
-| Concern              | Location                                                                                  |
-| -------------------- | ----------------------------------------------------------------------------------------- |
-| Routes               | `src/App.tsx`                                                                             |
-| Tool browse/search   | `src/pages/HomePage.tsx`                                                                  |
-| Public submission    | `src/pages/SubmitPage.tsx`, `src/hooks/usePublicSubmission.ts`                            |
-| Personal library     | `src/pages/LibraryPage.tsx`                                                               |
-| Public resources     | `src/pages/ResourcesPage.tsx`                                                             |
-| API clients          | `src/api/`                                                                                |
-| Validation schemas   | `src/lib/validation.ts`                                                                   |
-| Database schema      | `src/db/schema.ts`                                                                        |
-| Submit handlers      | `netlify/functions/public-submissions.mts`, `process-tool.mts`, `lib/submissions.ts`       |
-| List/search handlers | `netlify/functions/get-bookmarks.mts`, `search-bookmarks.mts`                             |
-| Auth handler         | `netlify/functions/auth-whoami.mts`                                                       |
-| Library handlers     | `netlify/functions/get-library.mts`, `add-library.mts`                                    |
-| Function shared libs | `netlify/functions/lib/`                                                                  |
-| Migrations           | `migrations/postgres/`                                                                    |
-| Storybook config     | `.storybook/main.ts`, `.storybook/preview.tsx`, `.storybook/msw-handlers.ts`              |
-| Component stories    | `src/components/**/*.stories.tsx`                                                         |
+| Concern               | Location                                                                                      |
+| --------------------- | --------------------------------------------------------------------------------------------- |
+| Routes                | `src/App.tsx`                                                                                 |
+| Tool browse/search    | `src/pages/HomePage.tsx`                                                                      |
+| Public submission     | `src/pages/SubmitPage.tsx`, `src/hooks/usePublicSubmission.ts`                                |
+| Personal library      | `src/pages/LibraryPage.tsx`                                                                   |
+| Public resources      | `src/pages/ResourcesPage.tsx`                                                                 |
+| API clients           | `src/api/`                                                                                    |
+| Validation schemas    | `src/lib/validation.ts`                                                                       |
+| Database schema       | `src/db/schema.ts`                                                                            |
+| Submit handlers       | `netlify/functions/public-submissions.mts`, `process-tool.mts`, `lib/submissions.ts`          |
+| List/search handlers  | `netlify/functions/get-bookmarks.mts`, `search-bookmarks.mts`                                 |
+| Auth handler          | `netlify/functions/auth-whoami.mts`                                                           |
+| Moderation handlers   | `netlify/functions/admin-moderation.mts`, `admin-blocklist.mts`                               |
+| Submission safeguards | `netlify/functions/lib/submission-rate-limit.ts`, `submission-blocklist.ts`, `submissions.ts` |
+| Library handlers      | `netlify/functions/get-library.mts`, `add-library.mts`                                        |
+| Function shared libs  | `netlify/functions/lib/`                                                                      |
+| Migrations            | `migrations/postgres/`                                                                        |
+| Storybook config      | `.storybook/main.ts`, `.storybook/preview.tsx`, `.storybook/msw-handlers.ts`                  |
+| Component stories     | `src/components/**/*.stories.tsx`                                                             |
 
 ## Related Documentation
 

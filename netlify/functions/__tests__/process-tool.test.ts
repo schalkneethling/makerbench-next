@@ -53,6 +53,7 @@ import { lookup } from "node:dns/promises";
 import { extractMetadata } from "../../../src/lib/services/metadata";
 import { captureScreenshot } from "../../../src/lib/services/screenshot";
 import { uploadScreenshot } from "../../../src/lib/services/cloudinary";
+import { createMockDb } from "./test-utils";
 
 const RESOURCE_ID = "11111111-1111-4111-8111-111111111111";
 const TOOL_LISTING_ID = "22222222-2222-4222-8222-222222222222";
@@ -80,32 +81,6 @@ function createMockContext(): Context {
   } as unknown as Context;
 }
 
-/**
- * Creates a mock database with chainable query methods
- */
-function createMockDb() {
-  const mockDb = {
-    execute: vi.fn().mockResolvedValue({ rows: [{ attempt_count: 1 }] }),
-    select: vi.fn().mockReturnThis(),
-    from: vi.fn().mockReturnThis(),
-    where: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockResolvedValue([]),
-    insert: vi.fn().mockReturnThis(),
-    values: vi.fn().mockReturnThis(),
-    onConflictDoUpdate: vi.fn().mockReturnThis(),
-    onConflictDoNothing: vi.fn().mockReturnThis(),
-    returning: vi
-      .fn()
-      .mockResolvedValueOnce([{ id: RESOURCE_ID }])
-      .mockResolvedValueOnce([{ id: TOOL_LISTING_ID }]),
-    innerJoin: vi.fn().mockReturnThis(),
-    leftJoin: vi.fn().mockReturnThis(),
-    orderBy: vi.fn().mockReturnThis(),
-    offset: vi.fn().mockReturnThis(),
-  };
-  return mockDb;
-}
-
 const anonymousAttribution = {
   submitterName: "Ada Lovelace",
   submitterGithubUsername: "ada-lovelace",
@@ -117,7 +92,13 @@ describe("process-tool", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockDb = createMockDb();
+    mockDb = createMockDb({
+      returningRows: [[{ id: RESOURCE_ID }], [{ id: TOOL_LISTING_ID }]],
+      transactionReturningRows: [
+        [{ id: RESOURCE_ID }],
+        [{ id: TOOL_LISTING_ID }],
+      ],
+    });
     vi.mocked(getDb).mockReturnValue(
       mockDb as unknown as ReturnType<typeof getDb>,
     );
@@ -384,8 +365,8 @@ describe("process-tool", () => {
 
   describe("duplicate detection", () => {
     it("returns 409 for duplicate URL", async () => {
-      mockDb.returning.mockReset();
-      mockDb.returning
+      mockDb.transactionDb.returning.mockReset();
+      mockDb.transactionDb.returning
         .mockResolvedValueOnce([{ id: "existing-resource-id" }])
         .mockResolvedValueOnce([]);
 
@@ -442,7 +423,7 @@ describe("process-tool", () => {
 
       expect(res.status).toBe(201);
       expect(verifyAuthenticatedUser).toHaveBeenCalledOnce();
-      expect(mockDb.values).toHaveBeenNthCalledWith(
+      expect(mockDb.transactionDb.values).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({
           submittedByUserId: "55555555-5555-4555-8555-555555555555",
@@ -473,7 +454,7 @@ describe("process-tool", () => {
       expect(body.data.type).toBe("tool");
       expect(body.data.status).toBe("pending");
       expect(body.data.message).toContain("submitted");
-      expect(mockDb.values).toHaveBeenNthCalledWith(
+      expect(mockDb.transactionDb.values).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({
           submittedByUserId: undefined,
@@ -553,7 +534,7 @@ describe("process-tool", () => {
 
       await processTool(req, mockContext);
 
-      expect(mockDb.values).toHaveBeenNthCalledWith(
+      expect(mockDb.transactionDb.values).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({
           imageUrl: "https://cloudinary.com/screenshot.png",
@@ -606,7 +587,8 @@ describe("process-tool", () => {
       await processTool(req, mockContext);
 
       // Verify insert was called (tags are processed internally)
-      expect(mockDb.insert).toHaveBeenCalled();
+      expect(mockDb.transactionDb.insert).toHaveBeenCalled();
+      expect(mockDb.insert).not.toHaveBeenCalled();
     });
   });
 });

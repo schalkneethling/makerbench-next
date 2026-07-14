@@ -1,5 +1,6 @@
 import type { Context } from "@netlify/functions";
 import type { BaseIssue } from "valibot";
+import { sql } from "drizzle-orm";
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 
@@ -95,6 +96,20 @@ interface SubmissionContext {
   normalizedUrl: string;
   submission: PublicSubmissionRequest;
   tags: string[];
+}
+
+type SubmissionDatabase =
+  | ReturnType<typeof getDb>
+  | Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
+
+interface ExistingPublicSubmission extends Record<string, unknown> {
+  status: "pending" | "approved" | "rejected";
+  submitted_by_user_id: string | null;
+}
+
+interface ToolImage {
+  imageSource: "og" | "screenshot" | "fallback";
+  imageUrl: string;
 }
 
 function getIssueField(issue: BaseIssue<unknown>): string {
@@ -340,21 +355,13 @@ function isPublicListingSubmission(
   return submission.type !== "tool";
 }
 
-/** Inserts a pending tool listing, using OG imagery or screenshot fallback metadata. */
-async function createToolSubmission({
-  authenticated,
-  metadata,
-  normalizedSubmitterGithubUrl,
-  normalizedSubmitterName,
-  normalizedUrl,
-  resourceId,
-  tags,
-}: SubmissionContext & {
-  metadata: MetadataResult;
-  resourceId: string;
-}): Promise<string | null> {
+/** Prepares OG, screenshot, or fallback imagery before opening a transaction. */
+async function prepareToolImage(
+  metadata: MetadataResult,
+  normalizedUrl: string,
+): Promise<ToolImage> {
   let imageUrl: string = FALLBACK_IMAGE;
-  let imageSource: "og" | "screenshot" | "fallback" = "fallback";
+  let imageSource: ToolImage["imageSource"] = "fallback";
 
   const publicOgImage = metadata.ogImage
     ? await resolvePublicHttpUrl(metadata.ogImage)
@@ -376,7 +383,29 @@ async function createToolSubmission({
     }
   }
 
-  const [tool] = await getDb()
+  return { imageSource, imageUrl };
+}
+
+/** Inserts a pending tool listing using previously prepared imagery. */
+async function createToolSubmission(
+  db: SubmissionDatabase,
+  {
+    authenticated,
+    imageSource,
+    imageUrl,
+    metadata,
+    normalizedSubmitterGithubUrl,
+    normalizedSubmitterName,
+    normalizedUrl,
+    resourceId,
+    tags,
+  }: SubmissionContext &
+    ToolImage & {
+      metadata: MetadataResult;
+      resourceId: string;
+    },
+): Promise<string | null> {
+  const [tool] = await db
     .insert(toolListingsTable)
     .values({
       resourceId,
@@ -397,21 +426,24 @@ async function createToolSubmission({
 }
 
 /** Inserts a pending public resource listing linked to the shared resource row. */
-async function createPublicListingSubmission({
-  authenticated,
-  metadata,
-  normalizedSubmitterGithubUrl,
-  normalizedSubmitterName,
-  normalizedUrl,
-  resourceId,
-  submission,
-  tags,
-}: SubmissionContext & {
-  metadata: MetadataResult;
-  resourceId: string;
-  submission: PublicSubmissionRequest & { type: PublicListingSubmissionType };
-}): Promise<string | null> {
-  const [listing] = await getDb()
+async function createPublicListingSubmission(
+  db: SubmissionDatabase,
+  {
+    authenticated,
+    metadata,
+    normalizedSubmitterGithubUrl,
+    normalizedSubmitterName,
+    normalizedUrl,
+    resourceId,
+    submission,
+    tags,
+  }: SubmissionContext & {
+    metadata: MetadataResult;
+    resourceId: string;
+    submission: PublicSubmissionRequest & { type: PublicListingSubmissionType };
+  },
+): Promise<string | null> {
+  const [listing] = await db
     .insert(publicListingsTable)
     .values({
       resourceId,
@@ -432,11 +464,12 @@ async function createPublicListingSubmission({
 
 /** Upserts the canonical resource identity and returns its id for listing inserts. */
 async function getOrCreateResourceId(
+  db: SubmissionDatabase,
   metadata: MetadataResult,
   normalizedUrl: string,
   submission: PublicSubmissionRequest,
 ): Promise<string> {
-  const [resource] = await getDb()
+  const [resource] = await db
     .insert(resourcesTable)
     .values({
       normalizedUrl,
@@ -451,6 +484,58 @@ async function getOrCreateResourceId(
     .returning({ id: resourcesTable.id });
 
   return resource.id;
+}
+
+/** Finds an existing public listing for a normalized URL across both catalogs. */
+async function findExistingPublicSubmission(
+  db: SubmissionDatabase,
+  normalizedUrl: string,
+): Promise<ExistingPublicSubmission | null> {
+  const result = await db.execute<ExistingPublicSubmission>(sql`
+    select status, submitted_by_user_id
+    from (
+      select tool_listings.status, tool_listings.submitted_by_user_id, tool_listings.created_at
+      from tool_listings
+      inner join resources on resources.id = tool_listings.resource_id
+      where resources.normalized_url = ${normalizedUrl}
+
+      union all
+
+      select public_listings.status, public_listings.submitted_by_user_id, public_listings.created_at
+      from public_listings
+      inner join resources on resources.id = public_listings.resource_id
+      where resources.normalized_url = ${normalizedUrl}
+    ) existing_public_submissions
+    order by
+      case status when 'approved' then 0 when 'pending' then 1 else 2 end,
+      created_at desc
+    limit 1
+  `);
+
+  const existing = result.rows[0];
+  return existing?.status ? existing : null;
+}
+
+/** Returns a helpful conflict response without exposing another submitter's identity. */
+function getDuplicateConflict(
+  existing: ExistingPublicSubmission,
+  authenticated: AuthenticatedUser | null,
+): Response {
+  if (existing.status === "approved") {
+    return conflict("This URL is already published.");
+  }
+
+  if (existing.status === "pending") {
+    const isSameUser =
+      authenticated && existing.submitted_by_user_id === authenticated.user.id;
+    return conflict(
+      isSameUser
+        ? "You already submitted this URL. It is awaiting review."
+        : "This URL has already been submitted and is awaiting review.",
+    );
+  }
+
+  return conflict("This URL has already been submitted");
 }
 
 /** Formats the success message returned by public submission endpoints. */
@@ -577,6 +662,20 @@ export async function handlePublicSubmission(
     return dependencyUnavailable();
   }
 
+  try {
+    const existing = await findExistingPublicSubmission(getDb(), normalizedUrl);
+    if (existing) {
+      return getDuplicateConflict(existing, authenticated);
+    }
+  } catch (error) {
+    captureError(error, {
+      function: options.endpointName,
+      dependency: "submission-store",
+    });
+    await flushSentry();
+    return dependencyUnavailable();
+  }
+
   const publicUrl = await resolvePublicHttpUrl(normalizedUrl);
   if (!publicUrl) {
     return validationError("Validation failed", {
@@ -610,30 +709,62 @@ export async function handlePublicSubmission(
 
   try {
     const metadata = await extractMetadata(publicUrl);
-    const resourceId = await getOrCreateResourceId(
-      metadata,
-      publicUrl,
-      validation.output,
-    );
-    const submittedItemId = isPublicListingSubmission(validation.output)
-      ? await createPublicListingSubmission({
+    const toolImage = isPublicListingSubmission(validation.output)
+      ? null
+      : await prepareToolImage(metadata, publicUrl);
+    const result = await getDb().transaction(async (transaction) => {
+      await transaction.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${publicUrl}, 0))`,
+      );
+
+      const existing = await findExistingPublicSubmission(
+        transaction,
+        publicUrl,
+      );
+      if (existing) {
+        return { existing, submittedItemId: null };
+      }
+
+      const resourceId = await getOrCreateResourceId(
+        transaction,
+        metadata,
+        publicUrl,
+        validation.output,
+      );
+      let submittedItemId: string | null;
+      if (isPublicListingSubmission(validation.output)) {
+        submittedItemId = await createPublicListingSubmission(transaction, {
           ...submissionContext,
           metadata,
           resourceId,
           submission: validation.output,
-        })
-      : await createToolSubmission({
+        });
+      } else {
+        if (!toolImage) {
+          throw new Error("Tool submission image preparation was skipped");
+        }
+
+        submittedItemId = await createToolSubmission(transaction, {
           ...submissionContext,
+          ...toolImage,
           metadata,
           resourceId,
         });
+      }
 
-    if (!submittedItemId) {
+      return { existing: null, submittedItemId };
+    });
+
+    if (result.existing) {
+      return getDuplicateConflict(result.existing, authenticated);
+    }
+
+    if (!result.submittedItemId) {
       return conflict("This URL has already been submitted");
     }
 
     return created({
-      submittedItemId,
+      submittedItemId: result.submittedItemId,
       type: validation.output.type,
       status: "pending",
       message: getSuccessMessage(validation.output.type),

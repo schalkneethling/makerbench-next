@@ -1,6 +1,6 @@
 # MakerBench Roadmap
 
-This roadmap reflects the codebase status as of May 2026.
+This roadmap reflects the codebase status as of July 2026.
 
 ## Completed
 
@@ -39,24 +39,24 @@ This roadmap reflects the codebase status as of May 2026.
 - Initial story set: UI primitives, tags, search, forms, tool cards (10 files)
 - Remaining: page-level stories, layout chrome, resource cards, authenticated views
 
+### Moderation and publishing loop
+
+- Unified admin queue for tools, public resources, stacks, and stack items
+- Admin-only approve/reject actions and route protection
+- Approved-only public browse and search surfaces
+- Private URL/domain blocklist management and redacted audit events
+
+### Public submission launch guardrails
+
+- Durable server-side rate limiting for anonymous and authenticated submissions
+- Cross-kind duplicate detection before public URL resolution or external work
+- Status-aware duplicate conflict responses
+- Production deployment runbook and launch checklist
+
 ## In Progress / Next Logical Milestone
 
-### Phase 3: Moderation and publishing loop
-
-Goal: close the loop between `pending` submissions and public visibility across all moderated content types.
-
-Target outcomes:
-
-- Add admin API endpoints for a unified review queue covering:
-  - Tools (`tool_listings`)
-  - Public resources (`public_listings`)
-  - Stacks (`public_stacks`)
-  - Stack items (`public_stack_items`)
-- Add admin UI with approve/reject actions for each type
-- Protect admin routes/actions with authentication
-- Add tests for moderation workflows
-
-Tracked in [#105](https://github.com/schalkneethling/makerbench-next/issues/105) (supersedes #69).
+The moderation and launch-readiness milestones are complete. GitHub Issues is
+the source of truth for selecting the next product milestone.
 
 ## Post-MVP Candidates
 

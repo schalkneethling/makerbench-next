@@ -60,7 +60,7 @@ import { captureScreenshot } from "../../../src/lib/services/screenshot";
 import { uploadScreenshot } from "../../../src/lib/services/cloudinary";
 import { extractMetadata } from "../../../src/lib/services/metadata";
 import { TEST_SUBMISSION_RATE_LIMIT_SECRET } from "../../../src/test/rate-limit-fixtures";
-import { createMockContext, getPgQuery } from "./test-utils";
+import { createMockContext, createMockDb, getPgQuery } from "./test-utils";
 
 const RATE_LIMIT_SECRET = TEST_SUBMISSION_RATE_LIMIT_SECRET;
 
@@ -69,17 +69,6 @@ interface SubmissionCreated {
   type: "tool" | "resource";
   status: "pending";
   message: string;
-}
-
-function createMockDb() {
-  return {
-    execute: vi.fn().mockResolvedValue({ rows: [{ attempt_count: 1 }] }),
-    insert: vi.fn().mockReturnThis(),
-    values: vi.fn().mockReturnThis(),
-    onConflictDoUpdate: vi.fn().mockReturnThis(),
-    onConflictDoNothing: vi.fn().mockReturnThis(),
-    returning: vi.fn(),
-  };
 }
 
 function createSubmissionRequest(
@@ -127,7 +116,7 @@ describe("public-submissions", () => {
 
   it("creates an anonymous pending resource listing", async () => {
     const mockDb = createMockDb();
-    mockDb.returning
+    mockDb.transactionDb.returning
       .mockResolvedValueOnce([{ id: "11111111-1111-4111-8111-111111111111" }])
       .mockResolvedValueOnce([{ id: "22222222-2222-4222-8222-222222222222" }]);
     vi.mocked(getDb).mockReturnValue(
@@ -153,7 +142,7 @@ describe("public-submissions", () => {
       status: "pending",
     });
     expect(verifyAuthenticatedUser).not.toHaveBeenCalled();
-    expect(mockDb.values).toHaveBeenNthCalledWith(
+    expect(mockDb.transactionDb.values).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
         contentKind: "resource",
@@ -208,7 +197,7 @@ describe("public-submissions", () => {
     mockDb.execute
       .mockResolvedValueOnce({ rows: [] })
       .mockResolvedValueOnce({ rows: [{ attempt_count: 1 }] });
-    mockDb.returning
+    mockDb.transactionDb.returning
       .mockResolvedValueOnce([{ id: "11111111-1111-4111-8111-111111111111" }])
       .mockResolvedValueOnce([{ id: "22222222-2222-4222-8222-222222222222" }]);
     vi.mocked(getDb).mockReturnValue(
@@ -256,7 +245,7 @@ describe("public-submissions", () => {
 
   it("stores signed-in attribution for public resource listings", async () => {
     const mockDb = createMockDb();
-    mockDb.returning
+    mockDb.transactionDb.returning
       .mockResolvedValueOnce([{ id: "33333333-3333-4333-8333-333333333333" }])
       .mockResolvedValueOnce([{ id: "44444444-4444-4444-8444-444444444444" }]);
     vi.mocked(getDb).mockReturnValue(
@@ -292,7 +281,7 @@ describe("public-submissions", () => {
 
     expect(res.status).toBe(201);
     expect(verifyAuthenticatedUser).toHaveBeenCalledOnce();
-    expect(mockDb.values).toHaveBeenNthCalledWith(
+    expect(mockDb.transactionDb.values).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
         contentKind: "resource",
@@ -335,7 +324,7 @@ describe("public-submissions", () => {
 
   it("routes tool submissions to tool listings", async () => {
     const mockDb = createMockDb();
-    mockDb.returning
+    mockDb.transactionDb.returning
       .mockResolvedValueOnce([{ id: "66666666-6666-4666-8666-666666666666" }])
       .mockResolvedValueOnce([{ id: "77777777-7777-4777-8777-777777777777" }]);
     vi.mocked(getDb).mockReturnValue(
@@ -362,7 +351,7 @@ describe("public-submissions", () => {
     const body = (await res.json()) as SuccessResponse<SubmissionCreated>;
     expect(body.data.type).toBe("tool");
     expect(captureScreenshot).not.toHaveBeenCalled();
-    expect(mockDb.values).toHaveBeenNthCalledWith(
+    expect(mockDb.transactionDb.values).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
         pageTitle: "Tool title",
@@ -532,9 +521,191 @@ describe("public-submissions", () => {
     }
   });
 
+  it("rejects a pending cross-kind duplicate before metadata work", async () => {
+    const mockDb = createMockDb();
+    mockDb.execute
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [{ attempt_count: 1 }] })
+      .mockResolvedValueOnce({
+        rows: [{ status: "pending", submitted_by_user_id: null }],
+      });
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+
+    const res = await publicSubmissions(
+      createSubmissionRequest({
+        type: "resource",
+        url: "https://example.com/existing-tool",
+        tags: ["css"],
+        submitterName: "Ada",
+        submitterGithubUsername: "ada",
+      }),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(409);
+    await expect(res.json()).resolves.toEqual({
+      success: false,
+      error: "This URL has already been submitted and is awaiting review.",
+    });
+    const duplicateQuery = getPgQuery(mockDb.execute.mock.calls[2]?.[0]);
+    expect(duplicateQuery.sql).toContain("from tool_listings");
+    expect(duplicateQuery.sql).toContain("from public_listings");
+    expect(extractMetadata).not.toHaveBeenCalled();
+    expect(captureScreenshot).not.toHaveBeenCalled();
+    expect(mockDb.transaction).not.toHaveBeenCalled();
+  });
+
+  it("returns a published conflict for an approved duplicate", async () => {
+    const mockDb = createMockDb();
+    mockDb.execute
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [{ attempt_count: 1 }] })
+      .mockResolvedValueOnce({
+        rows: [{ status: "approved", submitted_by_user_id: null }],
+      });
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+
+    const res = await publicSubmissions(
+      createSubmissionRequest({
+        type: "tool",
+        url: "https://example.com/published",
+        tags: ["css"],
+        submitterName: "Ada",
+        submitterGithubUsername: "ada",
+      }),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(409);
+    await expect(res.json()).resolves.toEqual({
+      success: false,
+      error: "This URL is already published.",
+    });
+    expect(extractMetadata).not.toHaveBeenCalled();
+  });
+
+  it("recognizes a signed-in user's pending submission retry", async () => {
+    const userId = "55555555-5555-4555-8555-555555555555";
+    const mockDb = createMockDb();
+    mockDb.execute
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [{ attempt_count: 1 }] })
+      .mockResolvedValueOnce({
+        rows: [{ status: "pending", submitted_by_user_id: userId }],
+      });
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+    vi.mocked(verifyAuthenticatedUser).mockResolvedValue({
+      user: {
+        id: userId,
+        user_metadata: { full_name: "Verified User" },
+        identities: [
+          {
+            provider: "github",
+            identity_data: { user_name: "verified-user" },
+          },
+        ],
+      },
+      isAdmin: false,
+    } as never);
+
+    const res = await publicSubmissions(
+      createSubmissionRequest(
+        {
+          type: "resource",
+          url: "https://example.com/retry",
+          tags: ["css"],
+        },
+        "valid-token",
+      ),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(409);
+    await expect(res.json()).resolves.toEqual({
+      success: false,
+      error: "You already submitted this URL. It is awaiting review.",
+    });
+    expect(extractMetadata).not.toHaveBeenCalled();
+  });
+
+  it("locks and rechecks duplicates inside the insert transaction", async () => {
+    const mockDb = createMockDb();
+    mockDb.transactionDb.returning
+      .mockResolvedValueOnce([{ id: "88888888-8888-4888-8888-888888888888" }])
+      .mockResolvedValueOnce([{ id: "99999999-9999-4999-8999-999999999999" }]);
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+
+    const res = await publicSubmissions(
+      createSubmissionRequest({
+        type: "resource",
+        url: "https://example.com/transaction",
+        tags: ["css"],
+        submitterName: "Ada",
+        submitterGithubUsername: "ada",
+      }),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(201);
+    expect(mockDb.transaction).toHaveBeenCalledOnce();
+    const queries = mockDb.transactionDb.execute.mock.calls.map(([query]) =>
+      getPgQuery(query),
+    );
+    expect(queries).toHaveLength(2);
+    expect(queries[0]?.sql).toContain("pg_advisory_xact_lock(hashtextextended");
+    expect(queries[1]?.sql).toContain("from tool_listings");
+    expect(queries[1]?.sql).toContain("from public_listings");
+    expect(mockDb.transactionDb.insert).toHaveBeenCalledTimes(2);
+    expect(mockDb.insert).not.toHaveBeenCalled();
+  });
+
+  it("stops a duplicate detected by the locked transaction recheck", async () => {
+    const mockDb = createMockDb();
+    mockDb.execute
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [{ attempt_count: 1 }] })
+      .mockResolvedValueOnce({ rows: [] });
+    mockDb.transactionDb.execute
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({
+        rows: [{ status: "pending", submitted_by_user_id: null }],
+      });
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+
+    const res = await publicSubmissions(
+      createSubmissionRequest({
+        type: "resource",
+        url: "https://example.com/concurrent-duplicate",
+        tags: ["css"],
+        submitterName: "Ada",
+        submitterGithubUsername: "ada",
+      }),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(409);
+    await expect(res.json()).resolves.toEqual({
+      success: false,
+      error: "This URL has already been submitted and is awaiting review.",
+    });
+    expect(extractMetadata).toHaveBeenCalledOnce();
+    expect(mockDb.transactionDb.insert).not.toHaveBeenCalled();
+    expect(mockDb.insert).not.toHaveBeenCalled();
+  });
+
   it("returns a clear duplicate conflict", async () => {
     const mockDb = createMockDb();
-    mockDb.returning
+    mockDb.transactionDb.returning
       .mockResolvedValueOnce([{ id: "88888888-8888-4888-8888-888888888888" }])
       .mockResolvedValueOnce([]);
     vi.mocked(getDb).mockReturnValue(

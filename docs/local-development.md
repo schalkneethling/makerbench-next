@@ -1,6 +1,6 @@
 # Local Development
 
-Last updated: July 11, 2026
+Last updated: July 14, 2026
 
 MakerBench runs locally as a Vite React frontend plus Netlify Functions. Use
 Supabase Postgres for data, Supabase Auth for sign-in, and Netlify Dev so the
@@ -10,6 +10,7 @@ Related runbooks:
 
 - Database details: [../DATABASE_SETUP.md](../DATABASE_SETUP.md)
 - Production deployment: [production-deployment.md](./production-deployment.md)
+- Launch checklist: [launch-checklist.md](./launch-checklist.md)
 
 ## Prerequisites
 
@@ -101,11 +102,23 @@ browser origin for the redirect.
 
 1. Open the URL printed by `netlify dev`.
 2. Confirm the home page loads without console or API errors.
-3. Sign in with a configured Supabase Auth provider if auth is being tested.
-4. Submit a bookmark from `/submit`.
-5. Confirm `GET /api/tools` returns approved tools.
-6. Confirm `GET /api/tools/search?q=...` returns JSON.
-7. Confirm authenticated library requests work at `/library`.
+3. Submit anonymously from `/submit` and confirm the result is `pending`.
+4. Sign in and submit a different URL with verified attribution.
+5. Submit the same URL as either public kind and confirm a status-aware `409`
+   response without another moderation row.
+6. With an admin account, open `/admin/moderation`, review a pending item, and
+   verify that only approved content appears on public surfaces.
+7. Add a temporary URL or domain blocklist rule, confirm a matching submission
+   receives a generic rejection, inspect the private audit event, then remove
+   the rule.
+8. Confirm authenticated library requests work at `/library` and remain scoped
+   to the signed-in user.
+9. Confirm `GET /api/tools` and `GET /api/tools/search?q=...` return JSON.
+
+Use local rate-limit settings for repeated submission checks. Do not exercise
+these checks against production merely to consume its attempt quota. See
+[Database setup](../DATABASE_SETUP.md#configure-the-first-admin) for first-admin
+setup.
 
 ## 6. Quality checks
 
@@ -116,7 +129,13 @@ pnpm typecheck
 pnpm test
 pnpm build
 npx vitest --project storybook run
+npx playwright test --project=chromium
 ```
+
+The Playwright command automatically starts the Vite server configured in
+`playwright.config.ts`; a separate `netlify dev` process is not required for the
+current frontend E2E suite. Locally, Playwright can reuse an existing server at
+the configured URL.
 
 The Storybook interaction tests require the Playwright Chromium browser. Run
 `npx playwright install chromium` once if the executable is not installed.

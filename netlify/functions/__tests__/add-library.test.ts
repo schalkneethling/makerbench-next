@@ -46,7 +46,9 @@ describe("add-library", () => {
     mockDb.limit
       .mockResolvedValueOnce([{ id: "resource-1" }])
       .mockResolvedValueOnce([{ id: "bookmark-1" }]);
-    vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
 
     const res = await addLibrary(
       new Request("https://test.com/api/library", {
@@ -62,5 +64,37 @@ describe("add-library", () => {
 
     expect(res.status).toBe(409);
     expect(extractMetadata).not.toHaveBeenCalled();
+  });
+
+  it("adds an existing shared resource to a user's library without extracting metadata", async () => {
+    const mockDb = createMockDb();
+    mockDb.limit
+      .mockResolvedValueOnce([{ id: "resource-1" }])
+      .mockResolvedValueOnce([]);
+    mockDb.returning.mockResolvedValueOnce([{ id: "bookmark-1" }]);
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+
+    const res = await addLibrary(
+      new Request("https://test.com/api/library", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: "https://example.com/resource",
+          tags: ["React"],
+        }),
+      }),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(201);
+    expect(extractMetadata).not.toHaveBeenCalled();
+    expect(mockDb.values).toHaveBeenCalledWith({
+      userId: "user-1",
+      resourceId: "resource-1",
+      notes: "",
+      tags: ["react"],
+    });
   });
 });
