@@ -13,6 +13,7 @@ import { InvalidEnvironmentError } from "../env";
 import {
   consumeSubmissionRateLimit,
   createSubmissionRateLimitKey,
+  getInspectionRateLimitConfig,
   getSubmissionRateLimitConfig,
   SUBMISSION_RATE_LIMIT_CLEANUP_BATCH_SIZE,
   SUBMISSION_RATE_LIMIT_RETENTION_SECONDS,
@@ -183,12 +184,37 @@ describe("submission rate limit", () => {
     }
   });
 
+  it("reads inspection limits independently from submission limits", () => {
+    const restore = setRateLimitEnvironment({
+      INSPECTION_RATE_LIMIT_SECRET: "b".repeat(64),
+      INSPECTION_RATE_LIMIT_MAX_ATTEMPTS: "30",
+      INSPECTION_RATE_LIMIT_WINDOW_SECONDS: "600",
+      SUBMISSION_RATE_LIMIT_SECRET: config.secret,
+      SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS: "5",
+      SUBMISSION_RATE_LIMIT_WINDOW_SECONDS: "3600",
+    });
+
+    try {
+      expect(getInspectionRateLimitConfig()).toEqual({
+        secret: "b".repeat(64),
+        maxAttempts: 30,
+        windowSeconds: 600,
+      });
+      expect(getSubmissionRateLimitConfig()).toEqual(config);
+    } finally {
+      restore();
+    }
+  });
+
   it("declares the HMAC secret as sensitive external Varlock config", () => {
     expect(environmentSchema).toContain(
       "# @type=string(isLength=64,matches=/^[0-9A-Fa-f]{64}$/) @sensitive\nSUBMISSION_RATE_LIMIT_SECRET=",
     );
     expect(environmentSchema).not.toContain(
       "# @type=string(isLength=64,matches=/^[0-9A-Fa-f]{64}$/) @sensitive @required\nSUBMISSION_RATE_LIMIT_SECRET=",
+    );
+    expect(environmentSchema).toContain(
+      "# @type=string(isLength=64,matches=/^[0-9A-Fa-f]{64}$/) @sensitive\nINSPECTION_RATE_LIMIT_SECRET=",
     );
   });
 

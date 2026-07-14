@@ -14,6 +14,12 @@ const SUBMISSION_RATE_LIMIT_ENV_KEYS = [
   "SUBMISSION_RATE_LIMIT_WINDOW_SECONDS",
 ] as const;
 
+const INSPECTION_RATE_LIMIT_ENV_KEYS = [
+  "INSPECTION_RATE_LIMIT_SECRET",
+  "INSPECTION_RATE_LIMIT_MAX_ATTEMPTS",
+  "INSPECTION_RATE_LIMIT_WINDOW_SECONDS",
+] as const;
+
 export const SUBMISSION_RATE_LIMIT_RETENTION_SECONDS = 30 * 24 * 60 * 60;
 export const SUBMISSION_RATE_LIMIT_CLEANUP_BATCH_SIZE = 100;
 
@@ -44,6 +50,24 @@ export const submissionRateLimitEnvironmentSchema = v.object({
     v.maxValue(1000),
   ),
   SUBMISSION_RATE_LIMIT_WINDOW_SECONDS: v.pipe(
+    positiveIntegerStringSchema,
+    v.maxValue(86_400),
+  ),
+});
+
+const inspectionRateLimitEnvironmentSchema = v.object({
+  INSPECTION_RATE_LIMIT_SECRET: v.pipe(
+    v.string(),
+    v.regex(
+      /^[0-9A-Fa-f]{64}$/,
+      "Must contain exactly 64 hexadecimal characters",
+    ),
+  ),
+  INSPECTION_RATE_LIMIT_MAX_ATTEMPTS: v.pipe(
+    positiveIntegerStringSchema,
+    v.maxValue(1000),
+  ),
+  INSPECTION_RATE_LIMIT_WINDOW_SECONDS: v.pipe(
     positiveIntegerStringSchema,
     v.maxValue(86_400),
   ),
@@ -85,6 +109,34 @@ export function getSubmissionRateLimitConfig(): SubmissionRateLimitConfig {
     secret: validation.output.SUBMISSION_RATE_LIMIT_SECRET,
     maxAttempts: validation.output.SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS,
     windowSeconds: validation.output.SUBMISSION_RATE_LIMIT_WINDOW_SECONDS,
+  };
+}
+
+/** Reads and validates the dedicated interactive inspection throttle. */
+export function getInspectionRateLimitConfig(): SubmissionRateLimitConfig {
+  const environment = Object.fromEntries(
+    INSPECTION_RATE_LIMIT_ENV_KEYS.map((key) => [key, getEnv(key)]),
+  );
+  const validation = v.safeParse(
+    inspectionRateLimitEnvironmentSchema,
+    environment,
+  );
+
+  if (!validation.success) {
+    const invalidKeys = [
+      ...new Set(
+        validation.issues
+          .map((issue) => issue.path?.[0]?.key)
+          .filter((key): key is string => typeof key === "string"),
+      ),
+    ];
+    throw new InvalidEnvironmentError(invalidKeys);
+  }
+
+  return {
+    secret: validation.output.INSPECTION_RATE_LIMIT_SECRET,
+    maxAttempts: validation.output.INSPECTION_RATE_LIMIT_MAX_ATTEMPTS,
+    windowSeconds: validation.output.INSPECTION_RATE_LIMIT_WINDOW_SECONDS,
   };
 }
 

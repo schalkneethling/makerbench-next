@@ -88,44 +88,60 @@ function isBlockedIpv4Address(address: string): boolean {
 }
 
 function getMappedIpv4Address(address: string): string | null {
-  const normalizedAddress = address.toLowerCase().split("%")[0];
-  const dottedAddress = normalizedAddress.match(
-    /(?:^|:)ffff:(\d+\.\d+\.\d+\.\d+)$/,
-  )?.[1];
-  if (dottedAddress) {
-    return dottedAddress;
+  let normalizedAddress = address.toLowerCase().split("%")[0];
+  const dottedMatch = normalizedAddress.match(/^(.*:)(\d+\.\d+\.\d+\.\d+)$/);
+  if (dottedMatch) {
+    const ipv4Number = ipv4ToNumber(dottedMatch[2]);
+    if (ipv4Number === null) {
+      return null;
+    }
+
+    normalizedAddress = `${dottedMatch[1]}${(ipv4Number >>> 16).toString(16)}:${(
+      ipv4Number & 0xffff
+    ).toString(16)}`;
   }
 
-  const [head = "", tail = ""] = normalizedAddress.split("::");
-  const headParts = head ? head.split(":") : [];
-  const tailParts = tail ? tail.split(":") : [];
-  const missingParts = 8 - headParts.length - tailParts.length;
-  const parts = [
-    ...headParts,
-    ...Array.from({ length: Math.max(0, missingParts) }, () => "0"),
-    ...tailParts,
-  ];
+  let parts: string[];
+  if (normalizedAddress.includes("::")) {
+    if (
+      normalizedAddress.indexOf("::") !== normalizedAddress.lastIndexOf("::")
+    ) {
+      return null;
+    }
+
+    const [head = "", tail = ""] = normalizedAddress.split("::");
+    const headParts = head ? head.split(":") : [];
+    const tailParts = tail ? tail.split(":") : [];
+    const missingParts = 8 - headParts.length - tailParts.length;
+    if (missingParts < 1) {
+      return null;
+    }
+    parts = [
+      ...headParts,
+      ...Array.from({ length: missingParts }, () => "0"),
+      ...tailParts,
+    ];
+  } else {
+    parts = normalizedAddress.split(":");
+  }
+
   if (
     parts.length !== 8 ||
-    parts.slice(0, 5).some((part) => Number.parseInt(part || "0", 16) !== 0) ||
-    Number.parseInt(parts[5] || "0", 16) !== 0xffff
+    parts.some((part) => !/^[0-9a-f]{1,4}$/.test(part))
   ) {
     return null;
   }
 
-  const high = Number.parseInt(parts[6] || "0", 16);
-  const low = Number.parseInt(parts[7] || "0", 16);
-  if (
-    !Number.isInteger(high) ||
-    !Number.isInteger(low) ||
-    high < 0 ||
-    high > 0xffff ||
-    low < 0 ||
-    low > 0xffff
-  ) {
+  const hextets = parts.map((part) => Number.parseInt(part, 16));
+  const hasZeroPrefix = hextets.slice(0, 5).every((part) => part === 0);
+  const isMapped = hasZeroPrefix && hextets[5] === 0xffff;
+  const isCompatible = hasZeroPrefix && hextets[5] === 0;
+  if (!isMapped && !isCompatible) {
     return null;
   }
 
+  const high = hextets[6];
+  const low = hextets[7];
   return `${high >> 8}.${high & 0xff}.${low >> 8}.${low & 0xff}`;
 }
 

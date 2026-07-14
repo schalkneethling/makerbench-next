@@ -7,7 +7,7 @@ import {
   createSubmissionRateLimitKey,
   dependencyUnavailable,
   flushSentry,
-  getSubmissionRateLimitConfig,
+  getInspectionRateLimitConfig,
   handleMissingEnvironmentError,
   initSentry,
   methodNotAllowed,
@@ -63,7 +63,7 @@ export default async (req: Request, _context: Context) => {
   let rateLimitConfig: SubmissionRateLimitConfig;
   let keyHash: string;
   try {
-    rateLimitConfig = getSubmissionRateLimitConfig();
+    rateLimitConfig = getInspectionRateLimitConfig();
     keyHash = createSubmissionRateLimitKey(
       { authenticated, clientIp: undefined },
       rateLimitConfig.secret,

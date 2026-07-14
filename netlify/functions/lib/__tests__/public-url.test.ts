@@ -133,4 +133,21 @@ describe("resolvePublicHttpUrl", () => {
     ).resolves.toBeNull();
     expect(lookup).not.toHaveBeenCalled();
   });
+
+  it("rejects deprecated IPv4-compatible IPv6 loopback addresses", async () => {
+    await expect(
+      resolvePublicHttpUrl("http://[::127.0.0.1]/admin"),
+    ).resolves.toBeNull();
+    expect(lookup).not.toHaveBeenCalled();
+  });
+
+  it("does not treat a private IPv4 suffix after a public IPv6 prefix as mapped", async () => {
+    vi.mocked(lookup).mockResolvedValue([
+      { address: "2001:4860::ffff:127.0.0.1", family: 6 },
+    ] as never);
+
+    await expect(
+      resolvePublicHttpUrl("https://example.com/resource"),
+    ).resolves.toMatchObject({ url: "https://example.com/resource" });
+  });
 });

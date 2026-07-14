@@ -11,7 +11,7 @@ vi.mock("../lib/sentry", () => ({
 }));
 
 vi.mock("../lib/submission-rate-limit", () => ({
-  getSubmissionRateLimitConfig: vi.fn(),
+  getInspectionRateLimitConfig: vi.fn(),
   createSubmissionRateLimitKey: vi.fn(),
   consumeSubmissionRateLimit: vi.fn(),
 }));
@@ -30,7 +30,7 @@ import { captureError, flushSentry } from "../lib/sentry";
 import {
   consumeSubmissionRateLimit,
   createSubmissionRateLimitKey,
-  getSubmissionRateLimitConfig,
+  getInspectionRateLimitConfig,
 } from "../lib/submission-rate-limit";
 import { lookup } from "node:dns/promises";
 import { extractMetadata } from "../../../src/lib/services/metadata";
@@ -57,10 +57,10 @@ describe("inspect-library", () => {
     vi.mocked(lookup).mockResolvedValue([
       { address: "93.184.216.34", family: 4 },
     ] as never);
-    vi.mocked(getSubmissionRateLimitConfig).mockReturnValue({
+    vi.mocked(getInspectionRateLimitConfig).mockReturnValue({
       secret: "a".repeat(64),
-      maxAttempts: 5,
-      windowSeconds: 3600,
+      maxAttempts: 30,
+      windowSeconds: 600,
     });
     vi.mocked(createSubmissionRateLimitKey).mockReturnValue("inspection-key");
     vi.mocked(consumeSubmissionRateLimit).mockResolvedValue(true);
@@ -185,6 +185,11 @@ describe("inspect-library", () => {
       "a".repeat(64),
       "library-inspection",
     );
+    expect(consumeSubmissionRateLimit).toHaveBeenCalledWith("inspection-key", {
+      secret: "a".repeat(64),
+      maxAttempts: 30,
+      windowSeconds: 600,
+    });
     expect(lookup).not.toHaveBeenCalled();
     expect(extractMetadata).not.toHaveBeenCalled();
   });
