@@ -20,6 +20,16 @@ vi.mock("../lib/sentry", () => ({
   flushSentry: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock("../lib/submission-blocklist", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../lib/submission-blocklist")>();
+  return {
+    ...actual,
+    findSubmissionBlocklistMatch: vi.fn(),
+    recordSubmissionBlocklistEvent: vi.fn(),
+  };
+});
+
 vi.mock("../../../src/lib/services/metadata", () => ({
   extractMetadata: vi.fn(),
 }));
@@ -41,6 +51,10 @@ import { verifyAuthenticatedUser } from "../lib/auth";
 import { getDb } from "../lib/db";
 import { captureError, flushSentry } from "../lib/sentry";
 import { createSubmissionRateLimitKey } from "../lib/submission-rate-limit";
+import {
+  findSubmissionBlocklistMatch,
+  recordSubmissionBlocklistEvent,
+} from "../lib/submission-blocklist";
 import { lookup } from "node:dns/promises";
 import { captureScreenshot } from "../../../src/lib/services/screenshot";
 import { uploadScreenshot } from "../../../src/lib/services/cloudinary";
@@ -92,6 +106,8 @@ describe("public-submissions", () => {
     ] as never);
 
     vi.mocked(verifyAuthenticatedUser).mockResolvedValue(null);
+    vi.mocked(findSubmissionBlocklistMatch).mockResolvedValue(null);
+    vi.mocked(recordSubmissionBlocklistEvent).mockResolvedValue(undefined);
     vi.mocked(extractMetadata).mockResolvedValue({
       title: "Example title",
       description: "Example description",
@@ -448,6 +464,72 @@ describe("public-submissions", () => {
 
     expect(res.status).toBe(422);
     expect(extractMetadata).not.toHaveBeenCalled();
+  });
+
+  it("rejects a blocklisted URL generically before DNS, metadata, or inserts", async () => {
+    const mockDb = createMockDb();
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+    vi.mocked(findSubmissionBlocklistMatch).mockResolvedValueOnce({
+      id: "11111111-1111-4111-8111-111111111111",
+      matchType: "domain",
+      normalizedValue: "example.com",
+    });
+
+    const res = await publicSubmissions(
+      createSubmissionRequest({
+        type: "resource",
+        url: "https://www.example.com/blocked",
+        tags: ["security"],
+      }),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(403);
+    await expect(res.json()).resolves.toEqual({
+      success: false,
+      error: "This resource cannot be submitted.",
+    });
+    expect(recordSubmissionBlocklistEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ normalizedValue: "example.com" }),
+      "https://www.example.com/blocked",
+      null,
+    );
+    expect(lookup).not.toHaveBeenCalled();
+    expect(extractMetadata).not.toHaveBeenCalled();
+    expect(mockDb.insert).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when the submission blocklist store is unavailable", async () => {
+    vi.mocked(findSubmissionBlocklistMatch).mockRejectedValueOnce(
+      new Error("blocklist datastore unavailable"),
+    );
+
+    try {
+      const res = await publicSubmissions(
+        createSubmissionRequest({
+          type: "resource",
+          url: "https://example.com/dependency-error",
+          tags: ["security"],
+        }),
+        createMockContext(),
+      );
+
+      expect(res.status).toBe(503);
+      await expect(res.json()).resolves.toEqual({
+        success: false,
+        error: "Service temporarily unavailable",
+      });
+      expect(captureError).toHaveBeenCalledWith(expect.any(Error), {
+        function: "public-submissions",
+        dependency: "submission-blocklist-store",
+      });
+      expect(flushSentry).toHaveBeenCalledOnce();
+      expect(extractMetadata).not.toHaveBeenCalled();
+    } finally {
+      vi.mocked(findSubmissionBlocklistMatch).mockResolvedValue(null);
+    }
   });
 
   it("returns a clear duplicate conflict", async () => {

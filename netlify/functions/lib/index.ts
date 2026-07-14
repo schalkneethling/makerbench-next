@@ -27,5 +27,7 @@ export {
   publicStacksTable,
   publicStackItemsTable,
   publicSubmissionRateLimitsTable,
+  publicSubmissionBlocklistTable,
+  publicSubmissionBlocklistEventsTable,
   userRolesTable,
 } from "../../../src/db/schema";

@@ -19,6 +19,7 @@ import {
   conflict,
   created,
   dependencyUnavailable,
+  forbidden,
   methodNotAllowed,
   serverError,
   tooManyRequests,
@@ -32,6 +33,10 @@ import {
   getSubmissionRateLimitConfig,
   type SubmissionRateLimitConfig,
 } from "./submission-rate-limit";
+import {
+  findSubmissionBlocklistMatch,
+  recordSubmissionBlocklistEvent,
+} from "./submission-blocklist";
 import { normalizeUrl, parseAndNormalizeUrl } from "./url";
 import {
   publicListingsTable,
@@ -289,7 +294,10 @@ function normalizeSubmitterName(
 function resolveSubmissionAttribution(
   submission: PublicSubmissionRequest,
   authenticated: AuthenticatedUser | null,
-): Pick<SubmissionContext, "normalizedSubmitterGithubUrl" | "normalizedSubmitterName"> {
+): Pick<
+  SubmissionContext,
+  "normalizedSubmitterGithubUrl" | "normalizedSubmitterName"
+> {
   const githubUsername = authenticated
     ? getVerifiedGithubUsername(authenticated.user)
     : null;
@@ -306,7 +314,10 @@ function resolveSubmissionAttribution(
 
 /** Returns structured errors when the resolved public attribution is incomplete. */
 function getAttributionValidationDetails(
-  attribution: Pick<SubmissionContext, "normalizedSubmitterGithubUrl" | "normalizedSubmitterName">,
+  attribution: Pick<
+    SubmissionContext,
+    "normalizedSubmitterGithubUrl" | "normalizedSubmitterName"
+  >,
 ): Record<string, string[]> | null {
   const details: Record<string, string[]> = {};
 
@@ -547,6 +558,25 @@ export async function handlePublicSubmission(
     });
   }
 
+  try {
+    const blocklistMatch = await findSubmissionBlocklistMatch(normalizedUrl);
+    if (blocklistMatch) {
+      await recordSubmissionBlocklistEvent(
+        blocklistMatch,
+        normalizedUrl,
+        authenticated?.user.id ?? null,
+      );
+      return forbidden("This resource cannot be submitted.");
+    }
+  } catch (error) {
+    captureError(error, {
+      function: options.endpointName,
+      dependency: "submission-blocklist-store",
+    });
+    await flushSentry();
+    return dependencyUnavailable();
+  }
+
   const publicUrl = await resolvePublicHttpUrl(normalizedUrl);
   if (!publicUrl) {
     return validationError("Validation failed", {
@@ -561,7 +591,10 @@ export async function handlePublicSubmission(
     });
   }
 
-  const attribution = resolveSubmissionAttribution(validation.output, authenticated);
+  const attribution = resolveSubmissionAttribution(
+    validation.output,
+    authenticated,
+  );
   const attributionDetails = getAttributionValidationDetails(attribution);
   if (attributionDetails) {
     return validationError("Validation failed", attributionDetails);
