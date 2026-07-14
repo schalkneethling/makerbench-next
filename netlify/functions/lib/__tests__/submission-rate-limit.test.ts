@@ -206,6 +206,30 @@ describe("submission rate limit", () => {
     }
   });
 
+  it("reports invalid inspection fields through the shared loader", () => {
+    const restore = setRateLimitEnvironment({
+      INSPECTION_RATE_LIMIT_SECRET: "b".repeat(64),
+      INSPECTION_RATE_LIMIT_MAX_ATTEMPTS: "not-a-number",
+      INSPECTION_RATE_LIMIT_WINDOW_SECONDS: "600",
+    });
+
+    try {
+      let thrownError: unknown;
+      try {
+        getInspectionRateLimitConfig();
+      } catch (error) {
+        thrownError = error;
+      }
+
+      expect(thrownError).toBeInstanceOf(InvalidEnvironmentError);
+      expect(thrownError).toMatchObject({
+        invalidKeys: ["INSPECTION_RATE_LIMIT_MAX_ATTEMPTS"],
+      });
+    } finally {
+      restore();
+    }
+  });
+
   it("declares the HMAC secret as sensitive external Varlock config", () => {
     expect(environmentSchema).toContain(
       "# @type=string(isLength=64,matches=/^[0-9A-Fa-f]{64}$/) @sensitive\nSUBMISSION_RATE_LIMIT_SECRET=",

@@ -163,5 +163,7 @@ Async hooks that use request IDs for stale-response protection must invalidate e
 
 - JSDoc on functions/classes — concise, clear
 - Search codebase before new components/styles; reuse tokens and patterns
-- Move repeated validation/error aggregation into shared helpers instead of copying function-local implementations
+- Before adding a function, search for equivalent behavior and extend or parameterize an existing utility when the abstraction remains cohesive.
+- Do not duplicate orchestration, validation, parsing, or error aggregation across features. Extract shared, well-tested utilities and keep feature-specific differences explicit through typed configuration.
+- Test shared utilities at their behavioral boundaries and retain focused call-site tests that prove each consumer supplies the correct configuration.
 - Barrel files (`index.ts` re-exports): curated public API only, not every directory

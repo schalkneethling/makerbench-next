@@ -36,41 +36,33 @@ const positiveIntegerStringSchema = v.pipe(
   v.minValue(1),
 );
 
+const rateLimitSecretSchema = v.pipe(
+  v.string(),
+  v.regex(
+    /^[0-9A-Fa-f]{64}$/,
+    "Must contain exactly 64 hexadecimal characters",
+  ),
+);
+const rateLimitMaxAttemptsSchema = v.pipe(
+  positiveIntegerStringSchema,
+  v.maxValue(1000),
+);
+const rateLimitWindowSecondsSchema = v.pipe(
+  positiveIntegerStringSchema,
+  v.maxValue(86_400),
+);
+
 /** Validates the server-only controls that tune public submission throttling. */
 export const submissionRateLimitEnvironmentSchema = v.object({
-  SUBMISSION_RATE_LIMIT_SECRET: v.pipe(
-    v.string(),
-    v.regex(
-      /^[0-9A-Fa-f]{64}$/,
-      "Must contain exactly 64 hexadecimal characters",
-    ),
-  ),
-  SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS: v.pipe(
-    positiveIntegerStringSchema,
-    v.maxValue(1000),
-  ),
-  SUBMISSION_RATE_LIMIT_WINDOW_SECONDS: v.pipe(
-    positiveIntegerStringSchema,
-    v.maxValue(86_400),
-  ),
+  SUBMISSION_RATE_LIMIT_SECRET: rateLimitSecretSchema,
+  SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS: rateLimitMaxAttemptsSchema,
+  SUBMISSION_RATE_LIMIT_WINDOW_SECONDS: rateLimitWindowSecondsSchema,
 });
 
 const inspectionRateLimitEnvironmentSchema = v.object({
-  INSPECTION_RATE_LIMIT_SECRET: v.pipe(
-    v.string(),
-    v.regex(
-      /^[0-9A-Fa-f]{64}$/,
-      "Must contain exactly 64 hexadecimal characters",
-    ),
-  ),
-  INSPECTION_RATE_LIMIT_MAX_ATTEMPTS: v.pipe(
-    positiveIntegerStringSchema,
-    v.maxValue(1000),
-  ),
-  INSPECTION_RATE_LIMIT_WINDOW_SECONDS: v.pipe(
-    positiveIntegerStringSchema,
-    v.maxValue(86_400),
-  ),
+  INSPECTION_RATE_LIMIT_SECRET: rateLimitSecretSchema,
+  INSPECTION_RATE_LIMIT_MAX_ATTEMPTS: rateLimitMaxAttemptsSchema,
+  INSPECTION_RATE_LIMIT_WINDOW_SECONDS: rateLimitWindowSecondsSchema,
 });
 
 export interface SubmissionRateLimitConfig {
@@ -84,15 +76,21 @@ interface SubmissionRateLimitIdentity {
   clientIp: string | undefined;
 }
 
-/** Reads and validates the server-only rate-limit configuration. */
-export function getSubmissionRateLimitConfig(): SubmissionRateLimitConfig {
+type RateLimitConfigOutputFields<TOutput> = Record<
+  keyof SubmissionRateLimitConfig,
+  keyof TOutput & string
+>;
+
+/** Reads, validates, and normalizes a rate-limit environment configuration. */
+function loadRateLimitConfig<TOutput extends Record<string, unknown>>(
+  environmentKeys: readonly (keyof TOutput & string)[],
+  schema: v.GenericSchema<unknown, TOutput>,
+  outputFields: RateLimitConfigOutputFields<TOutput>,
+): SubmissionRateLimitConfig {
   const environment = Object.fromEntries(
-    SUBMISSION_RATE_LIMIT_ENV_KEYS.map((key) => [key, getEnv(key)]),
+    environmentKeys.map((key) => [key, getEnv(key)]),
   );
-  const validation = v.safeParse(
-    submissionRateLimitEnvironmentSchema,
-    environment,
-  );
+  const validation = v.safeParse(schema, environment);
 
   if (!validation.success) {
     const invalidKeys = [
@@ -105,39 +103,44 @@ export function getSubmissionRateLimitConfig(): SubmissionRateLimitConfig {
     throw new InvalidEnvironmentError(invalidKeys);
   }
 
-  return {
-    secret: validation.output.SUBMISSION_RATE_LIMIT_SECRET,
-    maxAttempts: validation.output.SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS,
-    windowSeconds: validation.output.SUBMISSION_RATE_LIMIT_WINDOW_SECONDS,
-  };
+  const secret = validation.output[outputFields.secret];
+  const maxAttempts = validation.output[outputFields.maxAttempts];
+  const windowSeconds = validation.output[outputFields.windowSeconds];
+  if (
+    typeof secret !== "string" ||
+    typeof maxAttempts !== "number" ||
+    typeof windowSeconds !== "number"
+  ) {
+    throw new InvalidEnvironmentError(Object.values(outputFields));
+  }
+
+  return { secret, maxAttempts, windowSeconds };
+}
+
+/** Reads and validates the server-only rate-limit configuration. */
+export function getSubmissionRateLimitConfig(): SubmissionRateLimitConfig {
+  return loadRateLimitConfig(
+    SUBMISSION_RATE_LIMIT_ENV_KEYS,
+    submissionRateLimitEnvironmentSchema,
+    {
+      secret: "SUBMISSION_RATE_LIMIT_SECRET",
+      maxAttempts: "SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS",
+      windowSeconds: "SUBMISSION_RATE_LIMIT_WINDOW_SECONDS",
+    },
+  );
 }
 
 /** Reads and validates the dedicated interactive inspection throttle. */
 export function getInspectionRateLimitConfig(): SubmissionRateLimitConfig {
-  const environment = Object.fromEntries(
-    INSPECTION_RATE_LIMIT_ENV_KEYS.map((key) => [key, getEnv(key)]),
-  );
-  const validation = v.safeParse(
+  return loadRateLimitConfig(
+    INSPECTION_RATE_LIMIT_ENV_KEYS,
     inspectionRateLimitEnvironmentSchema,
-    environment,
+    {
+      secret: "INSPECTION_RATE_LIMIT_SECRET",
+      maxAttempts: "INSPECTION_RATE_LIMIT_MAX_ATTEMPTS",
+      windowSeconds: "INSPECTION_RATE_LIMIT_WINDOW_SECONDS",
+    },
   );
-
-  if (!validation.success) {
-    const invalidKeys = [
-      ...new Set(
-        validation.issues
-          .map((issue) => issue.path?.[0]?.key)
-          .filter((key): key is string => typeof key === "string"),
-      ),
-    ];
-    throw new InvalidEnvironmentError(invalidKeys);
-  }
-
-  return {
-    secret: validation.output.INSPECTION_RATE_LIMIT_SECRET,
-    maxAttempts: validation.output.INSPECTION_RATE_LIMIT_MAX_ATTEMPTS,
-    windowSeconds: validation.output.INSPECTION_RATE_LIMIT_WINDOW_SECONDS,
-  };
 }
 
 /** Creates the non-reversible, server-only rate-limit key for a submitter. */
