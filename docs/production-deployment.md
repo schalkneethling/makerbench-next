@@ -112,6 +112,13 @@ npx playwright test --project=chromium
 pnpm build
 ```
 
+The Playwright command automatically starts the Vite server configured in
+`playwright.config.ts`; a separate `netlify dev` or preview/staging server is not
+required for the current frontend E2E suite. Running Playwright before
+`pnpm build` is intentional: the E2E tests exercise source through that
+configured development server, while `pnpm build` separately validates the
+production compilation.
+
 Storybook is a development and CI aid. `pnpm build-storybook` is not part of
 the Netlify production build unless a separate publish step is introduced.
 

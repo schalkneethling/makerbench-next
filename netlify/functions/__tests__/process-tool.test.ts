@@ -53,6 +53,7 @@ import { lookup } from "node:dns/promises";
 import { extractMetadata } from "../../../src/lib/services/metadata";
 import { captureScreenshot } from "../../../src/lib/services/screenshot";
 import { uploadScreenshot } from "../../../src/lib/services/cloudinary";
+import { createMockDb } from "./test-utils";
 
 const RESOURCE_ID = "11111111-1111-4111-8111-111111111111";
 const TOOL_LISTING_ID = "22222222-2222-4222-8222-222222222222";
@@ -80,50 +81,6 @@ function createMockContext(): Context {
   } as unknown as Context;
 }
 
-/**
- * Creates a mock database with chainable query methods
- */
-function createMockDb() {
-  const transactionDb = {
-    execute: vi.fn().mockResolvedValue({ rows: [] }),
-    insert: vi.fn().mockReturnThis(),
-    values: vi.fn().mockReturnThis(),
-    onConflictDoUpdate: vi.fn().mockReturnThis(),
-    onConflictDoNothing: vi.fn().mockReturnThis(),
-    returning: vi
-      .fn()
-      .mockResolvedValueOnce([{ id: RESOURCE_ID }])
-      .mockResolvedValueOnce([{ id: TOOL_LISTING_ID }]),
-  };
-  const mockDb = {
-    execute: vi.fn().mockResolvedValue({ rows: [{ attempt_count: 1 }] }),
-    select: vi.fn().mockReturnThis(),
-    from: vi.fn().mockReturnThis(),
-    where: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockResolvedValue([]),
-    insert: vi.fn().mockReturnThis(),
-    values: vi.fn().mockReturnThis(),
-    onConflictDoUpdate: vi.fn().mockReturnThis(),
-    onConflictDoNothing: vi.fn().mockReturnThis(),
-    returning: vi
-      .fn()
-      .mockResolvedValueOnce([{ id: RESOURCE_ID }])
-      .mockResolvedValueOnce([{ id: TOOL_LISTING_ID }]),
-    innerJoin: vi.fn().mockReturnThis(),
-    leftJoin: vi.fn().mockReturnThis(),
-    orderBy: vi.fn().mockReturnThis(),
-    offset: vi.fn().mockReturnThis(),
-    transaction: vi.fn(),
-    transactionDb,
-  };
-  mockDb.transaction.mockImplementation(
-    async (
-      callback: (transaction: ReturnType<typeof getDb>) => Promise<unknown>,
-    ) => await callback(transactionDb as unknown as ReturnType<typeof getDb>),
-  );
-  return mockDb;
-}
-
 const anonymousAttribution = {
   submitterName: "Ada Lovelace",
   submitterGithubUsername: "ada-lovelace",
@@ -135,7 +92,13 @@ describe("process-tool", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockDb = createMockDb();
+    mockDb = createMockDb({
+      returningRows: [[{ id: RESOURCE_ID }], [{ id: TOOL_LISTING_ID }]],
+      transactionReturningRows: [
+        [{ id: RESOURCE_ID }],
+        [{ id: TOOL_LISTING_ID }],
+      ],
+    });
     vi.mocked(getDb).mockReturnValue(
       mockDb as unknown as ReturnType<typeof getDb>,
     );

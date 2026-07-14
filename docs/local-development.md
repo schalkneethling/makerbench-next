@@ -132,6 +132,11 @@ npx vitest --project storybook run
 npx playwright test --project=chromium
 ```
 
+The Playwright command automatically starts the Vite server configured in
+`playwright.config.ts`; a separate `netlify dev` process is not required for the
+current frontend E2E suite. Locally, Playwright can reuse an existing server at
+the configured URL.
+
 The Storybook interaction tests require the Playwright Chromium browser. Run
 `npx playwright install chromium` once if the executable is not installed.
 

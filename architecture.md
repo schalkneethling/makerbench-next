@@ -424,24 +424,37 @@ sequenceDiagram
     API->>Site: Fetch HTML for metadata
     Site-->>API: HTML
     API->>API: Extract title, description, og:image
-    API->>DB: Upsert canonical resource
 
     alt type is tool
         alt OG image exists
-            API->>DB: Insert tool_listings row (pending, imageSource=og)
+            API->>API: Prepare tool image (imageSource=og)
         else No OG image
             API->>Shot: Capture screenshot
             alt Screenshot success
                 Shot-->>API: Image bytes
                 API->>Img: Upload
                 Img-->>API: Hosted URL
-                API->>DB: Insert tool_listings row (pending, imageSource=screenshot)
+                API->>API: Prepare tool image (imageSource=screenshot)
             else Screenshot failed
-                API->>DB: Insert tool_listings row (pending, imageSource=fallback)
+                API->>API: Prepare fallback tool image
             end
         end
-    else type is resource
-        API->>DB: Insert public_listings row (pending, contentKind=resource)
+    end
+
+    API->>DB: Begin transaction
+    API->>DB: Acquire transaction-scoped advisory lock for normalized URL
+    API->>DB: Recheck tool and resource submissions while lock is held
+    alt Duplicate found during locked recheck
+        API->>DB: End transaction without inserts
+        API-->>Browser: 409 status-aware conflict
+    else No duplicate
+        API->>DB: Upsert canonical resource
+        alt type is tool
+            API->>DB: Insert tool_listings row (pending, prepared image source)
+        else type is resource
+            API->>DB: Insert public_listings row (pending, contentKind=resource)
+        end
+        API->>DB: Commit transaction
     end
 
     API-->>Browser: 201 { submittedItemId, type, status: pending }
