@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SubmitPage } from "../../pages/SubmitPage";
 import { server } from "../../test/mocks/server";
@@ -27,6 +27,10 @@ const authDefaults = {
 
 beforeEach(() => {
   vi.mocked(useAuth).mockReturnValue(authDefaults);
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe("SubmitPage", () => {
@@ -239,7 +243,8 @@ describe("SubmitPage", () => {
     expect(screen.getByText(/url: this domain is blocked/i)).toBeInTheDocument();
   });
 
-  it("shows safe submission diagnostics to admins", async () => {
+  it("shows safe submission diagnostics to admins outside development mode", async () => {
+    vi.stubEnv("DEV", false);
     vi.mocked(useAuth).mockReturnValue({
       ...authDefaults,
       identity: {
@@ -282,5 +287,51 @@ describe("SubmitPage", () => {
     expect(
       screen.getByText("submission-rate-limit-configuration-unavailable"),
     ).toBeInTheDocument();
+  });
+
+  it("hides safe submission diagnostics from non-admins outside development mode", async () => {
+    vi.stubEnv("DEV", false);
+    vi.mocked(useAuth).mockReturnValue({
+      ...authDefaults,
+      identity: {
+        user: {
+          id: "user-1",
+          email: "ada@example.com",
+          displayName: "Ada Lovelace",
+          githubUsername: "ada-lovelace",
+          avatarUrl: null,
+        },
+        isAdmin: false,
+      },
+      accessToken: "verified-token",
+      isAdmin: false,
+      isAuthenticated: true,
+    });
+    server.use(
+      http.post("/api/submissions", () =>
+        HttpResponse.json(
+          { success: false, error: "Service temporarily unavailable" },
+          {
+            status: 503,
+            headers: {
+              "X-MakerBench-Error-Code": "submission-rate-limit-configuration-unavailable",
+            },
+          },
+        ),
+      ),
+    );
+    const user = userEvent.setup();
+    render(<SubmitPage />);
+
+    await user.click(screen.getByRole("radio", { name: "Resource" }));
+    await user.type(screen.getByRole("textbox", { name: "URL" }), "https://example.com/guide");
+    await user.type(screen.getByRole("textbox", { name: /^tags/i }), "testing{Enter}");
+    await user.click(screen.getByRole("button", { name: "Submit Resource" }));
+
+    expect(await screen.findByText(/submission failed/i)).toBeInTheDocument();
+    expect(screen.queryByText(/diagnostic code/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("submission-rate-limit-configuration-unavailable"),
+    ).not.toBeInTheDocument();
   });
 });
