@@ -35,7 +35,7 @@ export function createMockDb(options: MockDbOptions = {}) {
     values: vi.fn().mockReturnThis(),
     onConflictDoUpdate: vi.fn().mockReturnThis(),
     onConflictDoNothing: vi.fn().mockReturnThis(),
-    returning: vi.fn(),
+    returning: vi.fn().mockResolvedValue([]),
   };
   const mockDb = {
     execute: vi.fn().mockResolvedValue({ rows: [{ attempt_count: 1 }] }),
@@ -49,7 +49,7 @@ export function createMockDb(options: MockDbOptions = {}) {
     values: vi.fn().mockReturnThis(),
     onConflictDoUpdate: vi.fn().mockReturnThis(),
     onConflictDoNothing: vi.fn().mockReturnThis(),
-    returning: vi.fn(),
+    returning: vi.fn().mockResolvedValue([]),
     orderBy: vi.fn().mockResolvedValue([]),
     offset: vi.fn().mockReturnThis(),
     transaction: vi.fn(),
