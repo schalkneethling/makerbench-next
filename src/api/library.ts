@@ -1,7 +1,11 @@
 import * as v from "valibot";
 
 import { BookmarkApiError } from "./bookmarks";
-import type { PersonalResourceRequest } from "../lib/validation";
+import {
+  libraryInspectionResponseSchema,
+  type LibraryInspectionResponse,
+  type PersonalResourceRequest,
+} from "../lib/validation";
 
 const libraryTagSchema = v.object({
   id: v.string(),
@@ -41,10 +45,13 @@ const errorResponseSchema = v.object({
 
 export type LibraryTag = v.InferOutput<typeof libraryTagSchema>;
 export type LibraryResource = v.InferOutput<typeof libraryResourceSchema>;
-export type LibraryResponse = v.InferOutput<typeof libraryResponseSchema>["data"];
+export type LibraryResponse = v.InferOutput<
+  typeof libraryResponseSchema
+>["data"];
 export type AddLibraryResourceResponse = v.InferOutput<
   typeof addLibraryResourceResponseSchema
 >["data"];
+export type LibraryInspection = LibraryInspectionResponse["data"];
 
 function throwApiError(json: unknown, status: number): never {
   const parsed = v.safeParse(errorResponseSchema, json);
@@ -63,13 +70,21 @@ async function parseJsonResponse(response: Response): Promise<unknown> {
   }
 }
 
-function toBookmarkApiError(error: unknown, fallbackMessage: string): BookmarkApiError {
+function toBookmarkApiError(
+  error: unknown,
+  fallbackMessage: string,
+): BookmarkApiError {
   return error instanceof BookmarkApiError
     ? error
-    : new BookmarkApiError(error instanceof Error ? error.message : fallbackMessage, 500);
+    : new BookmarkApiError(
+        error instanceof Error ? error.message : fallbackMessage,
+        500,
+      );
 }
 
-export async function getLibraryResources(accessToken: string): Promise<LibraryResponse> {
+export async function getLibraryResources(
+  accessToken: string,
+): Promise<LibraryResponse> {
   try {
     const response = await fetch("/api/library", {
       headers: {
@@ -120,5 +135,36 @@ export async function addLibraryResource(
     return result.output.data;
   } catch (error) {
     throw toBookmarkApiError(error, "Failed to save this resource");
+  }
+}
+
+/** Inspects a resource URL for metadata without saving it. */
+export async function inspectLibraryResource(
+  url: string,
+  accessToken: string,
+): Promise<LibraryInspection> {
+  try {
+    const response = await fetch("/api/library/inspect", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url }),
+    });
+    const json = await parseJsonResponse(response);
+
+    if (!response.ok) {
+      throwApiError(json, response.status);
+    }
+
+    const result = v.safeParse(libraryInspectionResponseSchema, json);
+    if (!result.success) {
+      throw new BookmarkApiError("Invalid response from server", 500);
+    }
+
+    return result.output.data;
+  } catch (error) {
+    throw toBookmarkApiError(error, "Failed to inspect this URL");
   }
 }

@@ -7,28 +7,45 @@ import { Button } from "../components/ui/Button";
 import { TextInput } from "../components/ui/TextInput";
 import { useAuth } from "../hooks/useAuth";
 import { useLibraryResources } from "../hooks/useLibraryResources";
-import { personalResourceRequestSchema, type PersonalResourceRequest } from "../lib/validation";
+import {
+  libraryInspectionRequestSchema,
+  personalResourceRequestSchema,
+  type PersonalResourceRequest,
+} from "../lib/validation";
 
 import "./LibraryPage.css";
 
 interface FormErrors {
   url?: string;
+  title?: string;
+  description?: string;
   tags?: string;
   notes?: string;
 }
 
+interface InspectedMetadata {
+  url: string;
+  title: string | null;
+  description: string | null;
+}
+
 interface LibraryPageState {
   url: string;
+  title: string;
+  description: string;
   tags: string[];
   notes: string;
   formErrors: FormErrors;
   didSave: boolean;
   signInError: string | null;
   isSignInPending: boolean;
+  inspectedMetadata: InspectedMetadata | null;
 }
 
 type LibraryPageAction =
   | { type: "setUrl"; url: string }
+  | { type: "setTitle"; title: string }
+  | { type: "setDescription"; description: string }
   | { type: "setTags"; tags: string[] }
   | { type: "setNotes"; notes: string }
   | { type: "setFormErrors"; formErrors: FormErrors }
@@ -37,22 +54,39 @@ type LibraryPageAction =
   | { type: "finishSignIn" }
   | { type: "failSignIn"; message: string }
   | { type: "dismissSignInError" }
+  | { type: "finishInspection"; metadata: InspectedMetadata }
   | { type: "resetFormAfterSave" };
 
 const initialState: LibraryPageState = {
   url: "",
+  title: "",
+  description: "",
   tags: [],
   notes: "",
   formErrors: {},
   didSave: false,
   signInError: null,
   isSignInPending: false,
+  inspectedMetadata: null,
 };
 
-function libraryPageReducer(state: LibraryPageState, action: LibraryPageAction): LibraryPageState {
+function libraryPageReducer(
+  state: LibraryPageState,
+  action: LibraryPageAction,
+): LibraryPageState {
   switch (action.type) {
     case "setUrl":
-      return { ...state, url: action.url };
+      return {
+        ...state,
+        url: action.url,
+        title: "",
+        description: "",
+        inspectedMetadata: null,
+      };
+    case "setTitle":
+      return { ...state, title: action.title };
+    case "setDescription":
+      return { ...state, description: action.description };
     case "setTags":
       return { ...state, tags: action.tags };
     case "setNotes":
@@ -69,14 +103,28 @@ function libraryPageReducer(state: LibraryPageState, action: LibraryPageAction):
       return { ...state, signInError: action.message, isSignInPending: false };
     case "dismissSignInError":
       return { ...state, signInError: null };
+    case "finishInspection":
+      if (state.url.trim() !== action.metadata.url) {
+        return state;
+      }
+
+      return {
+        ...state,
+        title: action.metadata.title ?? "",
+        description: action.metadata.description ?? "",
+        inspectedMetadata: action.metadata,
+      };
     case "resetFormAfterSave":
       return {
         ...state,
         url: "",
+        title: "",
+        description: "",
         tags: [],
         notes: "",
         formErrors: {},
         didSave: true,
+        inspectedMetadata: null,
       };
   }
 }
@@ -100,6 +148,21 @@ function getFormErrors(data: PersonalResourceRequest): FormErrors {
   return errors;
 }
 
+function getInspectionUrlError(url: string): string | undefined {
+  const result = v.safeParse(libraryInspectionRequestSchema, { url });
+
+  if (result.success) {
+    return undefined;
+  }
+
+  const urlIssue = result.issues.find((issue) => {
+    const pathItem = issue.path?.[0] as { key?: unknown } | undefined;
+    return pathItem?.key === "url";
+  });
+
+  return urlIssue?.message;
+}
+
 export function LibraryPage() {
   const {
     accessToken,
@@ -108,9 +171,31 @@ export function LibraryPage() {
     signInWithGitHub,
     signInWithGoogle,
   } = useAuth();
-  const { resources, isLoading, isSaving, error, addResource } = useLibraryResources(accessToken);
+  const {
+    resources,
+    isLoading,
+    isSaving,
+    error,
+    addResource,
+    isInspecting,
+    inspectionError,
+    inspectResource,
+    dismissInspectionError,
+    resetInspection,
+  } = useLibraryResources(accessToken);
   const [state, dispatch] = useReducer(libraryPageReducer, initialState);
-  const { url, tags, notes, formErrors, didSave, signInError, isSignInPending } = state;
+  const {
+    url,
+    title,
+    description,
+    tags,
+    notes,
+    formErrors,
+    didSave,
+    signInError,
+    isSignInPending,
+    inspectedMetadata,
+  } = state;
 
   async function handleSignIn(action: () => Promise<void>) {
     dispatch({ type: "startSignIn" });
@@ -121,7 +206,10 @@ export function LibraryPage() {
     } catch (error) {
       dispatch({
         type: "failSignIn",
-        message: error instanceof Error ? error.message : "Sign in failed. Please try again.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Sign in failed. Please try again.",
       });
     }
   }
@@ -130,10 +218,23 @@ export function LibraryPage() {
     event.preventDefault();
     dispatch({ type: "setDidSave", didSave: false });
 
+    const trimmedUrl = url.trim();
+    const trimmedTitle = title.trim();
+    const trimmedDescription = description.trim();
+    const inspectedTitle = inspectedMetadata?.title?.trim() ?? "";
+    const inspectedDescription = inspectedMetadata?.description?.trim() ?? "";
+    const shouldOverrideTitle = inspectedMetadata
+      ? trimmedTitle !== inspectedTitle
+      : trimmedTitle.length > 0;
+    const shouldOverrideDescription = inspectedMetadata
+      ? trimmedDescription !== inspectedDescription
+      : trimmedDescription.length > 0;
     const data: PersonalResourceRequest = {
-      url: url.trim(),
+      url: trimmedUrl,
       tags,
       notes: notes.trim() || undefined,
+      ...(shouldOverrideTitle ? { title: trimmedTitle } : {}),
+      ...(shouldOverrideDescription ? { description: trimmedDescription } : {}),
     };
     const errors = getFormErrors(data);
     dispatch({ type: "setFormErrors", formErrors: errors });
@@ -144,7 +245,29 @@ export function LibraryPage() {
 
     const saved = await addResource(data);
     if (saved) {
+      resetInspection();
       dispatch({ type: "resetFormAfterSave" });
+    }
+  }
+
+  async function handleInspect() {
+    const trimmedUrl = url.trim();
+    const urlError = getInspectionUrlError(trimmedUrl);
+    dispatch({
+      type: "setFormErrors",
+      formErrors: { ...formErrors, url: urlError },
+    });
+
+    if (urlError) {
+      return;
+    }
+
+    const metadata = await inspectResource(trimmedUrl);
+    if (metadata) {
+      dispatch({
+        type: "finishInspection",
+        metadata: { url: trimmedUrl, ...metadata },
+      });
     }
   }
 
@@ -220,41 +343,110 @@ export function LibraryPage() {
         </Alert>
       )}
 
+      {inspectionError && (
+        <Alert variant="error" dismissible onDismiss={dismissInspectionError}>
+          <strong>Couldn’t inspect this URL.</strong> {inspectionError.message}{" "}
+          You can still save it without inspecting.
+        </Alert>
+      )}
+
       <form className="LibraryPage-form" onSubmit={handleSubmit} noValidate>
         <fieldset className="LibraryPage-fieldset" disabled={isSaving}>
           <legend className="visually-hidden">Save a resource</legend>
+          <div className="LibraryPage-inspectionControls">
+            <TextInput
+              id="library-url"
+              label="Resource URL"
+              type="url"
+              value={url}
+              onChange={(event) => {
+                resetInspection();
+                dispatch({ type: "setUrl", url: event.target.value });
+              }}
+              placeholder="https://example.com/resource"
+              required
+              error={formErrors.url}
+            />
+            <Button
+              className="LibraryPage-inspectButton"
+              type="button"
+              variant="secondary"
+              isLoading={isInspecting}
+              onClick={() => void handleInspect()}
+            >
+              {isInspecting ? "Inspecting…" : "Inspect URL"}
+            </Button>
+          </div>
           <TextInput
-            id="library-url"
-            label="Resource URL"
-            type="url"
-            value={url}
-            onChange={(event) => dispatch({ type: "setUrl", url: event.target.value })}
-            placeholder="https://example.com/resource"
-            required
-            error={formErrors.url}
+            id="library-title"
+            label="Title"
+            value={title}
+            onChange={(event) =>
+              dispatch({ type: "setTitle", title: event.target.value })
+            }
+            hint="Inspect the URL to prefill this, then edit it if needed."
+            error={formErrors.title}
           />
+          <label className="LibraryPage-textarea" htmlFor="library-description">
+            <span className="LibraryPage-textareaLabel">Description</span>
+            <textarea
+              id="library-description"
+              className="LibraryPage-textareaField"
+              value={description}
+              onChange={(event) =>
+                dispatch({
+                  type: "setDescription",
+                  description: event.target.value,
+                })
+              }
+              rows={4}
+              aria-invalid={formErrors.description ? true : undefined}
+              aria-describedby={
+                formErrors.description ? "library-description-error" : undefined
+              }
+            />
+            {formErrors.description && (
+              <span
+                id="library-description-error"
+                className="LibraryPage-textareaError"
+                role="alert"
+              >
+                {formErrors.description}
+              </span>
+            )}
+          </label>
           <TagInput
             id="library-tags"
             label="Tags"
             tags={tags}
-            onTagsChange={(nextTags) => dispatch({ type: "setTags", tags: nextTags })}
+            onTagsChange={(nextTags) =>
+              dispatch({ type: "setTags", tags: nextTags })
+            }
             maxTags={10}
             required
             error={formErrors.tags}
           />
-          <label className="LibraryPage-notes" htmlFor="library-notes">
-            <span className="LibraryPage-notesLabel">Notes</span>
+          <label className="LibraryPage-textarea" htmlFor="library-notes">
+            <span className="LibraryPage-textareaLabel">Notes</span>
             <textarea
               id="library-notes"
-              className="LibraryPage-notesField"
+              className="LibraryPage-textareaField"
               value={notes}
-              onChange={(event) => dispatch({ type: "setNotes", notes: event.target.value })}
+              onChange={(event) =>
+                dispatch({ type: "setNotes", notes: event.target.value })
+              }
               rows={5}
               aria-invalid={formErrors.notes ? true : undefined}
-              aria-describedby={formErrors.notes ? "library-notes-error" : undefined}
+              aria-describedby={
+                formErrors.notes ? "library-notes-error" : undefined
+              }
             />
             {formErrors.notes && (
-              <span id="library-notes-error" className="LibraryPage-notesError" role="alert">
+              <span
+                id="library-notes-error"
+                className="LibraryPage-textareaError"
+                role="alert"
+              >
                 {formErrors.notes}
               </span>
             )}
@@ -265,8 +457,14 @@ export function LibraryPage() {
         </Button>
       </form>
 
-      <section className="LibraryPage-list" aria-labelledby="library-list-title">
-        <h2 id="library-list-title" className="LibraryPage-listTitle heading-lg">
+      <section
+        className="LibraryPage-list"
+        aria-labelledby="library-list-title"
+      >
+        <h2
+          id="library-list-title"
+          className="LibraryPage-listTitle heading-lg"
+        >
           Saved Resources
         </h2>
         {isLoading ? (
@@ -282,13 +480,20 @@ export function LibraryPage() {
                     <a href={resource.url}>{resource.title}</a>
                   </h3>
                   {resource.description && (
-                    <p className="LibraryPage-cardDescription body-sm">{resource.description}</p>
+                    <p className="LibraryPage-cardDescription body-sm">
+                      {resource.description}
+                    </p>
                   )}
                   {resource.notes && (
-                    <p className="LibraryPage-cardNotes body-sm">{resource.notes}</p>
+                    <p className="LibraryPage-cardNotes body-sm">
+                      {resource.notes}
+                    </p>
                   )}
                   {resource.tags.length > 0 && (
-                    <ul className="LibraryPage-tags reset-list" aria-label="Tags">
+                    <ul
+                      className="LibraryPage-tags reset-list"
+                      aria-label="Tags"
+                    >
                       {resource.tags.map((tag) => (
                         <li key={tag.id} className="LibraryPage-tag">
                           {tag.name}

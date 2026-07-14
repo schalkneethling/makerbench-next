@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   validateToolSubmission,
+  validateLibraryInspectionRequest,
   validatePersonalResourceRequest,
   validatePublicSubmissionRequest,
   validatePublicSubmissionResponse,
@@ -101,6 +102,36 @@ describe("Validation Schemas", () => {
 
       expect(result.success).toBe(false);
     });
+
+    it("should accept optional metadata overrides", () => {
+      const result = validatePersonalResourceRequest({
+        url: "https://example.com/resource",
+        title: "Personal title",
+        description: "Personal description",
+        tags: ["react"],
+      });
+
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe("validateLibraryInspectionRequest", () => {
+    it("should accept only an HTTP/HTTPS URL", () => {
+      expect(
+        validateLibraryInspectionRequest({
+          url: "https://example.com/resource",
+        }).success,
+      ).toBe(true);
+      expect(
+        validateLibraryInspectionRequest({ url: "file:///etc/passwd" }).success,
+      ).toBe(false);
+      expect(
+        validateLibraryInspectionRequest({
+          url: "https://example.com/resource",
+          userId: "user-1",
+        }).success,
+      ).toBe(false);
+    });
   });
 
   describe("validatePublicSubmissionRequest", () => {
@@ -183,7 +214,6 @@ describe("Validation Schemas", () => {
 
       expect(result.success).toBe(false);
     });
-
   });
 
   describe("validatePublicSubmissionResponse", () => {

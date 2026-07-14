@@ -93,6 +93,90 @@ describe("add-library", () => {
     expect(mockDb.values).toHaveBeenCalledWith({
       userId: "user-1",
       resourceId: "resource-1",
+      titleOverride: null,
+      descriptionOverride: null,
+      notes: "",
+      tags: ["react"],
+    });
+  });
+
+  it("persists edited metadata as personal bookmark overrides", async () => {
+    const mockDb = createMockDb();
+    mockDb.limit
+      .mockResolvedValueOnce([
+        {
+          id: "resource-1",
+          pageTitle: "Shared title",
+          metaDescription: "Shared description",
+        },
+      ])
+      .mockResolvedValueOnce([]);
+    mockDb.returning.mockResolvedValueOnce([{ id: "bookmark-1" }]);
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+
+    const res = await addLibrary(
+      new Request("https://test.com/api/library", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: "https://example.com/resource",
+          title: "  Personal title  ",
+          description: "Personal description",
+          tags: ["React"],
+        }),
+      }),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(201);
+    expect(mockDb.values).toHaveBeenCalledWith({
+      userId: "user-1",
+      resourceId: "resource-1",
+      titleOverride: "Personal title",
+      descriptionOverride: "Personal description",
+      notes: "",
+      tags: ["react"],
+    });
+  });
+
+  it("stores null overrides for unchanged or empty metadata", async () => {
+    const mockDb = createMockDb();
+    mockDb.limit
+      .mockResolvedValueOnce([
+        {
+          id: "resource-1",
+          pageTitle: "Shared title",
+          metaDescription: "Shared description",
+        },
+      ])
+      .mockResolvedValueOnce([]);
+    mockDb.returning.mockResolvedValueOnce([{ id: "bookmark-1" }]);
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
+
+    const res = await addLibrary(
+      new Request("https://test.com/api/library", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: "https://example.com/resource",
+          title: "Shared title",
+          description: "  ",
+          tags: ["React"],
+        }),
+      }),
+      createMockContext(),
+    );
+
+    expect(res.status).toBe(201);
+    expect(mockDb.values).toHaveBeenCalledWith({
+      userId: "user-1",
+      resourceId: "resource-1",
+      titleOverride: null,
+      descriptionOverride: null,
       notes: "",
       tags: ["react"],
     });
