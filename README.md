@@ -51,6 +51,7 @@ pnpm lint:css
 pnpm typecheck
 pnpm build
 npx playwright test --project=chromium
+pnpm performance:capture # production performance evidence
 pnpm storybook          # component workshop at http://localhost:6006
 pnpm build-storybook    # static Storybook build
 ```
@@ -130,4 +131,5 @@ Open backlog is tracked in GitHub Issues:
 - Local setup: [docs/local-development.md](./docs/local-development.md)
 - Production deployment: [docs/production-deployment.md](./docs/production-deployment.md)
 - Launch checklist: [docs/launch-checklist.md](./docs/launch-checklist.md)
+- Production performance evidence: [performance/README.md](./performance/README.md)
 - Database setup: [DATABASE_SETUP.md](./DATABASE_SETUP.md)

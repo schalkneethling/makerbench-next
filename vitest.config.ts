@@ -18,7 +18,11 @@ export default defineConfig({
         extends: true,
         test: {
           name: "unit",
-          include: ["src/**/*.test.ts", "netlify/**/*.test.ts"],
+          include: [
+            "src/**/*.test.ts",
+            "netlify/**/*.test.ts",
+            "scripts/**/*.test.ts",
+          ],
           environment: "node",
           setupFiles: ["./src/test/setup.ts"],
         },
