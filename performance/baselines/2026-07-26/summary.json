@@ -1,0 +1,1466 @@
+{
+  "schemaVersion": 1,
+  "target": "https://makerbench.schalkneethling.com",
+  "capturedAt": "2026-07-26T18:46:38.036Z",
+  "runCount": 90,
+  "scenarios": [
+    {
+      "device": "desktop",
+      "scenario": "cold-tools-load",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 2700.899999976158,
+          "p75": 2723.8000000715256,
+          "max": 2828.8000000715256
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 2744,
+          "p75": 2764,
+          "max": 2896
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 2896,
+          "p75": 3736,
+          "max": 3804
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0.022117179234822593,
+          "p75": 0.022176281611124674,
+          "max": 0.022176281611124678
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 376.2000000476837,
+          "p75": 377.2000000476837,
+          "max": 391.7999999523163
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 4014.2000000476837,
+          "p75": 4048.5999999046326,
+          "max": 4207.900000095367
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 8,
+          "p75": 20,
+          "max": 21,
+          "total": 60
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 159136,
+          "p75": 159145,
+          "max": 159145,
+          "total": 795676
+        }
+      }
+    },
+    {
+      "device": "desktop",
+      "scenario": "navigate-to-resources",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0.020402781168619794,
+          "p75": 0.020402781168619794,
+          "max": 0.020402781168619794
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 964.3999999761581,
+          "p75": 977.8999999761581,
+          "max": 994.3000000715256
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1,
+          "p75": 1,
+          "max": 1,
+          "total": 5
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 3936,
+          "p75": 3936,
+          "max": 3936,
+          "total": 19657
+        }
+      }
+    },
+    {
+      "device": "desktop",
+      "scenario": "navigate-to-submit",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 54.299999952316284,
+          "p75": 56.5,
+          "max": 62.700000047683716
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0,
+          "total": 0
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0,
+          "total": 0
+        }
+      }
+    },
+    {
+      "device": "desktop",
+      "scenario": "resource-sort-change",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0.014970896720886228,
+          "p75": 0.014970896720886228,
+          "max": 0.014970896720886228
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 35.699999928474426,
+          "p75": 37.199999928474426,
+          "max": 37.60000002384186
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0,
+          "total": 0
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0,
+          "total": 0
+        }
+      }
+    },
+    {
+      "device": "desktop",
+      "scenario": "resource-text-search",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0.020402781168619794,
+          "p75": 0.020402781168619794,
+          "max": 0.020402781168619794
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 24
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1273.8000000715256,
+          "p75": 1307.6000000238419,
+          "max": 1318.8999999761581
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1,
+          "p75": 1,
+          "max": 1,
+          "total": 5
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1205,
+          "p75": 1231,
+          "max": 1239,
+          "total": 6085
+        }
+      }
+    },
+    {
+      "device": "desktop",
+      "scenario": "submission-type-switch",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 63.699999928474426,
+          "p75": 64.10000002384186,
+          "max": 64.69999992847443
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0,
+          "total": 0
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0,
+          "total": 0
+        }
+      }
+    },
+    {
+      "device": "desktop",
+      "scenario": "tool-tag-selection",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0.017835150824652778,
+          "p75": 0.017835150824652778,
+          "max": 0.017835150824652778
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 40,
+          "p75": 48,
+          "max": 56
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 854.3999999761581,
+          "p75": 862.2000000476837,
+          "max": 886.7999999523163
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1,
+          "p75": 1,
+          "max": 1,
+          "total": 5
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 367,
+          "p75": 367,
+          "max": 367,
+          "total": 1835
+        }
+      }
+    },
+    {
+      "device": "desktop",
+      "scenario": "tool-text-search",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0.00005910237630208333,
+          "p75": 0.00005910237630208333,
+          "max": 0.00005910237630208333
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 16
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1445.2999999523163,
+          "p75": 1487.7000000476837,
+          "max": 1497.8999999761581
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1,
+          "p75": 1,
+          "max": 1,
+          "total": 5
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1501,
+          "p75": 1503,
+          "max": 1507,
+          "total": 7439
+        }
+      }
+    },
+    {
+      "device": "desktop",
+      "scenario": "warm-tools-reload",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 746.6000000238419,
+          "p75": 756,
+          "max": 808
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 768,
+          "p75": 772,
+          "max": 824
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1560,
+          "p75": 1560,
+          "max": 1580
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0.022176281611124678,
+          "p75": 0.022176281611124678,
+          "max": 0.022176281611124678
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 373,
+          "p75": 374.3000000715256,
+          "max": 374.6999999284744
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1571.7999999523163,
+          "p75": 1582.2000000476837,
+          "max": 1622.8999999761581
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 20,
+          "p75": 21,
+          "max": 21,
+          "total": 101
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 5630,
+          "p75": 5639,
+          "max": 5650,
+          "total": 28179
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "scenario": "cold-tools-load",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 2674.5,
+          "p75": 2695.7999999523163,
+          "max": 2787.399999976158
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 2712,
+          "p75": 2740,
+          "max": 2828
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 2712,
+          "p75": 2740,
+          "max": 2828
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0.011525532195442806,
+          "p75": 0.011525532195442806,
+          "max": 0.011525532195442806
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 379.6999999284744,
+          "p75": 380.89999997615814,
+          "max": 384.5
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 3512.5,
+          "p75": 3532.7999999523163,
+          "max": 3624.2999999523163
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 6,
+          "p75": 6,
+          "max": 6,
+          "total": 30
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 159125,
+          "p75": 159125,
+          "max": 159145,
+          "total": 795637
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "scenario": "navigate-to-resources",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0.004735311183210657,
+          "p75": 0.004735311183210657,
+          "max": 0.004735311183210657
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 947.5,
+          "p75": 959.2000000476837,
+          "max": 1039.6000000238419
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1,
+          "p75": 1,
+          "max": 1,
+          "total": 5
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 3936,
+          "p75": 3936,
+          "max": 3936,
+          "total": 19674
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "scenario": "navigate-to-submit",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 56.09999990463257,
+          "p75": 56.10000002384186,
+          "max": 58.300000071525574
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0,
+          "total": 0
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0,
+          "total": 0
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "scenario": "resource-sort-change",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 39.10000002384186,
+          "p75": 40.10000002384186,
+          "max": 40.60000002384186
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0,
+          "total": 0
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0,
+          "total": 0
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "scenario": "resource-text-search",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0.004735311183210657,
+          "p75": 0.004735311183210657,
+          "max": 0.004735311183210657
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 16
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1240.0999999046326,
+          "p75": 1247.7999999523163,
+          "max": 1256
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1,
+          "p75": 1,
+          "max": 1,
+          "total": 5
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1205,
+          "p75": 1205,
+          "max": 1205,
+          "total": 6025
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "scenario": "submission-type-switch",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 67.59999990463257,
+          "p75": 68.5,
+          "max": 68.59999990463257
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0,
+          "total": 0
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0,
+          "total": 0
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "scenario": "tool-tag-selection",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 40,
+          "p75": 40,
+          "max": 40
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 855.7000000476837,
+          "p75": 858.3000000715256,
+          "max": 890.1999999284744
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1,
+          "p75": 1,
+          "max": 1,
+          "total": 5
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 367,
+          "p75": 367,
+          "max": 367,
+          "total": 1835
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "scenario": "tool-text-search",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 0,
+          "missingRunCount": 5,
+          "p50": null,
+          "p75": null,
+          "max": null
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1445.3999999761581,
+          "p75": 1464.6999999284744,
+          "max": 1488.8000000715256
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1,
+          "p75": 2,
+          "max": 2,
+          "total": 7
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1485,
+          "p75": 1485,
+          "max": 1485,
+          "total": 7383
+        }
+      }
+    },
+    {
+      "device": "mobile",
+      "scenario": "warm-tools-reload",
+      "runCount": 5,
+      "metrics": {
+        "navigationDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 793.3000000715256,
+          "p75": 796.6000000238419,
+          "max": 1361.3999999761581
+        },
+        "firstContentfulPaintMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 808,
+          "p75": 812,
+          "max": 1380
+        },
+        "largestContentfulPaintMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 808,
+          "p75": 812,
+          "max": 1380
+        },
+        "cumulativeLayoutShift": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0.011525532195442806,
+          "p75": 0.011525532195442806,
+          "max": 0.011525532195442806
+        },
+        "interactionLatencyMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longTaskDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 0,
+          "p75": 0,
+          "max": 0
+        },
+        "longAnimationFrameDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 402.60000002384186,
+          "p75": 418.10000002384186,
+          "max": 483.5
+        },
+        "scenarioDurationMs": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 1604.1000000238419,
+          "p75": 1616.5,
+          "max": 2180.2999999523163
+        }
+      },
+      "network": {
+        "requestCount": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 11,
+          "p75": 11,
+          "max": 11,
+          "total": 55
+        },
+        "transferBytes": {
+          "sampleCount": 5,
+          "missingRunCount": 0,
+          "p50": 5630,
+          "p75": 5649,
+          "max": 5650,
+          "total": 28189
+        }
+      }
+    }
+  ]
+}
