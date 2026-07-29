@@ -223,7 +223,6 @@ export async function writeSanitizedHar(
   input: unknown,
 ): Promise<SanitizedHar> {
   const sanitized = sanitizeHar(input);
-  validateSanitizedHar(sanitized);
 
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(sanitized, null, 2)}\n`, {

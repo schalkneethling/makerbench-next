@@ -1,4 +1,13 @@
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  access,
+  copyFile,
+  mkdtemp,
+  mkdir,
+  readFile,
+  rm,
+  writeFile,
+} from "node:fs/promises";
+import { COPYFILE_EXCL } from "node:constants";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -110,8 +119,11 @@ export async function captureProductionPerformance(
             )),
           );
         } finally {
-          await context.tracing.stopHar();
-          await context.close();
+          try {
+            await context.tracing.stopHar();
+          } finally {
+            await context.close();
+          }
         }
 
         const rawHar: unknown = JSON.parse(await readFile(rawHarPath, "utf8"));
@@ -131,22 +143,12 @@ export async function captureProductionPerformance(
       runs,
     });
 
-    await mkdir(paths.directory, { recursive: true });
-    await writeHarArchive(paths.desktopHar, desktopHar, temporaryDirectory);
-    await writeHarArchive(paths.mobileHar, mobileHar, temporaryDirectory);
-    await writeFile(paths.summaryJson, renderPerformanceSummaryJson(summary), {
-      encoding: "utf8",
-      flag: "wx",
-      mode: 0o600,
-    });
-    await writeFile(
-      paths.summaryMarkdown,
-      renderPerformanceSummaryMarkdown(summary),
-      {
-        encoding: "utf8",
-        flag: "wx",
-        mode: 0o600,
-      },
+    await writeCaptureOutputs(
+      paths,
+      desktopHar,
+      mobileHar,
+      summary,
+      temporaryDirectory,
     );
   } finally {
     await browser?.close();
@@ -283,10 +285,7 @@ async function assertOutputsDoNotExist(paths: CapturePaths): Promise<void> {
 
   for (const output of outputs) {
     try {
-      await readFile(output);
-      throw new Error(
-        `Performance capture will not overwrite existing artifact: ${output}`,
-      );
+      await access(output);
     } catch (error) {
       if (
         error instanceof Error &&
@@ -298,16 +297,101 @@ async function assertOutputsDoNotExist(paths: CapturePaths): Promise<void> {
 
       throw error;
     }
+
+    throw new Error(
+      `Performance capture will not overwrite existing artifact: ${output}`,
+    );
   }
 }
 
-/** Creates a single-file ZIP after the sanitized HAR passes strict validation. */
+/** Stages every output before exclusively committing the complete capture. */
+async function writeCaptureOutputs(
+  paths: CapturePaths,
+  desktopHar: SanitizedHar,
+  mobileHar: SanitizedHar,
+  summary: ReturnType<typeof createPerformanceSummary>,
+  temporaryDirectory: string,
+): Promise<void> {
+  const stagedDirectory = join(temporaryDirectory, "outputs");
+  const stagedPaths: CapturePaths = {
+    directory: stagedDirectory,
+    desktopHar: join(stagedDirectory, basename(paths.desktopHar)),
+    mobileHar: join(stagedDirectory, basename(paths.mobileHar)),
+    summaryJson: join(stagedDirectory, basename(paths.summaryJson)),
+    summaryMarkdown: join(stagedDirectory, basename(paths.summaryMarkdown)),
+  };
+
+  await mkdir(stagedDirectory, { recursive: true });
+  await writeHarArchive(stagedPaths.desktopHar, desktopHar, temporaryDirectory);
+  await writeHarArchive(stagedPaths.mobileHar, mobileHar, temporaryDirectory);
+  await writeFile(
+    stagedPaths.summaryJson,
+    renderPerformanceSummaryJson(summary),
+    {
+      encoding: "utf8",
+      flag: "wx",
+      mode: 0o600,
+    },
+  );
+  await writeFile(
+    stagedPaths.summaryMarkdown,
+    renderPerformanceSummaryMarkdown(summary),
+    {
+      encoding: "utf8",
+      flag: "wx",
+      mode: 0o600,
+    },
+  );
+
+  const directoryExisted = await pathExists(paths.directory);
+  const commits = [
+    [stagedPaths.desktopHar, paths.desktopHar],
+    [stagedPaths.mobileHar, paths.mobileHar],
+    [stagedPaths.summaryJson, paths.summaryJson],
+    [stagedPaths.summaryMarkdown, paths.summaryMarkdown],
+  ] as const;
+  const committedOutputs: string[] = [];
+
+  await mkdir(paths.directory, { recursive: true });
+
+  try {
+    for (const [stagedPath, outputPath] of commits) {
+      await copyFile(stagedPath, outputPath, COPYFILE_EXCL);
+      committedOutputs.push(outputPath);
+    }
+  } catch (error) {
+    await Promise.all(
+      committedOutputs.map((outputPath) => rm(outputPath, { force: true })),
+    );
+
+    if (!directoryExisted) {
+      await rm(paths.directory, { recursive: true, force: true });
+    }
+
+    throw error;
+  }
+}
+
+/** Checks path existence without loading file contents. */
+async function pathExists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch (error) {
+    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+      return false;
+    }
+
+    throw error;
+  }
+}
+
+/** Creates a single-file ZIP through the sanitizer's exclusive writer. */
 async function writeHarArchive(
   outputPath: string,
   har: SanitizedHar,
   temporaryDirectory: string,
 ): Promise<void> {
-  validateSanitizedHar(har);
   const archiveEntryName = basename(outputPath, ".zip");
   const sanitizedHarPath = join(temporaryDirectory, archiveEntryName);
   await writeSanitizedHar(sanitizedHarPath, har);

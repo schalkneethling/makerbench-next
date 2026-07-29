@@ -474,13 +474,17 @@ async function retryNavigation(action: () => Promise<void>): Promise<void> {
 
 /** Waits for the expected first-party API response so its status enters the HAR. */
 function waitForResponsePath(page: Page, path: string): Promise<Response> {
-  return page.waitForResponse(
+  const response = page.waitForResponse(
     (response) => {
       const url = new URL(response.url());
       return response.request().method() === "GET" && url.pathname === path;
     },
     { timeout: RESPONSE_TIMEOUT_MS },
   );
+
+  // Keep the original promise awaitable while observing early action failures.
+  void response.catch(() => {});
+  return response;
 }
 
 /** Rejects unavailable production document navigations with a useful status. */
