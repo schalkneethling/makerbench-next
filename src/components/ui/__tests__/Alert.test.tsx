@@ -45,12 +45,16 @@ describe("Alert", () => {
         Dismissible
       </Alert>,
     );
-    expect(screen.getByRole("button", { name: "Dismiss alert" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Dismiss alert" }),
+    ).toBeInTheDocument();
   });
 
   it("hides dismiss button when not dismissible", () => {
     render(<Alert variant="info">Not dismissible</Alert>);
-    expect(screen.queryByRole("button", { name: "Dismiss alert" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Dismiss alert" }),
+    ).not.toBeInTheDocument();
   });
 
   it("removes alert when dismissed", async () => {
@@ -88,7 +92,9 @@ describe("Alert", () => {
   });
 
   it("displays variant-specific icon", () => {
-    const { container, rerender } = render(<Alert variant="success">Success</Alert>);
+    const { container, rerender } = render(
+      <Alert variant="success">Success</Alert>,
+    );
     expect(container.querySelector(".Alert-icon svg")).toBeInTheDocument();
 
     rerender(<Alert variant="error">Error</Alert>);

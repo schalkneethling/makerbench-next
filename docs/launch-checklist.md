@@ -16,13 +16,7 @@ remain in [Production deployment](./production-deployment.md).
       Playwright Chromium tests, and the production build.
 
 ```bash
-pnpm lint
-pnpm lint:css
-pnpm typecheck
-pnpm test
-npx vitest --project storybook run
-npx playwright test --project=chromium
-pnpm build
+pnpm check:ci
 ```
 
 ## Deployment

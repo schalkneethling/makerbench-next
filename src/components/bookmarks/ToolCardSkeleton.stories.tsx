@@ -20,7 +20,13 @@ export const Default: Story = {
 
 export const Grid: Story = {
   render: () => (
-    <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(2, 1fr)" }}>
+    <div
+      style={{
+        display: "grid",
+        gap: "1rem",
+        gridTemplateColumns: "repeat(2, 1fr)",
+      }}
+    >
       <ToolCardSkeleton />
       <ToolCardSkeleton />
     </div>

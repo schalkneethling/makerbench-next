@@ -1,4 +1,10 @@
-import { useId, useState, type ReactNode, type ComponentType, type SVGProps } from "react";
+import {
+  useId,
+  useState,
+  type ReactNode,
+  type ComponentType,
+  type SVGProps,
+} from "react";
 import {
   CheckIcon,
   XMarkIcon,
@@ -53,7 +59,8 @@ export function Alert({
   };
 
   // Use polite for info/success, assertive for errors/warnings
-  const politeness = variant === "error" || variant === "warning" ? "assertive" : "polite";
+  const politeness =
+    variant === "error" || variant === "warning" ? "assertive" : "polite";
   const variantIcon = ICONS[variant];
 
   return (
@@ -76,7 +83,12 @@ export function Alert({
           <span id={dismissLabelId} className="visually-hidden">
             Dismiss alert
           </span>
-          <Icon icon={XMarkIcon} size="sm" className="Alert-dismissIcon" aria-hidden="true" />
+          <Icon
+            icon={XMarkIcon}
+            size="sm"
+            className="Alert-dismissIcon"
+            aria-hidden="true"
+          />
         </Button>
       )}
     </div>

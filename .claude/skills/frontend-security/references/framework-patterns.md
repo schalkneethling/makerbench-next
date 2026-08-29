@@ -55,7 +55,9 @@ function SafeLink({ href, children }) {
 
 ```jsx
 // DANGEROUS - injecting user data into SSR without escaping
-<script>window.__INITIAL_STATE__ = {JSON.stringify(userControlledData)}</script>;
+<script>
+  window.__INITIAL_STATE__ = {JSON.stringify(userControlledData)}
+</script>;
 
 // SAFE - serialize with escaping
 import serialize from "serialize-javascript";

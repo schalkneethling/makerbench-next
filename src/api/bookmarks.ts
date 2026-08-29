@@ -4,7 +4,10 @@ import {
   type BookmarkRequest,
   type PublicSubmissionResponseData,
 } from "../lib/validation";
-import { PublicSubmissionApiError, submitPublicSubmission } from "./submissions";
+import {
+  PublicSubmissionApiError,
+  submitPublicSubmission,
+} from "./submissions";
 
 function getBaseUrl(): string {
   if (typeof window !== "undefined") {
@@ -103,7 +106,11 @@ export class BookmarkApiError extends Error {
   status: number;
   details?: Record<string, string[]>;
 
-  constructor(message: string, status: number, details?: Record<string, string[]>) {
+  constructor(
+    message: string,
+    status: number,
+    details?: Record<string, string[]>,
+  ) {
     super(message);
     this.name = "BookmarkApiError";
     this.status = status;
@@ -121,7 +128,10 @@ function throwApiError(json: unknown, status: number): never {
 }
 
 function getNow(): number {
-  if (typeof performance !== "undefined" && typeof performance.now === "function") {
+  if (
+    typeof performance !== "undefined" &&
+    typeof performance.now === "function"
+  ) {
     return performance.now();
   }
 
@@ -129,7 +139,10 @@ function getNow(): number {
 }
 
 function createRequestId(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
     return crypto.randomUUID();
   }
 
@@ -138,7 +151,11 @@ function createRequestId(): string {
 
 async function fetchValidatedResponse<T>(
   path: string,
-  schema: v.BaseSchema<unknown, { success: true; data: T }, v.BaseIssue<unknown>>,
+  schema: v.BaseSchema<
+    unknown,
+    { success: true; data: T },
+    v.BaseIssue<unknown>
+  >,
   options: RequestInit & RequestOptions = {},
 ): Promise<T> {
   const requestId = createRequestId();
@@ -170,14 +187,16 @@ async function fetchValidatedResponse<T>(
     return result.output.data;
   } catch (error) {
     const durationMs = Math.round(getNow() - startTime);
-    const aborted = error instanceof DOMException && error.name === "AbortError";
+    const aborted =
+      error instanceof DOMException && error.name === "AbortError";
 
     console.info("[perf] client-request", {
       requestId,
       path,
       durationMs,
       aborted,
-      error: error instanceof Error ? error.message : "Unexpected request failure",
+      error:
+        error instanceof Error ? error.message : "Unexpected request failure",
     });
 
     throw error;
@@ -207,8 +226,13 @@ function appendListParams(
   return `${path}${queryString ? `?${queryString}` : ""}`;
 }
 
-export async function getBookmarks(params: GetBookmarksParams = {}): Promise<BookmarksResponse> {
-  return fetchValidatedResponse(appendListParams("/api/tools", params), bookmarksResponseSchema);
+export async function getBookmarks(
+  params: GetBookmarksParams = {},
+): Promise<BookmarksResponse> {
+  return fetchValidatedResponse(
+    appendListParams("/api/tools", params),
+    bookmarksResponseSchema,
+  );
 }
 
 export async function searchBookmarks(
@@ -226,12 +250,18 @@ export async function getTags(
   params: GetTagsParams = {},
   options: RequestOptions = {},
 ): Promise<TagsResponse> {
-  return fetchValidatedResponse(appendListParams("/api/tools/tags", params), tagsResponseSchema, {
-    signal: options.signal,
-  });
+  return fetchValidatedResponse(
+    appendListParams("/api/tools/tags", params),
+    tagsResponseSchema,
+    {
+      signal: options.signal,
+    },
+  );
 }
 
-export async function submitBookmark(data: BookmarkRequest): Promise<SubmitBookmarkResponse> {
+export async function submitBookmark(
+  data: BookmarkRequest,
+): Promise<SubmitBookmarkResponse> {
   const { submitterGithubUsername, submitterGithubUrl, ...submission } = data;
 
   try {

@@ -71,7 +71,10 @@ export function forbidden(error = "Forbidden"): Response {
 /**
  * Validation error (422)
  */
-export function validationError(error: string, details?: Record<string, string[]>): Response {
+export function validationError(
+  error: string,
+  details?: Record<string, string[]>,
+): Response {
   return jsonResponse({ success: false, error, details }, 422);
 }
 
@@ -110,7 +113,10 @@ export function serverError(error: string): Response {
 /**
  * Service unavailable error (503)
  */
-export function serviceUnavailable(error: string, diagnosticCode?: string): Response {
+export function serviceUnavailable(
+  error: string,
+  diagnosticCode?: string,
+): Response {
   return jsonResponse(
     { success: false, error },
     503,

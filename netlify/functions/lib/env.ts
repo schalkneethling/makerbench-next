@@ -56,12 +56,16 @@ export function assertRequiredEnv(requiredKeys: readonly string[]): void {
 /**
  * Type guard for missing environment errors.
  */
-export function isMissingEnvironmentError(error: unknown): error is MissingEnvironmentError {
+export function isMissingEnvironmentError(
+  error: unknown,
+): error is MissingEnvironmentError {
   return error instanceof MissingEnvironmentError;
 }
 
 /** Type guard for invalid environment errors. */
-export function isInvalidEnvironmentError(error: unknown): error is InvalidEnvironmentError {
+export function isInvalidEnvironmentError(
+  error: unknown,
+): error is InvalidEnvironmentError {
   return error instanceof InvalidEnvironmentError;
 }
 

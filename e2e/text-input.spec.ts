@@ -15,7 +15,8 @@ test.describe("TextInput", () => {
   });
 
   test.skip("has correct accessible structure with error", async ({ page }) => {
-    await expect(page.locator(".TextInput--error").first()).toMatchAriaSnapshot(`
+    await expect(page.locator(".TextInput--error").first())
+      .toMatchAriaSnapshot(`
       - text: Label text
       - textbox:
         - /aria-invalid: true

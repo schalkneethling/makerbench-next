@@ -30,13 +30,18 @@ interface LibraryBody {
 describe("get-library", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getDb).mockReturnValue(createMockDb() as unknown as ReturnType<typeof getDb>);
+    vi.mocked(getDb).mockReturnValue(
+      createMockDb() as unknown as ReturnType<typeof getDb>,
+    );
   });
 
   it("returns 401 for guests", async () => {
     vi.mocked(verifyAuthenticatedUser).mockResolvedValue(null);
 
-    const res = await getLibrary(new Request("https://test.com/api/library"), createMockContext());
+    const res = await getLibrary(
+      new Request("https://test.com/api/library"),
+      createMockContext(),
+    );
 
     expect(res.status).toBe(401);
   });
@@ -60,9 +65,14 @@ describe("get-library", () => {
         tags: ["react"],
       },
     ]);
-    vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
 
-    const res = await getLibrary(new Request("https://test.com/api/library"), createMockContext());
+    const res = await getLibrary(
+      new Request("https://test.com/api/library"),
+      createMockContext(),
+    );
 
     expect(res.status).toBe(200);
     expect(mockDb.where).toHaveBeenCalledTimes(1);
@@ -99,9 +109,14 @@ describe("get-library", () => {
         tags: [],
       },
     ]);
-    vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
 
-    const res = await getLibrary(new Request("https://test.com/api/library"), createMockContext());
+    const res = await getLibrary(
+      new Request("https://test.com/api/library"),
+      createMockContext(),
+    );
 
     const body = (await res.json()) as LibraryBody;
     expect(body.data.resources[0]).toMatchObject({

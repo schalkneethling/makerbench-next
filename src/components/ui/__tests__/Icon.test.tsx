@@ -21,7 +21,13 @@ describe("Icon", () => {
   });
 
   it("merges custom className", () => {
-    render(<Icon icon={XMarkIcon} className="CustomIcon" aria-label="Custom close icon" />);
+    render(
+      <Icon
+        icon={XMarkIcon}
+        className="CustomIcon"
+        aria-label="Custom close icon"
+      />,
+    );
 
     const icon = screen.getByLabelText("Custom close icon");
     expect(icon).toHaveClass("Icon");

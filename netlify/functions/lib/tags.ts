@@ -6,7 +6,9 @@ interface RawTagEntry {
 /**
  * Parses aggregated tag JSON and removes null placeholder entries.
  */
-export function parseAggregatedTags(tagsJson: string): Array<{ id: string; name: string }> {
+export function parseAggregatedTags(
+  tagsJson: string,
+): Array<{ id: string; name: string }> {
   try {
     const parsed = JSON.parse(tagsJson) as Array<RawTagEntry | null>;
     return parsed.filter(

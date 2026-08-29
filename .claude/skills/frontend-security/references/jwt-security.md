@@ -62,9 +62,14 @@ function generateFingerprint() {
 
 // Create token with fingerprint hash
 function createToken(userId, fingerprint) {
-  const fingerprintHash = crypto.createHash("sha256").update(fingerprint).digest("hex");
+  const fingerprintHash = crypto
+    .createHash("sha256")
+    .update(fingerprint)
+    .digest("hex");
 
-  return jwt.sign({ sub: userId, fph: fingerprintHash }, secret, { expiresIn: "15m" });
+  return jwt.sign({ sub: userId, fph: fingerprintHash }, secret, {
+    expiresIn: "15m",
+  });
 }
 
 // Set fingerprint as httpOnly cookie
@@ -79,7 +84,10 @@ res.cookie("__Secure-Fgp", fingerprint, {
 function validateToken(token, fingerprintCookie) {
   const decoded = jwt.verify(token, secret, { algorithms: ["HS256"] });
 
-  const fingerprintHash = crypto.createHash("sha256").update(fingerprintCookie).digest("hex");
+  const fingerprintHash = crypto
+    .createHash("sha256")
+    .update(fingerprintCookie)
+    .digest("hex");
 
   if (decoded.fph !== fingerprintHash) {
     throw new Error("Invalid fingerprint");
@@ -136,7 +144,9 @@ localStorage.setItem("token", jwt); // Not recommended
 const accessToken = jwt.sign(payload, secret, { expiresIn: "15m" });
 
 // Longer refresh tokens (days/weeks)
-const refreshToken = jwt.sign({ sub: userId, type: "refresh" }, refreshSecret, { expiresIn: "7d" });
+const refreshToken = jwt.sign({ sub: userId, type: "refresh" }, refreshSecret, {
+  expiresIn: "7d",
+});
 
 // Refresh endpoint
 app.post("/refresh", async (req, res) => {
@@ -157,7 +167,9 @@ app.post("/refresh", async (req, res) => {
     }
 
     // Issue new access token
-    const newAccessToken = jwt.sign({ sub: decoded.sub }, secret, { expiresIn: "15m" });
+    const newAccessToken = jwt.sign({ sub: decoded.sub }, secret, {
+      expiresIn: "15m",
+    });
 
     res.json({ accessToken: newAccessToken });
   } catch (error) {
@@ -192,7 +204,9 @@ function isTokenRevoked(token) {
 }
 
 // Include jti (JWT ID) in tokens
-const token = jwt.sign({ sub: userId, jti: crypto.randomUUID() }, secret, { expiresIn: "15m" });
+const token = jwt.sign({ sub: userId, jti: crypto.randomUUID() }, secret, {
+  expiresIn: "15m",
+});
 ```
 
 ## Token Information Disclosure

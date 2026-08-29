@@ -38,7 +38,10 @@ const submissionTypeOptions: Array<{
 ];
 
 /** Builds form validation around the attribution missing from verified identity. */
-function getSubmissionFormSchema(requireName: boolean, requireGithubUsername: boolean) {
+function getSubmissionFormSchema(
+  requireName: boolean,
+  requireGithubUsername: boolean,
+) {
   return v.pipe(
     publicSubmissionRequestSchema,
     v.forward(
@@ -53,7 +56,8 @@ function getSubmissionFormSchema(requireName: boolean, requireGithubUsername: bo
       v.partialCheck(
         [["submitterGithubUsername"]],
         (input) =>
-          !requireGithubUsername || Boolean(input.submitterGithubUsername?.trim()),
+          !requireGithubUsername ||
+          Boolean(input.submitterGithubUsername?.trim()),
         "GitHub username is required",
       ),
       ["submitterGithubUsername"],
@@ -89,13 +93,17 @@ export function SubmitPage() {
     accessToken: accessToken ?? undefined,
   });
   const hasVerifiedName = Boolean(identity?.user.displayName?.trim());
-  const hasVerifiedGithubUsername = Boolean(identity?.user.githubUsername?.trim());
+  const hasVerifiedGithubUsername = Boolean(
+    identity?.user.githubUsername?.trim(),
+  );
   const requireName = !hasVerifiedName;
   const requireGithubUsername = !hasVerifiedGithubUsername;
   const isFormDisabled = isAuthLoading || isSubmitting;
   const canSeeDiagnostics = isAdmin || import.meta.env.DEV;
 
-  const [submissionType, setSubmissionType] = useState<PublicSubmissionType | "">("");
+  const [submissionType, setSubmissionType] = useState<
+    PublicSubmissionType | ""
+  >("");
   const [url, setUrl] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [submitterName, setSubmitterName] = useState("");
@@ -163,7 +171,8 @@ export function SubmitPage() {
 
       {response ? (
         <Alert variant="success" dismissible onDismiss={handleReset}>
-          <strong>Submission received.</strong> It will appear on the site after review.
+          <strong>Submission received.</strong> It will appear on the site after
+          review.
         </Alert>
       ) : null}
 
@@ -174,7 +183,8 @@ export function SubmitPage() {
             <ul className="SubmitPage-errorDetails body-sm">
               {Object.entries(error.details).map(([field, messages]) => (
                 <li key={field}>
-                  {field}: {Array.isArray(messages) ? messages.join(", ") : messages}
+                  {field}:{" "}
+                  {Array.isArray(messages) ? messages.join(", ") : messages}
                 </li>
               ))}
             </ul>
@@ -203,9 +213,13 @@ export function SubmitPage() {
         <fieldset
           className="SubmitPage-fieldset SubmitPage-typeFieldset"
           disabled={isFormDisabled}
-          aria-describedby={formErrors.type ? "submission-type-error" : undefined}
+          aria-describedby={
+            formErrors.type ? "submission-type-error" : undefined
+          }
         >
-          <legend className="SubmitPage-legend ui-label">What are you submitting?</legend>
+          <legend className="SubmitPage-legend ui-label">
+            What are you submitting?
+          </legend>
           <div className="SubmitPage-typeOptions">
             {submissionTypeOptions.map((option) => {
               const labelId = `submission-type-${option.value}-label`;
@@ -238,7 +252,11 @@ export function SubmitPage() {
             })}
           </div>
           {formErrors.type ? (
-            <p id="submission-type-error" className="SubmitPage-fieldError" role="alert">
+            <p
+              id="submission-type-error"
+              className="SubmitPage-fieldError"
+              role="alert"
+            >
               {formErrors.type}
             </p>
           ) : null}
@@ -304,7 +322,9 @@ export function SubmitPage() {
                 label="GitHub username"
                 type="text"
                 value={submitterGithubUsername}
-                onChange={(event) => setSubmitterGithubUsername(event.target.value)}
+                onChange={(event) =>
+                  setSubmitterGithubUsername(event.target.value)
+                }
                 placeholder="username"
                 required
                 error={formErrors.submitterGithubUsername}

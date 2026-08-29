@@ -54,7 +54,10 @@ type FilterMode = "search" | "filter" | "search-filter";
 /**
  * Determines URL mode parameter based on active query/tag filters.
  */
-function getFilterMode(query: string, tagNames: string[]): FilterMode | undefined {
+function getFilterMode(
+  query: string,
+  tagNames: string[],
+): FilterMode | undefined {
   const hasQuery = query.trim() !== "";
   const hasTags = tagNames.length > 0;
 
@@ -78,7 +81,9 @@ function getFilterMode(query: string, tagNames: string[]): FilterMode | undefine
  */
 export function HomePage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState(() => searchParams.get("q") ?? "");
+  const [searchQuery, setSearchQuery] = useState(
+    () => searchParams.get("q") ?? "",
+  );
   const [shouldLoadTags, setShouldLoadTags] = useState(false);
   const [selectedTagNames, setSelectedTagNames] = useState<string[]>(() => {
     const tagsParam = searchParams.get("tags");
@@ -87,7 +92,8 @@ export function HomePage() {
 
   // Track if initial URL-based search has been triggered
   const initialSearchTriggered = useRef(false);
-  const hasInitialFilters = searchQuery.trim() !== "" || selectedTagNames.length > 0;
+  const hasInitialFilters =
+    searchQuery.trim() !== "" || selectedTagNames.length > 0;
 
   // Fetch all bookmarks on mount
   const {
@@ -120,7 +126,9 @@ export function HomePage() {
 
   // Current data depends on mode
   const currentBookmarks = isFiltering ? searchResults : bookmarks;
-  const currentPagination = isFiltering ? searchPagination : bookmarksPagination;
+  const currentPagination = isFiltering
+    ? searchPagination
+    : bookmarksPagination;
   const isLoading = isFiltering ? searchLoading : bookmarksLoading;
   const error = searchError ?? bookmarksError ?? tagsError;
 
@@ -141,7 +149,10 @@ export function HomePage() {
   }, [selectedTagNames, availableTags]);
 
   // Convert to ToolCard format
-  const tools = useMemo(() => toToolCardProps(currentBookmarks), [currentBookmarks]);
+  const tools = useMemo(
+    () => toToolCardProps(currentBookmarks),
+    [currentBookmarks],
+  );
 
   /**
    * Updates URL search params. Uses replace to avoid polluting history.
@@ -182,7 +193,8 @@ export function HomePage() {
       return;
     }
 
-    const hasUrlFilters = searchQuery.trim() !== "" || selectedTagNames.length > 0;
+    const hasUrlFilters =
+      searchQuery.trim() !== "" || selectedTagNames.length > 0;
 
     if (!hasUrlFilters) {
       initialSearchTriggered.current = true;
@@ -252,7 +264,9 @@ export function HomePage() {
   const handleTagToggle = useCallback(
     (tagId: string) => {
       // Find tag name from ID
-      const tag = availableTags.find((availableTag) => availableTag.id === tagId);
+      const tag = availableTags.find(
+        (availableTag) => availableTag.id === tagId,
+      );
       if (!tag) {
         return;
       }
@@ -335,7 +349,9 @@ export function HomePage() {
   return (
     <div className="HomePage">
       <header className="HomePage-hero">
-        <h1 className="HomePage-title heading-3xl">Find the right tool for the job</h1>
+        <h1 className="HomePage-title heading-3xl">
+          Find the right tool for the job
+        </h1>
         <p className="HomePage-subtitle body-lg">
           Browse practical software, references, and resources for makers.
         </p>

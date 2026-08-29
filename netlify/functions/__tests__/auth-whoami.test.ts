@@ -29,7 +29,9 @@ interface WhoamiBody {
 describe("auth-whoami", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getDb).mockReturnValue(createMockDb() as unknown as ReturnType<typeof getDb>);
+    vi.mocked(getDb).mockReturnValue(
+      createMockDb() as unknown as ReturnType<typeof getDb>,
+    );
   });
 
   it("returns 401 without a bearer token", async () => {
@@ -44,7 +46,9 @@ describe("auth-whoami", () => {
   it("returns the authenticated identity and admin state", async () => {
     const mockDb = createMockDb();
     mockDb.limit.mockResolvedValue([{ role: "admin" }]);
-    vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
     vi.mocked(createClient).mockReturnValue({
       auth: {
         getUser: vi.fn().mockResolvedValue({
@@ -95,7 +99,9 @@ describe("auth-whoami", () => {
   it("does not grant admin for non-admin role rows", async () => {
     const mockDb = createMockDb();
     mockDb.limit.mockResolvedValue([{ role: "viewer" }]);
-    vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
     vi.mocked(createClient).mockReturnValue({
       auth: {
         getUser: vi.fn().mockResolvedValue({
@@ -124,7 +130,9 @@ describe("auth-whoami", () => {
 
   it("does not expose user-editable GitHub metadata without a trusted identity", async () => {
     const mockDb = createMockDb();
-    vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
     vi.mocked(createClient).mockReturnValue({
       auth: {
         getUser: vi.fn().mockResolvedValue({

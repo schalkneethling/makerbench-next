@@ -19,7 +19,9 @@ describe("extractMetadata", () => {
   });
 
   it("resolves relative OG image paths against the page URL", async () => {
-    const result = await extractMetadata("https://example.com/relative-og-image");
+    const result = await extractMetadata(
+      "https://example.com/relative-og-image",
+    );
 
     expect(result.title).toBe("Tool With Relative OG Image");
     expect(result.description).toBeNull();

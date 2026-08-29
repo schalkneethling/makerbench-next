@@ -15,7 +15,9 @@ const ALLOWED_URL_PROTOCOLS = new Set(["http:", "https:", "mailto:"]);
 function sanitizeUrl(url: string): string | undefined {
   try {
     const parsedUrl = new URL(url);
-    return ALLOWED_URL_PROTOCOLS.has(parsedUrl.protocol) ? parsedUrl.href : undefined;
+    return ALLOWED_URL_PROTOCOLS.has(parsedUrl.protocol)
+      ? parsedUrl.href
+      : undefined;
   } catch {
     return undefined;
   }
@@ -28,7 +30,9 @@ function getHostname(url: string): string {
   }
 
   const parsedUrl = new URL(safeUrl);
-  return parsedUrl.protocol === "mailto:" ? "" : parsedUrl.hostname.replace(/^www\./, "");
+  return parsedUrl.protocol === "mailto:"
+    ? ""
+    : parsedUrl.hostname.replace(/^www\./, "");
 }
 
 function getKindLabel(kind: Resource["kind"]): string {
@@ -52,21 +56,35 @@ export function ResourceCard({ resource, onTagClick }: ResourceCardProps) {
     <article className="ResourceCard">
       <div className="ResourceCard-main">
         {/* TODO: Rework the card-click pattern so the full card is clickable without wrapping all content in one anchor. */}
-        <a href={resourceHref} className="ResourceCard-link" aria-labelledby={titleId}>
-          <span className="ResourceCard-kind ui-caption">{getKindLabel(resource.kind)}</span>
+        <a
+          href={resourceHref}
+          className="ResourceCard-link"
+          aria-labelledby={titleId}
+        >
+          <span className="ResourceCard-kind ui-caption">
+            {getKindLabel(resource.kind)}
+          </span>
           <h3 id={titleId} className="ResourceCard-title heading-base">
             {resource.title}
           </h3>
-          <p className="ResourceCard-hostname ui-caption">{getHostname(resource.url)}</p>
+          <p className="ResourceCard-hostname ui-caption">
+            {getHostname(resource.url)}
+          </p>
           {resource.description && (
-            <p className="ResourceCard-description body-sm">{resource.description}</p>
+            <p className="ResourceCard-description body-sm">
+              {resource.description}
+            </p>
           )}
         </a>
 
         {resource.tags.length > 0 && (
           <div className="ResourceCard-tags">
             {resource.tags.map((tag) => (
-              <TagBadge key={tag.id} label={tag.name} onClick={() => onTagClick?.(tag.name)} />
+              <TagBadge
+                key={tag.id}
+                label={tag.name}
+                onClick={() => onTagClick?.(tag.name)}
+              />
             ))}
           </div>
         )}

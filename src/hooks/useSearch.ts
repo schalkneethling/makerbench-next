@@ -17,7 +17,10 @@ interface UseSearchState {
 
 interface UseSearchReturn extends UseSearchState {
   /** Execute search with params */
-  search: (params: SearchBookmarksParams, options?: { immediate?: boolean }) => Promise<void>;
+  search: (
+    params: SearchBookmarksParams,
+    options?: { immediate?: boolean },
+  ) => Promise<void>;
   /** Load more search results */
   loadMore: () => Promise<void>;
   /** Reset to initial state */
@@ -37,7 +40,8 @@ export function useSearch(debounceMs = DEBOUNCE_MS): UseSearchReturn {
     error: null,
   });
 
-  const [searchParams, setSearchParams] = useState<SearchBookmarksParams | null>(null);
+  const [searchParams, setSearchParams] =
+    useState<SearchBookmarksParams | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const activeRequestIdRef = useRef(0);
@@ -50,9 +54,14 @@ export function useSearch(debounceMs = DEBOUNCE_MS): UseSearchReturn {
   }, []);
 
   const executeSearch = useCallback(
-    async (params: SearchBookmarksParams, requestId: number, signal: AbortSignal) => {
+    async (
+      params: SearchBookmarksParams,
+      requestId: number,
+      signal: AbortSignal,
+    ) => {
       const startedAt =
-        typeof performance !== "undefined" && typeof performance.now === "function"
+        typeof performance !== "undefined" &&
+        typeof performance.now === "function"
           ? performance.now()
           : Date.now();
 
@@ -64,7 +73,8 @@ export function useSearch(debounceMs = DEBOUNCE_MS): UseSearchReturn {
         }
 
         const durationMs = Math.round(
-          (typeof performance !== "undefined" && typeof performance.now === "function"
+          (typeof performance !== "undefined" &&
+          typeof performance.now === "function"
             ? performance.now()
             : Date.now()) - startedAt,
         );
@@ -88,7 +98,9 @@ export function useSearch(debounceMs = DEBOUNCE_MS): UseSearchReturn {
         }
 
         const error =
-          err instanceof BookmarkApiError ? err : new BookmarkApiError("Search failed", 500);
+          err instanceof BookmarkApiError
+            ? err
+            : new BookmarkApiError("Search failed", 500);
         setState((prev) => ({ ...prev, isLoading: false, error }));
       }
     },
@@ -96,7 +108,10 @@ export function useSearch(debounceMs = DEBOUNCE_MS): UseSearchReturn {
   );
 
   const search = useCallback(
-    async (params: SearchBookmarksParams, options: { immediate?: boolean } = {}) => {
+    async (
+      params: SearchBookmarksParams,
+      options: { immediate?: boolean } = {},
+    ) => {
       // Store params for loadMore
       setSearchParams(params);
 
@@ -152,7 +167,10 @@ export function useSearch(debounceMs = DEBOUNCE_MS): UseSearchReturn {
         },
       );
 
-      if (controller.signal.aborted || requestId !== activeRequestIdRef.current) {
+      if (
+        controller.signal.aborted ||
+        requestId !== activeRequestIdRef.current
+      ) {
         return;
       }
 
@@ -163,7 +181,10 @@ export function useSearch(debounceMs = DEBOUNCE_MS): UseSearchReturn {
         error: null,
       }));
     } catch (err) {
-      if (controller.signal.aborted || requestId !== activeRequestIdRef.current) {
+      if (
+        controller.signal.aborted ||
+        requestId !== activeRequestIdRef.current
+      ) {
         return;
       }
 

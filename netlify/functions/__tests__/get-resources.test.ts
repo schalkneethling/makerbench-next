@@ -68,7 +68,9 @@ describe("get-resources", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockDb = createMockDb();
-    vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
     mockContext = createMockContext();
   });
 

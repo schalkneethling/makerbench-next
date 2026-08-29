@@ -14,7 +14,9 @@ import {
   verifyAuthenticatedUser,
 } from "./lib";
 
-function mapTags(tags: string[] | null | undefined): { id: string; name: string }[] {
+function mapTags(
+  tags: string[] | null | undefined,
+): { id: string; name: string }[] {
   return tags?.map((tag) => ({ id: tag, name: tag })) ?? [];
 }
 
@@ -28,7 +30,11 @@ export default async (req: Request, _context: Context) => {
   }
 
   try {
-    assertRequiredEnv(["SUPABASE_DATABASE_URL", "VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY"]);
+    assertRequiredEnv([
+      "SUPABASE_DATABASE_URL",
+      "VITE_SUPABASE_URL",
+      "VITE_SUPABASE_ANON_KEY",
+    ]);
   } catch (error) {
     return handleMissingEnvironmentError(error, "get-library");
   }
@@ -53,7 +59,10 @@ export default async (req: Request, _context: Context) => {
         tags: bookmarksTable.tags,
       })
       .from(bookmarksTable)
-      .innerJoin(resourcesTable, eq(bookmarksTable.resourceId, resourcesTable.id))
+      .innerJoin(
+        resourcesTable,
+        eq(bookmarksTable.resourceId, resourcesTable.id),
+      )
       .where(eq(bookmarksTable.userId, authenticated.user.id))
       .orderBy(desc(bookmarksTable.createdAt));
 

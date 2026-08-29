@@ -56,13 +56,21 @@ function validateDoubleSubmit(req) {
 
 ```javascript
 // Strict - never sent cross-site
-res.cookie("session", value, { sameSite: "Strict", secure: true, httpOnly: true });
+res.cookie("session", value, {
+  sameSite: "Strict",
+  secure: true,
+  httpOnly: true,
+});
 
 // Lax - sent for top-level GET navigations (default in modern browsers)
 res.cookie("session", value, { sameSite: "Lax", secure: true, httpOnly: true });
 
 // None - requires Secure flag, sent cross-site
-res.cookie("session", value, { sameSite: "None", secure: true, httpOnly: true });
+res.cookie("session", value, {
+  sameSite: "None",
+  secure: true,
+  httpOnly: true,
+});
 ```
 
 **Recommendation**: Use `SameSite=Strict` for session cookies when possible, `Lax` as minimum.

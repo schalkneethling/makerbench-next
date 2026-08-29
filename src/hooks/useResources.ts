@@ -48,7 +48,10 @@ export function useResources(): UseResourcesReturn {
 
       try {
         const data = await getResources(params, { signal: controller.signal });
-        if (controller.signal.aborted || requestId !== activeRequestIdRef.current) {
+        if (
+          controller.signal.aborted ||
+          requestId !== activeRequestIdRef.current
+        ) {
           return;
         }
 
@@ -59,7 +62,10 @@ export function useResources(): UseResourcesReturn {
           error: null,
         });
       } catch (err) {
-        if (controller.signal.aborted || requestId !== activeRequestIdRef.current) {
+        if (
+          controller.signal.aborted ||
+          requestId !== activeRequestIdRef.current
+        ) {
           return;
         }
 
@@ -95,7 +101,10 @@ export function useResources(): UseResourcesReturn {
         { signal: controller.signal },
       );
 
-      if (controller.signal.aborted || requestId !== activeRequestIdRef.current) {
+      if (
+        controller.signal.aborted ||
+        requestId !== activeRequestIdRef.current
+      ) {
         return;
       }
 
@@ -106,7 +115,10 @@ export function useResources(): UseResourcesReturn {
         error: null,
       }));
     } catch (err) {
-      if (controller.signal.aborted || requestId !== activeRequestIdRef.current) {
+      if (
+        controller.signal.aborted ||
+        requestId !== activeRequestIdRef.current
+      ) {
         return;
       }
 

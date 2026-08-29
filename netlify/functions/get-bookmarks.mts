@@ -31,7 +31,9 @@ interface ToolWithTags {
   tags: { id: string; name: string }[];
 }
 
-function parsePagination(url: URL): { limit: number; offset: number } | Response {
+function parsePagination(
+  url: URL,
+): { limit: number; offset: number } | Response {
   const limitParam = url.searchParams.get("limit");
   const offsetParam = url.searchParams.get("offset");
   let limit = DEFAULT_LIMIT;
@@ -56,7 +58,9 @@ function parsePagination(url: URL): { limit: number; offset: number } | Response
   return { limit, offset };
 }
 
-function mapTags(tags: string[] | null | undefined): { id: string; name: string }[] {
+function mapTags(
+  tags: string[] | null | undefined,
+): { id: string; name: string }[] {
   return tags?.map((tag) => ({ id: tag, name: tag })) ?? [];
 }
 
@@ -100,7 +104,10 @@ export default async (req: Request, context: Context) => {
         tags: toolListingsTable.tags,
       })
       .from(toolListingsTable)
-      .innerJoin(resourcesTable, eq(toolListingsTable.resourceId, resourcesTable.id))
+      .innerJoin(
+        resourcesTable,
+        eq(toolListingsTable.resourceId, resourcesTable.id),
+      )
       .where(eq(toolListingsTable.status, "approved"))
       .orderBy(desc(toolListingsTable.createdAt))
       .limit(limit + 1)

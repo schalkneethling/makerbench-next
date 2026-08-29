@@ -131,14 +131,19 @@ setup.
 ## 6. Quality checks
 
 ```bash
-pnpm lint
-pnpm lint:css
-pnpm typecheck
-pnpm test
-pnpm build
-npx vitest --project storybook run
-npx playwright test --project=chromium
+pnpm check:fast
+pnpm check:pr
 ```
+
+All check commands are non-mutating. Use `pnpm format` only when you explicitly
+want Prettier to rewrite files.
+
+| Command           | Composition                                                                   |
+| ----------------- | ----------------------------------------------------------------------------- |
+| `pnpm check:fast` | Formatting, ESLint, Stylelint, configured TypeScript projects, and unit tests |
+| `pnpm check:pr`   | Fast checks, production-mode build, Storybook tests, and Chromium E2E         |
+| `pnpm check:ci`   | The complete PR gate; CI extends this command as deterministic checks grow    |
+| `pnpm quality`    | Fast checks plus the production-mode build; retained as a non-mutating alias  |
 
 The Playwright command automatically starts the Vite server configured in
 `playwright.config.ts`; a separate `netlify dev` process is not required for the

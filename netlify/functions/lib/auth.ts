@@ -28,7 +28,9 @@ function createAuthClient() {
   const supabaseAnonKey = getEnv("VITE_SUPABASE_ANON_KEY");
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY is not configured");
+    throw new Error(
+      "VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY is not configured",
+    );
   }
 
   return createClient(supabaseUrl, supabaseAnonKey, {
@@ -52,7 +54,9 @@ function getMetadataString(metadata: unknown, key: string): string | null {
   }
 
   const value = (metadata as Record<string, unknown>)[key];
-  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim()
+    : null;
 }
 
 /** Resolves the name supplied by Supabase's verified user lookup. */
@@ -79,7 +83,9 @@ export function getVerifiedGithubUsername(user: User): string | null {
   return null;
 }
 
-export async function verifyAuthenticatedUser(req: Request): Promise<AuthenticatedUser | null> {
+export async function verifyAuthenticatedUser(
+  req: Request,
+): Promise<AuthenticatedUser | null> {
   const token = getBearerToken(req);
   if (!token) {
     return null;

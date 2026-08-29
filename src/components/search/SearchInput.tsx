@@ -71,7 +71,11 @@ export function SearchInput({
             <span id={`${id}-clear-label`} className="visually-hidden">
               Clear search
             </span>
-            <Icon icon={XMarkIcon} className="SearchInput-clearIcon" aria-hidden="true" />
+            <Icon
+              icon={XMarkIcon}
+              className="SearchInput-clearIcon"
+              aria-hidden="true"
+            />
           </button>
         )}
       </div>

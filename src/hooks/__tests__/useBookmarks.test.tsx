@@ -78,7 +78,9 @@ describe("useBookmarks", () => {
   });
 
   it("respects initial params", async () => {
-    const { result } = renderHook(() => useBookmarks({ initialParams: { limit: 1 } }));
+    const { result } = renderHook(() =>
+      useBookmarks({ initialParams: { limit: 1 } }),
+    );
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -91,7 +93,10 @@ describe("useBookmarks", () => {
   it("handles fetch errors", async () => {
     server.use(
       http.get("/api/tools", () => {
-        return HttpResponse.json({ success: false, error: "Database error" }, { status: 500 });
+        return HttpResponse.json(
+          { success: false, error: "Database error" },
+          { status: 500 },
+        );
       }),
     );
 
@@ -147,7 +152,9 @@ describe("useBookmarks", () => {
       }),
     );
 
-    const { result } = renderHook(() => useBookmarks({ initialParams: { limit: 1 } }));
+    const { result } = renderHook(() =>
+      useBookmarks({ initialParams: { limit: 1 } }),
+    );
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);

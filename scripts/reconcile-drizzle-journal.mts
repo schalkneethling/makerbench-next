@@ -17,7 +17,10 @@ async function main() {
     throw new Error("SUPABASE_DATABASE_URL or DATABASE_URL is not configured");
   }
 
-  const migrationPath = join(process.cwd(), "migrations/postgres/0001_review_followups.sql");
+  const migrationPath = join(
+    process.cwd(),
+    "migrations/postgres/0001_review_followups.sql",
+  );
   const migrationSql = readFileSync(migrationPath, "utf8");
   const migrationHash = createHash("sha256").update(migrationSql).digest("hex");
   const migrationCreatedAt = 1778265600000;
@@ -38,7 +41,9 @@ async function main() {
     );
 
     if (existing.rows.length > 0) {
-      console.log("Migration 0001 is already recorded in drizzle.__drizzle_migrations");
+      console.log(
+        "Migration 0001 is already recorded in drizzle.__drizzle_migrations",
+      );
       return;
     }
 

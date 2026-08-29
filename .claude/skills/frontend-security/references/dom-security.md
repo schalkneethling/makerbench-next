@@ -64,7 +64,8 @@ element.style.backgroundColor = sanitizeColor(userInput);
 
 function sanitizeColor(input) {
   // Only allow safe color values
-  const colorRegex = /^#[0-9A-Fa-f]{6}$|^#[0-9A-Fa-f]{3}$|^rgb\(\d{1,3},\s*\d{1,3},\s*\d{1,3}\)$/;
+  const colorRegex =
+    /^#[0-9A-Fa-f]{6}$|^#[0-9A-Fa-f]{3}$|^rgb\(\d{1,3},\s*\d{1,3},\s*\d{1,3}\)$/;
   return colorRegex.test(input) ? input : "inherit";
 }
 ```

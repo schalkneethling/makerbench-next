@@ -27,7 +27,9 @@ const errorResponseSchema = v.object({
 });
 
 export type AuthUser = v.InferOutput<typeof authUserSchema>;
-export type AuthenticatedIdentity = v.InferOutput<typeof authenticatedIdentitySchema>;
+export type AuthenticatedIdentity = v.InferOutput<
+  typeof authenticatedIdentitySchema
+>;
 
 function throwApiError(json: unknown, status: number): never {
   // Parse API error bodies to preserve structured details from known failures.

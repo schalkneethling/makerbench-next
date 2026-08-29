@@ -70,7 +70,9 @@ describe("get-bookmarks", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockDb = createMockDb();
-    vi.mocked(getDb).mockReturnValue(mockDb as unknown as ReturnType<typeof getDb>);
+    vi.mocked(getDb).mockReturnValue(
+      mockDb as unknown as ReturnType<typeof getDb>,
+    );
     mockContext = createMockContext();
   });
 
@@ -179,7 +181,10 @@ describe("get-bookmarks", () => {
     it("limits public browse results to approved tools", async () => {
       mockDb.offset.mockResolvedValueOnce([]);
 
-      await getBookmarks(new Request("https://test.com/api/tools"), mockContext);
+      await getBookmarks(
+        new Request("https://test.com/api/tools"),
+        mockContext,
+      );
 
       const query = getPgQuery(mockDb.where.mock.calls[0]?.[0]);
       expect(query.sql).toContain('"tool_listings"."status" = $1');

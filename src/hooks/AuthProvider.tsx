@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useEffectEvent, useMemo, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import type { Session } from "@supabase/supabase-js";
 
 import { getAuthenticatedIdentity, type AuthenticatedIdentity } from "../api";
@@ -15,28 +22,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const refreshIdentityForSession = useCallback(async (nextSession: Session | null) => {
-    setSession(nextSession);
+  const refreshIdentityForSession = useCallback(
+    async (nextSession: Session | null) => {
+      setSession(nextSession);
 
-    if (!nextSession) {
-      setIdentity(null);
-      setError(null);
-      setIsLoading(false);
-      return;
-    }
+      if (!nextSession) {
+        setIdentity(null);
+        setError(null);
+        setIsLoading(false);
+        return;
+      }
 
-    try {
-      setIsLoading(true);
-      setError(null);
-      const nextIdentity = await getAuthenticatedIdentity(nextSession.access_token);
-      setIdentity(nextIdentity);
-    } catch (err) {
-      setIdentity(null);
-      setError(err instanceof Error ? err : new Error("Authentication failed"));
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      try {
+        setIsLoading(true);
+        setError(null);
+        const nextIdentity = await getAuthenticatedIdentity(
+          nextSession.access_token,
+        );
+        setIdentity(nextIdentity);
+      } catch (err) {
+        setIdentity(null);
+        setError(
+          err instanceof Error ? err : new Error("Authentication failed"),
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
 
   const refreshIdentity = useCallback(async () => {
     const {
@@ -54,7 +68,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refreshIdentityForSession]);
 
   const refreshIdentityEvent = useEffectEvent(refreshIdentity);
-  const refreshIdentityForSessionEvent = useEffectEvent(refreshIdentityForSession);
+  const refreshIdentityForSessionEvent = useEffectEvent(
+    refreshIdentityForSession,
+  );
 
   useEffect(() => {
     // This effect synchronizes React state with Supabase's external auth store.

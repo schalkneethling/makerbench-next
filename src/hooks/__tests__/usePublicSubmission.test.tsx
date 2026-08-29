@@ -190,7 +190,9 @@ describe("usePublicSubmission", () => {
     });
     await expect(olderSubmission).resolves.toBeNull();
 
-    expect(newerResponse?.submittedItemId).toBe("33333333-3333-4333-8333-333333333333");
+    expect(newerResponse?.submittedItemId).toBe(
+      "33333333-3333-4333-8333-333333333333",
+    );
     expect(result.current.response).toEqual(newerResponse);
     expect(result.current.isSubmitting).toBe(false);
     expect(result.current.error).toBeNull();

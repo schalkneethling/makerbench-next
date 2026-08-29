@@ -158,12 +158,12 @@ Package scripts:
 
 Initial deterministic Size Limit budgets, based on the current build:
 
-| Asset group | Current Brotli | Initial budget |
-|---|---:|---:|
-| Entry JavaScript | 129,857 bytes | 130 kB |
-| Entry CSS | 5,392 bytes | 7 kB |
-| All JavaScript | ~134 kB | 150 kB |
-| All CSS | ~6.1 kB | 8 kB |
+| Asset group      | Current Brotli | Initial budget |
+| ---------------- | -------------: | -------------: |
+| Entry JavaScript |  129,857 bytes |         130 kB |
+| Entry CSS        |    5,392 bytes |           7 kB |
+| All JavaScript   |        ~134 kB |         150 kB |
+| All CSS          |        ~6.1 kB |           8 kB |
 
 Enable Vite’s build manifest so entry and lazy chunks are identified by role rather than guessed solely from hashed filenames.
 
@@ -235,7 +235,7 @@ import {
 Tool configuration:
 
 ```html
-<masonry-grid-lanes min-column-width="288" gap="24">
+<masonry-grid-lanes min-column-width="288" gap="24"></masonry-grid-lanes>
 ```
 
 - Use DOM measurement because Tool cards contain images and variable rich markup.
@@ -282,11 +282,7 @@ Add shared Valibot schemas for:
 
 ```ts
 type PublicListingKind = "resource" | "article";
-type PublicListingSort =
-  | "newest"
-  | "oldest"
-  | "alpha-asc"
-  | "alpha-desc";
+type PublicListingSort = "newest" | "oldest" | "alpha-asc" | "alpha-desc";
 ```
 
 Validated query contract:
@@ -333,7 +329,7 @@ usePublicListings({
   query,
   tags,
   sort,
-})
+});
 ```
 
 It must:
@@ -380,7 +376,7 @@ Resource/Article Masonry:
   min-column-width="320"
   gap="24"
   text-metrics="pretext"
->
+></masonry-grid-lanes>
 ```
 
 - Calibrate Pretext typography/chrome variables against real Listing cards.
@@ -414,7 +410,7 @@ Pages:
 Extend moderation types:
 
 ```ts
-"tool" | "resource" | "article" | "stack" | "stack-item"
+"tool" | "resource" | "article" | "stack" | "stack-item";
 ```
 
 - Select `public_listings.content_kind` instead of hard-coding Resource.

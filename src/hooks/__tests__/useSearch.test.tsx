@@ -229,7 +229,10 @@ describe("useSearch", () => {
   it("handles search errors", async () => {
     server.use(
       http.get("/api/tools/search", () => {
-        return HttpResponse.json({ success: false, error: "Search failed" }, { status: 500 });
+        return HttpResponse.json(
+          { success: false, error: "Search failed" },
+          { status: 500 },
+        );
       }),
     );
 

@@ -5,7 +5,8 @@ import * as schema from "../../../src/db/schema";
 import { getEnv } from "./env";
 
 function createDbClient() {
-  const connectionString = getEnv("SUPABASE_DATABASE_URL") ?? getEnv("DATABASE_URL");
+  const connectionString =
+    getEnv("SUPABASE_DATABASE_URL") ?? getEnv("DATABASE_URL");
 
   if (!connectionString) {
     throw new Error("SUPABASE_DATABASE_URL or DATABASE_URL is not configured");

@@ -23,7 +23,8 @@ describe("uploadScreenshot", () => {
       // Simulate successful upload
       setTimeout(() => {
         callback(null, {
-          secure_url: "https://res.cloudinary.com/test/image/upload/v123/screenshot.png",
+          secure_url:
+            "https://res.cloudinary.com/test/image/upload/v123/screenshot.png",
           public_id: "screenshots/2024/12/test-id",
         });
       }, 0);
