@@ -1,11 +1,11 @@
 # example netlify.toml
 [build]
-command = "pnpm build"
+command = "pnpm build:production"
 functions = "netlify/functions"
 publish = "dist"
 
 [build.environment]
-NODE_VERSION = "24"
+NODE_VERSION = "24.20.0"
 
 [[redirects]]
 from = "/*"

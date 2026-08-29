@@ -8,7 +8,7 @@ test.describe("AboutPage", () => {
       - article:
         - heading "About MakerBench" [level=1]
         - heading "What MakerBench Is" [level=2]
-        - paragraph: MakerBench is a curated directory of tools and resources for makers, developers, and teams building products on the web. The goal is simple: make useful links easier to discover without turning the site into a noisy list of everything on the internet.
+        - paragraph: "MakerBench is a curated directory of tools and resources for makers, developers, and teams building products on the web. The goal is simple: make useful links easier to discover without turning the site into a noisy list of everything on the internet."
         - heading "How It Works" [level=2]
         - paragraph: Tools and resources can be submitted by the community and are reviewed before they appear in the catalog. Each approved listing includes the metadata we can reliably collect, relevant tags, and an image when available so visitors can quickly evaluate whether it is worth exploring.
         - heading "Contributing Resources" [level=2]
@@ -37,7 +37,10 @@ test.describe("AboutPage", () => {
 
   test("footer About link navigates to about page", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("contentinfo").getByRole("link", { name: "About" }).click();
+    await page
+      .getByRole("contentinfo")
+      .getByRole("link", { name: "About" })
+      .click();
     await expect(page).toHaveURL("/about");
     await expect(page.locator("h1")).toHaveText("About MakerBench");
   });
@@ -51,7 +54,9 @@ test.describe("AboutPage", () => {
   test("GitHub links open in new tab", async ({ page }) => {
     await page.goto("/about");
 
-    const githubLinks = page.getByRole("link", { name: /GitHub|our project repository/ });
+    const githubLinks = page.getByRole("link", {
+      name: /GitHub|our project repository/,
+    });
     const count = await githubLinks.count();
 
     for (let i = 0; i < count; i++) {

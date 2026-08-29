@@ -14,8 +14,8 @@ Related runbooks:
 
 ## Prerequisites
 
-- Node.js 24.x
-- pnpm 11.5.0, as pinned by `package.json`
+- Node.js 24.20.0, as pinned by `.nvmrc` and `package.json`
+- pnpm 11.10.0, as pinned by `package.json`
 - Netlify CLI (`pnpm add --global netlify-cli`)
 - A Supabase project and its Postgres/Auth configuration
 - Access to the repository's Varlock and 1Password setup
@@ -35,7 +35,10 @@ Use [`.env.schema`](../.env.schema) as the canonical list of required local
 variables managed through Varlock. Resolve its Varlock/1Password references
 using the repository's normal local environment workflow before starting
 Netlify Dev or running Drizzle commands. Do not commit resolved secrets or
-create a second checked-in environment file.
+create another checked-in environment file. The committed `.env.test` is the
+intentional exception: it contains inert validation-only values so tests and
+build checks are reproducible without 1Password. Never place real credentials
+in `.env.test`.
 
 The required names are:
 

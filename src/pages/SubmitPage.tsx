@@ -42,14 +42,16 @@ function getSubmissionFormSchema(requireName: boolean, requireGithubUsername: bo
   return v.pipe(
     publicSubmissionRequestSchema,
     v.forward(
-      v.check(
+      v.partialCheck(
+        [["submitterName"]],
         (input) => !requireName || Boolean(input.submitterName?.trim()),
         "Your name is required",
       ),
       ["submitterName"],
     ),
     v.forward(
-      v.check(
+      v.partialCheck(
+        [["submitterGithubUsername"]],
         (input) =>
           !requireGithubUsername || Boolean(input.submitterGithubUsername?.trim()),
         "GitHub username is required",

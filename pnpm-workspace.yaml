@@ -1,3 +1,6 @@
 allowBuilds:
   esbuild: true
   msw: true
+
+overrides:
+  "@valibot/to-json-schema": 1.4.0
