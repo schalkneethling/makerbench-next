@@ -88,6 +88,7 @@ export function findLoweredThresholds(
 function readThresholdsAtRevision(
   repositoryRoot: string,
   revision: string,
+  environment: NodeJS.ProcessEnv,
 ): CoverageThresholds | undefined {
   const matchingPath = execFileSync(
     "git",
@@ -95,6 +96,7 @@ function readThresholdsAtRevision(
     {
       cwd: repositoryRoot,
       encoding: "utf8",
+      env: environment,
       maxBuffer: MAX_COVERAGE_THRESHOLDS_BYTES,
       stdio: ["ignore", "pipe", "pipe"],
     },
@@ -110,6 +112,7 @@ function readThresholdsAtRevision(
     {
       cwd: repositoryRoot,
       encoding: "utf8",
+      env: environment,
       maxBuffer: MAX_COVERAGE_THRESHOLDS_BYTES,
       stdio: ["ignore", "pipe", "pipe"],
     },
@@ -138,6 +141,7 @@ function strongestThresholds(
 export function readBaseThresholds(
   repositoryRoot: string,
   baseRef = process.env.COVERAGE_BASE_REF,
+  environment: NodeJS.ProcessEnv = process.env,
 ): CoverageThresholds | undefined {
   if (baseRef === undefined) {
     const revisions = execFileSync(
@@ -146,6 +150,7 @@ export function readBaseThresholds(
       {
         cwd: repositoryRoot,
         encoding: "utf8",
+        env: environment,
         maxBuffer: 64 * 1024,
         stdio: ["ignore", "pipe", "pipe"],
       },
@@ -156,7 +161,11 @@ export function readBaseThresholds(
 
     return strongestThresholds(
       revisions.flatMap((revision) => {
-        const thresholds = readThresholdsAtRevision(repositoryRoot, revision);
+        const thresholds = readThresholdsAtRevision(
+          repositoryRoot,
+          revision,
+          environment,
+        );
         return thresholds === undefined ? [] : [thresholds];
       }),
     );
@@ -168,6 +177,7 @@ export function readBaseThresholds(
     {
       cwd: repositoryRoot,
       encoding: "utf8",
+      env: environment,
       maxBuffer: MAX_COVERAGE_THRESHOLDS_BYTES,
       stdio: ["ignore", "pipe", "pipe"],
     },
@@ -178,6 +188,7 @@ export function readBaseThresholds(
     {
       cwd: repositoryRoot,
       encoding: "utf8",
+      env: environment,
       maxBuffer: MAX_COVERAGE_THRESHOLDS_BYTES,
       stdio: ["ignore", "pipe", "pipe"],
     },
@@ -190,6 +201,7 @@ export function readBaseThresholds(
         ["merge-base", "--is-ancestor", baseCommit, headCommit],
         {
           cwd: repositoryRoot,
+          env: environment,
           stdio: "ignore",
         },
       );
@@ -199,7 +211,7 @@ export function readBaseThresholds(
       );
     }
   }
-  return readThresholdsAtRevision(repositoryRoot, baseRef);
+  return readThresholdsAtRevision(repositoryRoot, baseRef, environment);
 }
 
 /** Prevents a pull request from lowering an existing coverage floor. */

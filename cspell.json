@@ -22,6 +22,7 @@
     "pooler",
     "Prettier",
     "Pyflakes",
+    "rerere",
     "Supabase",
     "Turso",
     "TypeScript",

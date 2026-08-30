@@ -1,7 +1,27 @@
-import { describe, expect, it } from "vitest";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-import { mergeSanitizedHars, parseCaptureOptions } from "../capture.ts";
+import { strFromU8, unzipSync } from "fflate";
+import { afterEach, describe, expect, it } from "vitest";
+
+import {
+  mergeSanitizedHars,
+  parseCaptureOptions,
+  writeCaptureFailureEvidence,
+  writeSanitizedHarArchive,
+} from "../capture.ts";
 import { sanitizeHar } from "../har.ts";
+
+const temporaryDirectories: string[] = [];
+
+afterEach(async () => {
+  await Promise.all(
+    temporaryDirectories
+      .splice(0)
+      .map((directory) => rm(directory, { recursive: true, force: true })),
+  );
+});
 
 function createRawHar(url: string) {
   return {
@@ -14,7 +34,12 @@ function createRawHar(url: string) {
           request: {
             method: "GET",
             url,
-            headers: [],
+            headers: [
+              {
+                name: "Authorization",
+                value: "Bearer private-token",
+              },
+            ],
             headersSize: 100,
             bodySize: 0,
           },
@@ -71,6 +96,15 @@ describe("parseCaptureOptions", () => {
     expect(() => parseCaptureOptions(["--baseline=2026-02-30"])).toThrow(
       "real calendar date",
     );
+    expect(parseCaptureOptions(["--artifact=ci_42"])).toMatchObject({
+      artifactId: "ci_42",
+    });
+    expect(() => parseCaptureOptions(["--artifact=../private"])).toThrow(
+      "artifact id",
+    );
+    expect(() =>
+      parseCaptureOptions(["--baseline=2026-07-26", "--artifact=ci"]),
+    ).toThrow("cannot combine");
   });
 });
 
@@ -89,5 +123,46 @@ describe("mergeSanitizedHars", () => {
 
   it("rejects an empty device capture", () => {
     expect(() => mergeSanitizedHars([])).toThrow("At least one sanitized HAR");
+  });
+});
+
+describe("failure checkpoints", () => {
+  it("keeps a sanitized HAR and redacted failure evidence", async () => {
+    const directory = await mkdtemp(
+      join(tmpdir(), "makerbench-capture-failure-"),
+    );
+    temporaryDirectories.push(directory);
+
+    const rawHar = createRawHar(
+      "https://user:password@example.com/?token=private-token&q=css#private",
+    );
+
+    const harPath = join(directory, "checkpoints", "desktop-1.har.zip");
+    await writeSanitizedHarArchive(harPath, rawHar);
+    const archive = unzipSync(await readFile(harPath));
+    const serializedHar = strFromU8(
+      archive["desktop-1.har"] ?? new Uint8Array(),
+    );
+
+    const failurePath = join(directory, "failure.json");
+    await writeCaptureFailureEvidence(failurePath, {
+      target: new URL("https://example.com"),
+      capturedAt: "2026-08-30T10:00:00.000Z",
+      runCount: 5,
+      completedRunCount: 0,
+      stage: "scenario",
+      device: "desktop",
+      run: 1,
+      error: new Error(
+        "redirected to https://example.com/?token=private-token",
+      ),
+    });
+    const serializedFailure = await readFile(failurePath, "utf8");
+
+    expect(serializedHar).toContain("https://example.com/?q=css");
+    expect(serializedHar).not.toMatch(/private|password|authorization|token/i);
+    expect(serializedFailure).toContain('"status": "failed"');
+    expect(serializedFailure).toContain('"completedRunCount": 0');
+    expect(serializedFailure).not.toMatch(/private-token|redirected to/i);
   });
 });

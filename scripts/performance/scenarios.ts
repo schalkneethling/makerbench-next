@@ -34,6 +34,8 @@ export async function runProductionScenarios(
   device: PerformanceDevice,
   run: number,
 ): Promise<PerformanceRun[]> {
+  page.setDefaultTimeout(RESPONSE_TIMEOUT_MS);
+  page.setDefaultNavigationTimeout(RESPONSE_TIMEOUT_MS);
   const results: PerformanceRun[] = [];
 
   results.push(
@@ -438,7 +440,10 @@ function supportsEntryType(
 /** Uses a bounded retry policy for production navigation availability. */
 async function navigateWithRetries(page: Page, url: string): Promise<void> {
   await retryNavigation(async () => {
-    const response = await page.goto(url, { waitUntil: "load" });
+    const response = await page.goto(url, {
+      waitUntil: "load",
+      timeout: RESPONSE_TIMEOUT_MS,
+    });
     await assertSuccessfulNavigation(response);
   });
 }
@@ -446,7 +451,10 @@ async function navigateWithRetries(page: Page, url: string): Promise<void> {
 /** Uses the same bounded retry policy for warm reloads. */
 async function reloadWithRetries(page: Page): Promise<void> {
   await retryNavigation(async () => {
-    const response = await page.reload({ waitUntil: "load" });
+    const response = await page.reload({
+      waitUntil: "load",
+      timeout: RESPONSE_TIMEOUT_MS,
+    });
     await assertSuccessfulNavigation(response);
   });
 }

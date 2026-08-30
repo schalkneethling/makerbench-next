@@ -1,0 +1,46 @@
+name: Production Performance
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-performance-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  production:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with: { node-version: 24.20.0 }
+      - run: corepack enable && corepack prepare pnpm@11.10.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Capture five fresh runs per device
+        timeout-minutes: 35
+        run: pnpm performance:capture -- --runs=5 --artifact=ci
+      - name: Enforce production performance budgets
+        timeout-minutes: 2
+        run: >-
+          pnpm performance:production-budget --
+          --summary=performance/artifacts/ci/summary.json
+          --evidence=performance/artifacts/ci/budget-result.json
+      - name: Upload sanitized production evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: production-performance-${{ github.run_id }}-${{ github.run_attempt }}
+          path: performance/artifacts/ci/
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,4 @@
+interface:
+  display_name: MakerBench PR Gate
+  short_description: Prepare deterministic PR gate evidence
+  default_prompt: Review this MakerBench PR for stack safety, required checks, and concise validation evidence.

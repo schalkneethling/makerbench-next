@@ -1,0 +1,232 @@
+{
+  "schemaVersion": 1,
+  "requiredRunsPerScenario": 5,
+  "requiredScenarios": [
+    { "device": "desktop", "scenario": "cold-tools-load" },
+    { "device": "desktop", "scenario": "warm-tools-reload" },
+    { "device": "desktop", "scenario": "tool-text-search" },
+    { "device": "desktop", "scenario": "navigate-to-resources" },
+    { "device": "desktop", "scenario": "resource-text-search" },
+    { "device": "desktop", "scenario": "resource-sort-change" },
+    { "device": "desktop", "scenario": "navigate-to-submit" },
+    { "device": "desktop", "scenario": "submission-type-switch" },
+    { "device": "mobile", "scenario": "cold-tools-load" },
+    { "device": "mobile", "scenario": "warm-tools-reload" },
+    { "device": "mobile", "scenario": "tool-text-search" },
+    { "device": "mobile", "scenario": "navigate-to-resources" },
+    { "device": "mobile", "scenario": "resource-text-search" },
+    { "device": "mobile", "scenario": "resource-sort-change" },
+    { "device": "mobile", "scenario": "navigate-to-submit" },
+    { "device": "mobile", "scenario": "submission-type-switch" }
+  ],
+  "budgets": [
+    {
+      "source": "browser",
+      "device": "desktop",
+      "scenario": "cold-tools-load",
+      "metric": "largestContentfulPaintMs",
+      "statistic": "p75",
+      "maximum": 4000
+    },
+    {
+      "source": "browser",
+      "device": "desktop",
+      "scenario": "cold-tools-load",
+      "metric": "cumulativeLayoutShift",
+      "statistic": "p75",
+      "maximum": 0.05
+    },
+    {
+      "source": "browser",
+      "device": "desktop",
+      "scenario": "cold-tools-load",
+      "metric": "scenarioDurationMs",
+      "statistic": "p75",
+      "maximum": 4500
+    },
+    {
+      "source": "network",
+      "device": "desktop",
+      "scenario": "cold-tools-load",
+      "metric": "transferBytes",
+      "statistic": "p75",
+      "maximum": 175000
+    },
+    {
+      "source": "browser",
+      "device": "desktop",
+      "scenario": "warm-tools-reload",
+      "metric": "largestContentfulPaintMs",
+      "statistic": "p75",
+      "maximum": 1800
+    },
+    {
+      "source": "browser",
+      "device": "desktop",
+      "scenario": "warm-tools-reload",
+      "metric": "scenarioDurationMs",
+      "statistic": "p75",
+      "maximum": 1800
+    },
+    {
+      "source": "network",
+      "device": "desktop",
+      "scenario": "warm-tools-reload",
+      "metric": "transferBytes",
+      "statistic": "p75",
+      "maximum": 10000
+    },
+    {
+      "source": "browser",
+      "device": "desktop",
+      "scenario": "tool-text-search",
+      "metric": "scenarioDurationMs",
+      "statistic": "p75",
+      "maximum": 1800
+    },
+    {
+      "source": "browser",
+      "device": "desktop",
+      "scenario": "navigate-to-resources",
+      "metric": "scenarioDurationMs",
+      "statistic": "p75",
+      "maximum": 1200
+    },
+    {
+      "source": "browser",
+      "device": "desktop",
+      "scenario": "resource-text-search",
+      "metric": "scenarioDurationMs",
+      "statistic": "p75",
+      "maximum": 1600
+    },
+    {
+      "source": "browser",
+      "device": "desktop",
+      "scenario": "resource-sort-change",
+      "metric": "scenarioDurationMs",
+      "statistic": "p75",
+      "maximum": 100
+    },
+    {
+      "source": "browser",
+      "device": "desktop",
+      "scenario": "navigate-to-submit",
+      "metric": "scenarioDurationMs",
+      "statistic": "p75",
+      "maximum": 120
+    },
+    {
+      "source": "browser",
+      "device": "desktop",
+      "scenario": "submission-type-switch",
+      "metric": "scenarioDurationMs",
+      "statistic": "p75",
+      "maximum": 120
+    },
+    {
+      "source": "browser",
+      "device": "mobile",
+      "scenario": "cold-tools-load",
+      "metric": "largestContentfulPaintMs",
+      "statistic": "p75",
+      "maximum": 3000
+    },
+    {
+      "source": "browser",
+      "device": "mobile",
+      "scenario": "cold-tools-load",
+      "metric": "cumulativeLayoutShift",
+      "statistic": "p75",
+      "maximum": 0.05
+    },
+    {
+      "source": "browser",
+      "device": "mobile",
+      "scenario": "cold-tools-load",
+      "metric": "scenarioDurationMs",
+      "statistic": "p75",
+      "maximum": 4000
+    },
+    {
+      "source": "network",
+      "device": "mobile",
+      "scenario": "cold-tools-load",
+      "metric": "transferBytes",
+      "statistic": "p75",
+      "maximum": 175000
+    },
+    {
+      "source": "browser",
+      "device": "mobile",
+      "scenario": "warm-tools-reload",
+      "metric": "largestContentfulPaintMs",
+      "statistic": "p75",
+      "maximum": 1200
+    },
+    {
+      "source": "browser",
+      "device": "mobile",
+      "scenario": "warm-tools-reload",
+      "metric": "scenarioDurationMs",
+      "statistic": "p75",
+      "maximum": 1800
+    },
+    {
+      "source": "network",
+      "device": "mobile",
+      "scenario": "warm-tools-reload",
+      "metric": "transferBytes",
+      "statistic": "p75",
+      "maximum": 10000
+    },
+    {
+      "source": "browser",
+      "device": "mobile",
+      "scenario": "tool-text-search",
+      "metric": "scenarioDurationMs",
+      "statistic": "p75",
+      "maximum": 1800
+    },
+    {
+      "source": "browser",
+      "device": "mobile",
+      "scenario": "navigate-to-resources",
+      "metric": "scenarioDurationMs",
+      "statistic": "p75",
+      "maximum": 1200
+    },
+    {
+      "source": "browser",
+      "device": "mobile",
+      "scenario": "resource-text-search",
+      "metric": "scenarioDurationMs",
+      "statistic": "p75",
+      "maximum": 1600
+    },
+    {
+      "source": "browser",
+      "device": "mobile",
+      "scenario": "resource-sort-change",
+      "metric": "scenarioDurationMs",
+      "statistic": "p75",
+      "maximum": 100
+    },
+    {
+      "source": "browser",
+      "device": "mobile",
+      "scenario": "navigate-to-submit",
+      "metric": "scenarioDurationMs",
+      "statistic": "p75",
+      "maximum": 120
+    },
+    {
+      "source": "browser",
+      "device": "mobile",
+      "scenario": "submission-type-switch",
+      "metric": "scenarioDurationMs",
+      "statistic": "p75",
+      "maximum": 120
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: MakerBench Public Catalog
+  short_description: Route public catalog product changes
+  default_prompt: Implement this MakerBench public catalog change using the maintained contracts and migration ordering.

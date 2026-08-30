@@ -67,6 +67,20 @@ evidence. Non-success API responses are logged and retained in the HAR so a
 baseline cannot erase pre-existing behavior; capture continues only when the
 UI scenario can still complete.
 
+GitHub uses a deterministic artifact directory and the full five-run contract:
+
+```bash
+pnpm performance:capture -- --runs=5 --artifact=ci
+pnpm performance:production-budget -- \
+  --summary=performance/artifacts/ci/summary.json \
+  --evidence=performance/artifacts/ci/budget-result.json
+```
+
+The production workflow has no production credentials. It fails when any
+required scenario has fewer than five runs, a required metric is missing, a
+budget is exceeded, or production remains unavailable after the bounded retry
+policy.
+
 ## Evidence contract
 
 The baseline directory contains:
@@ -99,6 +113,15 @@ strict Valibot sanitizer:
 Subsequent captures are stored under `performance/artifacts/` and are ignored
 by Git.
 
+Every capture creates `capture.json` before Chromium launches. Each completed
+browser context is immediately sanitized and written under `checkpoints/`; raw
+HARs remain only in a temporary directory. Successful captures add the merged
+device HARs, summaries, and `success.json`. Failed captures retain completed
+sanitized checkpoints and add `failure.json` containing only a fixed-vocabulary
+category and location—browser error messages are never copied into artifacts.
+GitHub uploads the whole deterministic capture directory even after a failed
+capture or budget check.
+
 ## Interpretation
 
 `summary.json` is the machine-readable source. `summary.md` is a generated
@@ -108,8 +131,11 @@ sizes come from browser Resource Timing; cross-origin resources without
 appropriate timing exposure can report zero and remain visible in the
 sanitized HAR.
 
-Performance budgets and pull-request enforcement are introduced by the next
-delivery-plan issue after this baseline merges.
+Runtime budgets live in `performance/budgets.json`. They use absolute p75
+ceilings derived from the initial production measurements and require the eight
+non-optional scenarios for both desktop and mobile. The Tool tag-selection
+scenario remains evidence when tags are available, but is not a required budget
+input because the production catalog may legitimately expose no tags.
 
 The initial baseline records the known production Tool tag-filter HTTP 500
 tracked by [issue #206](https://github.com/schalkneethling/makerbench-next/issues/206).
