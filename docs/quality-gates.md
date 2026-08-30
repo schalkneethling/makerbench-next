@@ -9,9 +9,9 @@ entries, or any rerere configuration other than `enabled=false`,
 build, Size Limit, Storybook, and Chromium. GitHub runs Quality, Storybook,
 Chromium E2E, Dependency Review, and Production Performance separately so every
 required result is visible to branch protection. Their required contexts are
-`Quality / quality`, `Storybook / storybook`, `Chromium E2E / chromium`,
-`Dependency Review / dependency-review`, and
-`Production Performance / production`.
+the job names GitHub reports: `quality`, `storybook`, `chromium`,
+`dependency-review`, and `production`. The workflow names remain the
+human-readable labels shown in the Actions UI.
 
 All workflow actions are immutable SHA pins. Every Node workflow enables
 Corepack, uses Node 24.20.0, and installs with
