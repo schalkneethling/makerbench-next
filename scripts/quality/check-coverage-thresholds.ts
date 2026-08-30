@@ -140,10 +140,12 @@ function strongestThresholds(
 /** Reads an explicit base or the strongest floor reachable from the current stack. */
 export function readBaseThresholds(
   repositoryRoot: string,
-  baseRef = process.env.COVERAGE_BASE_REF,
+  baseRef?: string,
   environment: NodeJS.ProcessEnv = process.env,
 ): CoverageThresholds | undefined {
-  if (baseRef === undefined) {
+  const selectedBaseRef = baseRef ?? environment.COVERAGE_BASE_REF;
+
+  if (selectedBaseRef === undefined) {
     const revisions = execFileSync(
       "git",
       ["log", "--format=%H", "HEAD", "--", "coverage-thresholds.json"],
@@ -173,7 +175,7 @@ export function readBaseThresholds(
 
   const baseCommit = execFileSync(
     "git",
-    ["rev-parse", "--verify", `${baseRef}^{commit}`],
+    ["rev-parse", "--verify", `${selectedBaseRef}^{commit}`],
     {
       cwd: repositoryRoot,
       encoding: "utf8",
@@ -207,11 +209,11 @@ export function readBaseThresholds(
       );
     } catch {
       throw new Error(
-        `Coverage base ref ${baseRef} is stale because it is not an ancestor of HEAD.`,
+        `Coverage base ref ${selectedBaseRef} is stale because it is not an ancestor of HEAD.`,
       );
     }
   }
-  return readThresholdsAtRevision(repositoryRoot, baseRef, environment);
+  return readThresholdsAtRevision(repositoryRoot, selectedBaseRef, environment);
 }
 
 /** Prevents a pull request from lowering an existing coverage floor. */

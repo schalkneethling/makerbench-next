@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   findLoweredThresholds,
@@ -20,6 +20,7 @@ const isolatedGitEnvironment = createIsolatedGitEnvironment({
 });
 
 afterEach(() => {
+  vi.unstubAllEnvs();
   for (const directory of temporaryDirectories.splice(0)) {
     rmSync(directory, { recursive: true, force: true });
   }
@@ -92,7 +93,10 @@ describe("coverage threshold gate", () => {
   });
 
   it("uses the strongest committed stack floor when no explicit base is selected", () => {
+    vi.stubEnv("COVERAGE_BASE_REF", "ci/coverage-base");
     const directory = createRepository();
+    const environment = { ...isolatedGitEnvironment };
+    delete environment.COVERAGE_BASE_REF;
     runGit(directory, ["update-ref", "refs/remotes/origin/main", "HEAD"]);
     const floors =
       '{"branches": 60, "functions": 60, "lines": 60, "statements": 60}';
@@ -106,11 +110,7 @@ describe("coverage threshold gate", () => {
     runGit(directory, ["add", "coverage-thresholds.json"]);
     runGit(directory, ["commit", "-qm", "attempt to lower coverage floors"]);
 
-    const baseline = readBaseThresholds(
-      directory,
-      isolatedGitEnvironment.COVERAGE_BASE_REF,
-      isolatedGitEnvironment,
-    );
+    const baseline = readBaseThresholds(directory, undefined, environment);
     const candidate = readCoverageThresholdFile(
       join(directory, "coverage-thresholds.json"),
     );
