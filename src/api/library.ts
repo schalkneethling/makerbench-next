@@ -43,7 +43,6 @@ const errorResponseSchema = v.object({
   details: v.optional(v.record(v.string(), v.array(v.string()))),
 });
 
-export type LibraryTag = v.InferOutput<typeof libraryTagSchema>;
 export type LibraryResource = v.InferOutput<typeof libraryResourceSchema>;
 export type LibraryResponse = v.InferOutput<
   typeof libraryResponseSchema

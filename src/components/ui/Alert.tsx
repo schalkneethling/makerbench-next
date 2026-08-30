@@ -16,7 +16,7 @@ import { Button } from "./Button";
 import { Icon } from "./Icon";
 import "./Alert.css";
 
-export type AlertVariant = "success" | "error" | "warning" | "info";
+type AlertVariant = "success" | "error" | "warning" | "info";
 
 export interface AlertProps {
   variant: AlertVariant;

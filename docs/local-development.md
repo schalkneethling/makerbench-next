@@ -138,12 +138,34 @@ pnpm check:pr
 All check commands are non-mutating. Use `pnpm format` only when you explicitly
 want Prettier to rewrite files.
 
-| Command           | Composition                                                                   |
-| ----------------- | ----------------------------------------------------------------------------- |
-| `pnpm check:fast` | Formatting, ESLint, Stylelint, configured TypeScript projects, and unit tests |
-| `pnpm check:pr`   | Fast checks, production-mode build, Storybook tests, and Chromium E2E         |
-| `pnpm check:ci`   | The complete PR gate; CI extends this command as deterministic checks grow    |
-| `pnpm quality`    | Fast checks plus the production-mode build; retained as a non-mutating alias  |
+| Command           | Composition                                                                                                                 |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm check:fast` | Formatting; ESLint; Stylelint; five TypeScript configs; unit tests; architecture, unused-code, spelling, and Actions checks |
+| `pnpm check:pr`   | Fast checks, coverage and its ratchet, production-mode build, bundle budgets, Storybook tests, and Chromium E2E             |
+| `pnpm check:ci`   | The complete PR gate; CI extends this command with environment-specific integration jobs                                    |
+| `pnpm quality`    | Fast checks plus the production-mode build; retained as a non-mutating alias                                                |
+
+### Deterministic analyzer scope
+
+| Analyzer           | Maintained scope and deliberate boundaries                                                                                                                                  |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ESLint             | Repository JavaScript and TypeScript with zero warnings; generated MSW worker output is excluded.                                                                           |
+| Stylelint          | All maintained CSS, using the repository naming and property-order rules.                                                                                                   |
+| TypeScript         | Application, root/tooling configs, Storybook/E2E, Netlify Functions, and repository scripts.                                                                                |
+| dependency-cruiser | `src`, `netlify/functions`, and `scripts`; rejects cycles, unresolved imports, production-to-test imports, client/server UI crossings, and runtime use of dev dependencies. |
+| Knip               | Vite, Storybook, Netlify Function, config, and script entrypoints; only the declarative Varlock plugin is an explicit dependency exception.                                 |
+| CSpell             | Maintained documentation plus user-facing component, page, and CSS copy; tests, stories, generated data, and dependency files are excluded.                                 |
+| actionlint         | A checksum-pinned binary validates committed valid/invalid fixtures and every YAML file below `.github/workflows` when present; ShellCheck and Pyflakes are disabled.       |
+| Vitest coverage    | Unit and component projects across `src`, Functions, and scripts. Initial measured floors are 62.4% statements, 61.3% branches, 61.4% functions, and 62.6% lines.           |
+| Size Limit         | Brotli-compressed built assets: entry JS 132 kB, entry CSS 7 kB, all JS 150 kB, and all CSS 8 kB.                                                                           |
+
+`coverage-thresholds.json` is checked against `COVERAGE_BASE_REF` when set;
+otherwise it is compared with the strongest floor committed anywhere in the
+current stack ancestry. Floors may only stay equal or increase. Fetch an
+explicit selected base before running `pnpm check:coverage-floor` in a shallow
+or offline checkout. The 132 kB entry-JavaScript limit is the rounded initial
+ceiling for the measured 131.43 kB baseline; it is not an increase from an
+earlier committed budget. Future improvements should ratchet it downward.
 
 The Playwright command automatically starts the Vite server configured in
 `playwright.config.ts`; a separate `netlify dev` process is not required for the

@@ -22,7 +22,6 @@
     "src/types",
     "src/vite-env.d.ts",
     "src/db/schema.ts",
-    "src/db/errors.ts",
     "src/lib"
   ]
 }

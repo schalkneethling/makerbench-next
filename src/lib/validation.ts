@@ -71,8 +71,8 @@ const optionalGithubUsernameSchema = v.optional(
   ]),
 );
 
-export const publicSubmissionTypeSchema = v.picklist(["tool", "resource"]);
-export const publicSubmissionStatusSchema = v.picklist([
+const publicSubmissionTypeSchema = v.picklist(["tool", "resource"]);
+const publicSubmissionStatusSchema = v.picklist([
   "pending",
   "approved",
   "rejected",
@@ -87,7 +87,7 @@ export const publicSubmissionRequestSchema = v.strictObject({
   submitterGithubUrl: optionalGithubProfileUrlSchema,
 });
 
-export const publicSubmissionResponseDataSchema = v.object({
+const publicSubmissionResponseDataSchema = v.object({
   submittedItemId: v.pipe(v.string(), v.uuid()),
   type: publicSubmissionTypeSchema,
   status: publicSubmissionStatusSchema,
@@ -105,26 +105,7 @@ export const apiErrorResponseSchema = v.object({
   details: v.optional(v.record(v.string(), v.array(v.string()))),
 });
 
-export const tagSchema = v.object({
-  id: v.pipe(v.string(), v.uuid()),
-  name: v.pipe(
-    v.string(),
-    v.minLength(1, "Tag name is required"),
-    v.maxLength(50, "Tag name must be 50 characters or less"),
-  ),
-  description: v.optional(v.string()),
-});
-
-export const submitterSchema = v.object({
-  name: v.pipe(
-    v.string(),
-    v.minLength(1, "Name is required"),
-    v.maxLength(100, "Name must be 100 characters or less"),
-  ),
-  githubUrl: githubProfileUrlSchema,
-});
-
-export const toolSubmissionSchema = v.object({
+const toolSubmissionSchema = v.object({
   url: urlSchema,
   githubUrl: optionalGithubProfileUrlSchema,
   tags: v.pipe(
@@ -132,14 +113,6 @@ export const toolSubmissionSchema = v.object({
     v.minLength(1, "At least one tag is required"),
   ),
   submitterName: optionalSubmitterNameSchema,
-  submitterGithubUrl: optionalGithubProfileUrlSchema,
-});
-
-export const bookmarkRequestSchema = v.object({
-  url: resourceUrlSchema,
-  tags: resourceTagsSchema,
-  submitterName: optionalSubmitterNameSchema,
-  submitterGithubUsername: optionalGithubUsernameSchema,
   submitterGithubUrl: optionalGithubProfileUrlSchema,
 });
 
@@ -178,58 +151,9 @@ export const libraryInspectionResponseSchema = v.object({
   }),
 });
 
-export const toolMetadataSchema = v.object({
-  title: v.optional(v.string()),
-  description: v.optional(v.string()),
-  imageUrl: v.optional(v.pipe(v.string(), v.url())),
-  screenshotUrl: v.optional(v.pipe(v.string(), v.url())),
-  extractedAt: v.pipe(v.string(), v.isoTimestamp()),
-});
-
-export const toolSchema = v.object({
-  id: v.pipe(v.string(), v.uuid()),
-  url: urlSchema,
-  title: v.string(),
-  description: v.string(),
-  imageUrl: v.optional(v.pipe(v.string(), v.url())),
-  githubUrl: v.optional(v.pipe(v.string(), v.url())),
-  tags: v.array(tagSchema),
-  submitter: v.optional(submitterSchema),
-  status: v.picklist(["pending", "approved", "rejected"]),
-  createdAt: v.pipe(v.string(), v.isoTimestamp()),
-  approvedAt: v.optional(v.pipe(v.string(), v.isoTimestamp())),
-});
-
-export const searchRequestSchema = v.object({
-  query: v.optional(v.string()),
-  tags: v.optional(v.array(v.string())),
-  limit: v.optional(
-    v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(100)),
-  ),
-  offset: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
-});
-
-export const submitToolResponseSchema = v.object({
-  success: v.boolean(),
-  message: v.string(),
-  toolId: v.optional(v.pipe(v.string(), v.uuid())),
-});
-
-export const getToolsResponseSchema = v.object({
-  tools: v.array(toolSchema),
-  total: v.pipe(v.number(), v.integer(), v.minValue(0)),
-  hasMore: v.boolean(),
-});
-
-export type Tag = v.InferOutput<typeof tagSchema>;
-export type Submitter = v.InferOutput<typeof submitterSchema>;
-export type ToolSubmissionData = v.InferOutput<typeof toolSubmissionSchema>;
-export type BookmarkRequest = v.InferOutput<typeof bookmarkRequestSchema>;
+export type BookmarkRequest = Omit<PublicSubmissionRequest, "type">;
 export type PersonalResourceRequest = v.InferOutput<
   typeof personalResourceRequestSchema
->;
-export type LibraryInspectionRequest = v.InferOutput<
-  typeof libraryInspectionRequestSchema
 >;
 export type LibraryInspectionResponse = v.InferOutput<
   typeof libraryInspectionResponseSchema
@@ -237,28 +161,15 @@ export type LibraryInspectionResponse = v.InferOutput<
 export type PublicSubmissionType = v.InferOutput<
   typeof publicSubmissionTypeSchema
 >;
-export type PublicSubmissionStatus = v.InferOutput<
-  typeof publicSubmissionStatusSchema
->;
 export type PublicSubmissionRequest = v.InferOutput<
   typeof publicSubmissionRequestSchema
 >;
 export type PublicSubmissionResponseData = v.InferOutput<
   typeof publicSubmissionResponseDataSchema
 >;
-export type ApiErrorResponse = v.InferOutput<typeof apiErrorResponseSchema>;
-export type ToolMetadata = v.InferOutput<typeof toolMetadataSchema>;
-export type Tool = v.InferOutput<typeof toolSchema>;
-export type SearchRequest = v.InferOutput<typeof searchRequestSchema>;
-export type SubmitToolResponse = v.InferOutput<typeof submitToolResponseSchema>;
-export type GetToolsResponse = v.InferOutput<typeof getToolsResponseSchema>;
 
 export const validateToolSubmission = (data: unknown) => {
   return v.safeParse(toolSubmissionSchema, data);
-};
-
-export const validateBookmarkRequest = (data: unknown) => {
-  return v.safeParse(bookmarkRequestSchema, data);
 };
 
 export const validatePersonalResourceRequest = (data: unknown) => {
@@ -275,14 +186,6 @@ export const validatePublicSubmissionRequest = (data: unknown) => {
 
 export const validatePublicSubmissionResponse = (data: unknown) => {
   return v.safeParse(publicSubmissionResponseSchema, data);
-};
-
-export const validateSearchRequest = (data: unknown) => {
-  return v.safeParse(searchRequestSchema, data);
-};
-
-export const validateToolMetadata = (data: unknown) => {
-  return v.safeParse(toolMetadataSchema, data);
 };
 
 export const validateUrl = (url: string) => {

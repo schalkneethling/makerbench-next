@@ -1,0 +1,15 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
+  "entry": ["scripts/**/*.{ts,mts}"],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "netlify/functions/**/*.{ts,mts}",
+    "scripts/**/*.{ts,mts}",
+    "*.{ts,mts,js}",
+    ".storybook/**/*.{ts,tsx,mdx}",
+  ],
+  "ignoreDependencies": [
+    // Loaded declaratively by Varlock from .env.schema at runtime.
+    "@varlock/1password-plugin",
+  ],
+}

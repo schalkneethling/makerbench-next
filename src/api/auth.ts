@@ -26,7 +26,6 @@ const errorResponseSchema = v.object({
   details: v.optional(v.record(v.string(), v.array(v.string()))),
 });
 
-export type AuthUser = v.InferOutput<typeof authUserSchema>;
 export type AuthenticatedIdentity = v.InferOutput<
   typeof authenticatedIdentitySchema
 >;

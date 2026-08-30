@@ -69,18 +69,12 @@ const tagsResponseSchema = v.object({
 // TODO(#61): These bookmark* schemas are legacy compatibility exports for the
 // tools API response envelope. Rename bookmarkSchema/Bookmark to Tool* once the
 // client no longer needs the historical "bookmarks" response key.
-export type BookmarkTag = v.InferOutput<typeof bookmarkTagSchema>;
 export type Tag = v.InferOutput<typeof tagSchema>;
 export type PaginationInfo = v.InferOutput<typeof paginationSchema>;
 export type Bookmark = v.InferOutput<typeof bookmarkSchema>;
 export type BookmarksResponse = v.InferOutput<typeof bookmarksDataSchema>;
 export type TagsResponse = v.InferOutput<typeof tagsDataSchema>;
 export type SubmitBookmarkResponse = PublicSubmissionResponseData;
-export type ApiError = v.InferOutput<typeof apiErrorResponseSchema>;
-
-export type Tool = Bookmark;
-export type ToolsResponse = BookmarksResponse;
-export type SubmitToolResponse = SubmitBookmarkResponse;
 
 export interface GetBookmarksParams {
   limit?: number;
@@ -280,8 +274,3 @@ export async function submitBookmark(
     throw error;
   }
 }
-
-export const getTools = getBookmarks;
-export const searchTools = searchBookmarks;
-export const getToolTags = getTags;
-export const submitTool = submitBookmark;
