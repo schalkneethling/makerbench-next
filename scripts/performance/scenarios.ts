@@ -37,15 +37,21 @@ export async function runProductionScenarios(
   page.setDefaultTimeout(RESPONSE_TIMEOUT_MS);
   page.setDefaultNavigationTimeout(RESPONSE_TIMEOUT_MS);
   const results: PerformanceRun[] = [];
+  const targetOrigin = target.origin;
 
   results.push(
     await runNavigationScenario(
       page,
+      targetOrigin,
       device,
       run,
       "cold-tools-load",
       async () => {
-        await navigateWithRetries(page, new URL("/", target).toString());
+        await navigateWithRetries(
+          page,
+          new URL("/", target).toString(),
+          targetOrigin,
+        );
         await waitForCollection(page, ".ToolGrid", ".ToolCardSkeleton");
       },
     ),
@@ -54,11 +60,12 @@ export async function runProductionScenarios(
   results.push(
     await runNavigationScenario(
       page,
+      targetOrigin,
       device,
       run,
       "warm-tools-reload",
       async () => {
-        await reloadWithRetries(page);
+        await reloadWithRetries(page, targetOrigin);
         await waitForCollection(page, ".ToolGrid", ".ToolCardSkeleton");
       },
     ),
@@ -67,11 +74,16 @@ export async function runProductionScenarios(
   results.push(
     await runInteractionScenario(
       page,
+      targetOrigin,
       device,
       run,
       "tool-text-search",
       async () => {
-        const response = waitForResponsePath(page, "/api/tools/search");
+        const response = waitForResponsePath(
+          page,
+          "/api/tools/search",
+          targetOrigin,
+        );
         await page
           .getByRole("searchbox", { name: "Search by title or tag" })
           .fill("css");
@@ -81,7 +93,12 @@ export async function runProductionScenarios(
     ),
   );
 
-  const tagScenario = await runOptionalToolTagScenario(page, device, run);
+  const tagScenario = await runOptionalToolTagScenario(
+    page,
+    targetOrigin,
+    device,
+    run,
+  );
   if (tagScenario) {
     results.push(tagScenario);
   }
@@ -89,11 +106,16 @@ export async function runProductionScenarios(
   results.push(
     await runInteractionScenario(
       page,
+      targetOrigin,
       device,
       run,
       "navigate-to-resources",
       async () => {
-        const response = waitForResponsePath(page, "/api/resources");
+        const response = waitForResponsePath(
+          page,
+          "/api/resources",
+          targetOrigin,
+        );
         await page
           .getByRole("link", { name: "Resources", exact: true })
           .click();
@@ -109,11 +131,16 @@ export async function runProductionScenarios(
   results.push(
     await runInteractionScenario(
       page,
+      targetOrigin,
       device,
       run,
       "resource-text-search",
       async () => {
-        const response = waitForResponsePath(page, "/api/resources/search");
+        const response = waitForResponsePath(
+          page,
+          "/api/resources/search",
+          targetOrigin,
+        );
         await page
           .getByRole("searchbox", { name: "Search resources" })
           .fill("design");
@@ -126,6 +153,7 @@ export async function runProductionScenarios(
   results.push(
     await runInteractionScenario(
       page,
+      targetOrigin,
       device,
       run,
       "resource-sort-change",
@@ -136,7 +164,6 @@ export async function runProductionScenarios(
         await page.waitForURL(
           (url) => url.searchParams.get("sort") === "oldest",
         );
-        await waitForRenderingOpportunity(page);
       },
     ),
   );
@@ -144,6 +171,7 @@ export async function runProductionScenarios(
   results.push(
     await runInteractionScenario(
       page,
+      targetOrigin,
       device,
       run,
       "navigate-to-submit",
@@ -162,6 +190,7 @@ export async function runProductionScenarios(
   results.push(
     await runInteractionScenario(
       page,
+      targetOrigin,
       device,
       run,
       "submission-type-switch",
@@ -171,7 +200,6 @@ export async function runProductionScenarios(
 
         await tool.check();
         await resource.check();
-        await waitForRenderingOpportunity(page);
       },
     ),
   );
@@ -182,6 +210,7 @@ export async function runProductionScenarios(
 /** Measures an action that creates a new document and performance timeline. */
 async function runNavigationScenario(
   page: Page,
+  targetOrigin: string,
   device: PerformanceDevice,
   run: number,
   scenario: string,
@@ -210,6 +239,7 @@ async function runNavigationScenario(
   const after = await collectBrowserMetrics(page);
 
   return createPerformanceRun({
+    targetOrigin,
     device,
     run,
     scenario,
@@ -224,6 +254,7 @@ async function runNavigationScenario(
 /** Measures a same-document interaction against a before/after timeline snapshot. */
 async function runInteractionScenario(
   page: Page,
+  targetOrigin: string,
   device: PerformanceDevice,
   run: number,
   scenario: string,
@@ -247,6 +278,7 @@ async function runInteractionScenario(
   const after = await collectBrowserMetrics(page);
 
   return createPerformanceRun({
+    targetOrigin,
     device,
     run,
     scenario,
@@ -262,6 +294,7 @@ async function runInteractionScenario(
 /** Runs tag selection only when the production catalog exposes at least one tag. */
 async function runOptionalToolTagScenario(
   page: Page,
+  targetOrigin: string,
   device: PerformanceDevice,
   run: number,
 ): Promise<PerformanceRun | null> {
@@ -283,11 +316,16 @@ async function runOptionalToolTagScenario(
 
   return runInteractionScenario(
     page,
+    targetOrigin,
     device,
     run,
     "tool-tag-selection",
     async () => {
-      const response = waitForResponsePath(page, "/api/tools/search");
+      const response = waitForResponsePath(
+        page,
+        "/api/tools/search",
+        targetOrigin,
+      );
       await tagButtons.first().click();
       await recordResponseEvidence(await response, "tool-tag-selection");
       await waitForCollection(page, ".ToolGrid", ".ToolCardSkeleton");
@@ -297,23 +335,41 @@ async function runOptionalToolTagScenario(
 
 /** Converts one before/after snapshot pair into the summary module contract. */
 export function createPerformanceRun({
+  targetOrigin,
   device,
   run,
   scenario,
   measurement,
 }: {
+  targetOrigin: string;
   device: PerformanceDevice;
   run: number;
   scenario: string;
   measurement: ScenarioMeasurement;
 }): PerformanceRun {
   const { after, before, measureName, navigation } = measurement;
+  const previousDroppedResourceCount =
+    before && before.timeOrigin === after.timeOrigin
+      ? before.droppedEntries.resource
+      : 0;
+  if (after.droppedEntries.resource > previousDroppedResourceCount) {
+    throw new Error(
+      "Resource Timing dropped entries during the measured scenario.",
+    );
+  }
+
   const timelineStart =
     before && before.timeOrigin === after.timeOrigin
       ? before.capturedAt
       : Number.NEGATIVE_INFINITY;
-  const resources = entriesSince(after.resources, timelineStart);
-  const navigationEntries = navigation ? after.navigation : [];
+  const resources = entriesSince(after.resources, timelineStart).filter(
+    (entry) => isTargetOriginEntry(entry, targetOrigin),
+  );
+  const navigationEntries = navigation
+    ? after.navigation.filter((entry) =>
+        isTargetOriginEntry(entry, targetOrigin),
+      )
+    : [];
   const events = entriesSince(after.events, timelineStart);
   const longTasks = entriesSince(after.longTasks, timelineStart);
   const longAnimationFrames = entriesSince(
@@ -390,6 +446,21 @@ export function createPerformanceRun({
   };
 }
 
+/** Includes only exact target-origin entries and rejects malformed timing URLs. */
+function isTargetOriginEntry(
+  entry: SerializablePerformanceEntry,
+  targetOrigin: string,
+): boolean {
+  let entryUrl: URL;
+  try {
+    entryUrl = new URL(entry.name);
+  } catch {
+    throw new Error("Resource Timing contained a malformed URL.");
+  }
+
+  return entryUrl.origin === targetOrigin;
+}
+
 /** Keeps entries that began after the previous snapshot. */
 function entriesSince<T extends SerializablePerformanceEntry>(
   entries: readonly T[],
@@ -438,24 +509,31 @@ function supportsEntryType(
 }
 
 /** Uses a bounded retry policy for production navigation availability. */
-async function navigateWithRetries(page: Page, url: string): Promise<void> {
+async function navigateWithRetries(
+  page: Page,
+  url: string,
+  targetOrigin: string,
+): Promise<void> {
   await retryNavigation(async () => {
     const response = await page.goto(url, {
       waitUntil: "load",
       timeout: RESPONSE_TIMEOUT_MS,
     });
-    await assertSuccessfulNavigation(response);
+    await assertSuccessfulNavigation(response, targetOrigin);
   });
 }
 
 /** Uses the same bounded retry policy for warm reloads. */
-async function reloadWithRetries(page: Page): Promise<void> {
+async function reloadWithRetries(
+  page: Page,
+  targetOrigin: string,
+): Promise<void> {
   await retryNavigation(async () => {
     const response = await page.reload({
       waitUntil: "load",
       timeout: RESPONSE_TIMEOUT_MS,
     });
-    await assertSuccessfulNavigation(response);
+    await assertSuccessfulNavigation(response, targetOrigin);
   });
 }
 
@@ -481,11 +559,19 @@ async function retryNavigation(action: () => Promise<void>): Promise<void> {
 }
 
 /** Waits for the expected first-party API response so its status enters the HAR. */
-function waitForResponsePath(page: Page, path: string): Promise<Response> {
+function waitForResponsePath(
+  page: Page,
+  path: string,
+  targetOrigin: string,
+): Promise<Response> {
   const response = page.waitForResponse(
     (response) => {
-      const url = new URL(response.url());
-      return response.request().method() === "GET" && url.pathname === path;
+      return matchesTargetResponse({
+        method: response.request().method(),
+        path,
+        responseUrl: response.url(),
+        targetOrigin,
+      });
     },
     { timeout: RESPONSE_TIMEOUT_MS },
   );
@@ -495,9 +581,28 @@ function waitForResponsePath(page: Page, path: string): Promise<Response> {
   return response;
 }
 
+/** Matches an expected first-party response without accepting origin lookalikes. */
+export function matchesTargetResponse({
+  method,
+  path,
+  responseUrl,
+  targetOrigin,
+}: {
+  method: string;
+  path: string;
+  responseUrl: string;
+  targetOrigin: string;
+}): boolean {
+  const url = new URL(responseUrl);
+  return (
+    method === "GET" && url.origin === targetOrigin && url.pathname === path
+  );
+}
+
 /** Rejects unavailable production document navigations with a useful status. */
 async function assertSuccessfulNavigation(
   response: Response | null,
+  targetOrigin: string,
 ): Promise<void> {
   if (!response) {
     throw new Error(
@@ -509,6 +614,18 @@ async function assertSuccessfulNavigation(
     throw new Error(
       `Production request failed with ${response.status()} ${response.statusText()} for ${response.url()}.`,
     );
+  }
+
+  assertTargetOrigin(response.url(), targetOrigin);
+}
+
+/** Rejects successful redirects that leave the configured production origin. */
+export function assertTargetOrigin(
+  responseUrl: string,
+  targetOrigin: string,
+): void {
+  if (new URL(responseUrl).origin !== targetOrigin) {
+    throw new Error("Production navigation left the configured target origin.");
   }
 }
 

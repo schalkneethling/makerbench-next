@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import type { BrowserMetricsSnapshot } from "../browser-metrics.ts";
-import { createPerformanceRun } from "../scenarios.ts";
+import type {
+  BrowserMetricsSnapshot,
+  SerializableResourceTiming,
+} from "../browser-metrics.ts";
+import {
+  assertTargetOrigin,
+  createPerformanceRun,
+  matchesTargetResponse,
+} from "../scenarios.ts";
 
 function createSnapshot(
   overrides: Partial<BrowserMetricsSnapshot> = {},
@@ -35,6 +42,38 @@ function createSnapshot(
       measure: 0,
     },
     ...overrides,
+  };
+}
+
+/** Creates a bounded Resource Timing fixture. */
+function createResource(
+  name: string,
+  startTime: number,
+  transferSize: number,
+): SerializableResourceTiming {
+  return {
+    name,
+    entryType: "resource",
+    startTime,
+    duration: 20,
+    initiatorType: "fetch",
+    nextHopProtocol: "h2",
+    workerStart: 0,
+    redirectStart: 0,
+    redirectEnd: 0,
+    fetchStart: startTime,
+    domainLookupStart: 0,
+    domainLookupEnd: 0,
+    connectStart: 0,
+    secureConnectionStart: 0,
+    connectEnd: 0,
+    requestStart: startTime,
+    responseStart: startTime + 10,
+    responseEnd: startTime + 20,
+    transferSize,
+    encodedBodySize: transferSize,
+    decodedBodySize: transferSize,
+    serverTiming: [],
   };
 }
 
@@ -79,30 +118,12 @@ describe("createPerformanceRun", () => {
         },
       ],
       resources: [
-        {
-          name: "https://makerbench.schalkneethling.com/app.js",
-          entryType: "resource",
-          startTime: 20,
-          duration: 100,
-          initiatorType: "script",
-          nextHopProtocol: "h2",
-          workerStart: 0,
-          redirectStart: 0,
-          redirectEnd: 0,
-          fetchStart: 20,
-          domainLookupStart: 0,
-          domainLookupEnd: 0,
-          connectStart: 0,
-          secureConnectionStart: 0,
-          connectEnd: 0,
-          requestStart: 25,
-          responseStart: 50,
-          responseEnd: 120,
-          transferSize: 2_000,
-          encodedBodySize: 1_900,
-          decodedBodySize: 4_000,
-          serverTiming: [],
-        },
+        createResource(
+          "https://makerbench.schalkneethling.com/app.js",
+          20,
+          2_000,
+        ),
+        createResource("https://images.example/catalog.png", 30, 500_000),
       ],
       paints: [
         {
@@ -136,6 +157,7 @@ describe("createPerformanceRun", () => {
 
     expect(
       createPerformanceRun({
+        targetOrigin: "https://makerbench.schalkneethling.com",
         device: "desktop",
         run: 1,
         scenario: "cold-tools-load",
@@ -186,54 +208,19 @@ describe("createPerformanceRun", () => {
         },
       ],
       resources: [
-        {
-          name: "old",
-          entryType: "resource",
-          startTime: 400,
-          duration: 10,
-          initiatorType: "fetch",
-          nextHopProtocol: "h2",
-          workerStart: 0,
-          redirectStart: 0,
-          redirectEnd: 0,
-          fetchStart: 400,
-          domainLookupStart: 0,
-          domainLookupEnd: 0,
-          connectStart: 0,
-          secureConnectionStart: 0,
-          connectEnd: 0,
-          requestStart: 400,
-          responseStart: 405,
-          responseEnd: 410,
-          transferSize: 100,
-          encodedBodySize: 100,
-          decodedBodySize: 100,
-          serverTiming: [],
-        },
-        {
-          name: "new",
-          entryType: "resource",
-          startTime: 550,
-          duration: 20,
-          initiatorType: "fetch",
-          nextHopProtocol: "h2",
-          workerStart: 0,
-          redirectStart: 0,
-          redirectEnd: 0,
-          fetchStart: 550,
-          domainLookupStart: 0,
-          domainLookupEnd: 0,
-          connectStart: 0,
-          secureConnectionStart: 0,
-          connectEnd: 0,
-          requestStart: 550,
-          responseStart: 560,
-          responseEnd: 570,
-          transferSize: 250,
-          encodedBodySize: 250,
-          decodedBodySize: 250,
-          serverTiming: [],
-        },
+        createResource("https://makerbench.schalkneethling.com/old", 400, 100),
+        createResource("https://makerbench.schalkneethling.com/new", 550, 250),
+        createResource(
+          "https://cdn.makerbench.schalkneethling.com/new",
+          560,
+          1_000,
+        ),
+        createResource("http://makerbench.schalkneethling.com/new", 570, 1_000),
+        createResource(
+          "https://makerbench.schalkneethling.com:444/new",
+          580,
+          1_000,
+        ),
       ],
       events: [
         {
@@ -260,6 +247,7 @@ describe("createPerformanceRun", () => {
 
     expect(
       createPerformanceRun({
+        targetOrigin: "https://makerbench.schalkneethling.com",
         device: "mobile",
         run: 2,
         scenario: "tool-text-search",
@@ -283,5 +271,159 @@ describe("createPerformanceRun", () => {
         transferBytes: 250,
       },
     });
+  });
+
+  it("fails closed when Resource Timing contains a malformed URL", () => {
+    const after = createSnapshot({
+      resources: [createResource("not a URL", 20, 100)],
+      measures: [
+        {
+          name: "makerbench:scenario:cold-tools-load",
+          entryType: "measure",
+          startTime: 0,
+          duration: 100,
+        },
+      ],
+    });
+
+    expect(() =>
+      createPerformanceRun({
+        targetOrigin: "https://makerbench.schalkneethling.com",
+        device: "desktop",
+        run: 1,
+        scenario: "cold-tools-load",
+        measurement: {
+          after,
+          measureName: "makerbench:scenario:cold-tools-load",
+          navigation: true,
+        },
+      }),
+    ).toThrow("Resource Timing contained a malformed URL.");
+  });
+
+  it("fails closed when Resource Timing drops entries during a scenario", () => {
+    const before = createSnapshot();
+    const after = createSnapshot({
+      droppedEntries: {
+        ...createSnapshot().droppedEntries,
+        resource: 1,
+      },
+      measures: [
+        {
+          name: "makerbench:scenario:tool-text-search",
+          entryType: "measure",
+          startTime: 500,
+          duration: 100,
+        },
+      ],
+    });
+
+    expect(() =>
+      createPerformanceRun({
+        targetOrigin: "https://makerbench.schalkneethling.com",
+        device: "desktop",
+        run: 1,
+        scenario: "tool-text-search",
+        measurement: {
+          before,
+          after,
+          measureName: "makerbench:scenario:tool-text-search",
+          navigation: false,
+        },
+      }),
+    ).toThrow("Resource Timing dropped entries during the measured scenario.");
+  });
+
+  it("does not carry a dropped-entry baseline across documents", () => {
+    const before = createSnapshot({
+      timeOrigin: 1_000,
+      droppedEntries: {
+        ...createSnapshot().droppedEntries,
+        resource: 2,
+      },
+    });
+    const after = createSnapshot({
+      timeOrigin: 2_000,
+      droppedEntries: {
+        ...createSnapshot().droppedEntries,
+        resource: 1,
+      },
+      measures: [
+        {
+          name: "makerbench:scenario:tool-text-search",
+          entryType: "measure",
+          startTime: 500,
+          duration: 100,
+        },
+      ],
+    });
+
+    expect(() =>
+      createPerformanceRun({
+        targetOrigin: "https://makerbench.schalkneethling.com",
+        device: "desktop",
+        run: 1,
+        scenario: "tool-text-search",
+        measurement: {
+          before,
+          after,
+          measureName: "makerbench:scenario:tool-text-search",
+          navigation: false,
+        },
+      }),
+    ).toThrow("Resource Timing dropped entries during the measured scenario.");
+  });
+
+  it("matches API responses only on the exact target origin", () => {
+    const input = {
+      method: "GET",
+      path: "/api/tools/search",
+      targetOrigin: "https://makerbench.schalkneethling.com",
+    };
+
+    expect(
+      matchesTargetResponse({
+        ...input,
+        responseUrl:
+          "https://makerbench.schalkneethling.com/api/tools/search?q=css",
+      }),
+    ).toBe(true);
+    expect(
+      matchesTargetResponse({
+        ...input,
+        responseUrl:
+          "https://cdn.makerbench.schalkneethling.com/api/tools/search",
+      }),
+    ).toBe(false);
+    expect(
+      matchesTargetResponse({
+        ...input,
+        responseUrl:
+          "https://makerbench.schalkneethling.com:444/api/tools/search",
+      }),
+    ).toBe(false);
+    expect(
+      matchesTargetResponse({
+        ...input,
+        method: "POST",
+        responseUrl: "https://makerbench.schalkneethling.com/api/tools/search",
+      }),
+    ).toBe(false);
+  });
+
+  it("rejects a successful navigation that leaves the target origin", () => {
+    expect(() =>
+      assertTargetOrigin(
+        "https://accounts.example/sign-in",
+        "https://makerbench.schalkneethling.com",
+      ),
+    ).toThrow("Production navigation left the configured target origin.");
+
+    expect(() =>
+      assertTargetOrigin(
+        "https://makerbench.schalkneethling.com/resources",
+        "https://makerbench.schalkneethling.com",
+      ),
+    ).not.toThrow();
   });
 });

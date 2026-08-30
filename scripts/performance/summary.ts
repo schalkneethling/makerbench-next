@@ -219,7 +219,7 @@ export function renderPerformanceSummaryMarkdown(
 
     lines.push(
       "",
-      "### Network totals",
+      "### First-party network totals",
       "",
       "| Metric | Total | p50 | p75 | Max |",
       "| --- | ---: | ---: | ---: | ---: |",

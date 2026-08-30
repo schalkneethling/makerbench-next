@@ -96,7 +96,9 @@ performance/baselines/YYYY-MM-DD/
 The browser collector records navigation, resource, paint, LCP, layout shift,
 Event Timing, long-task, Long Animation Frame, mark, measure, cache, and
 Server-Timing data when supported. Unsupported optional APIs remain visible as
-missing samples in the summary.
+missing samples in the summary. Request and transfer summaries count only exact
+target-origin navigation and Resource Timing entries; this keeps first-party
+budgets independent of catalog images hosted by third parties.
 
 Raw Playwright HARs use `content: "omit"`. Before an artifact is written, a
 strict Valibot sanitizer:
@@ -126,10 +128,10 @@ capture or budget check.
 
 `summary.json` is the machine-readable source. `summary.md` is a generated
 review view. Percentiles use the deterministic nearest-rank method, and
-missing-run counts must be considered before comparing a metric. Transfer
-sizes come from browser Resource Timing; cross-origin resources without
-appropriate timing exposure can report zero and remain visible in the
-sanitized HAR.
+missing-run counts must be considered before comparing a metric. First-party
+transfer sizes come from browser Resource Timing. Sanitized HARs deliberately
+retain both first-party and third-party requests as all-origin diagnostic
+evidence, so the summary budgets are not a total-page-weight measurement.
 
 Runtime budgets live in `performance/budgets.json`. They use absolute p75
 ceilings derived from the initial production measurements and require the eight

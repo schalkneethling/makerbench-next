@@ -361,6 +361,7 @@ export function browserMetricsInitScript(
   }
 
   const maximumEntries = Math.max(1, Math.floor(options.maxEntries));
+  performance.setResourceTimingBufferSize(maximumEntries + 1);
   const supportedEntryTypes =
     typeof PerformanceObserver === "undefined"
       ? []

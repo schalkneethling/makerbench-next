@@ -104,6 +104,29 @@ function createHar() {
 }
 
 describe("sanitizeHar", () => {
+  it("retains sanitized first-party and third-party entries", () => {
+    const har = createHar();
+    const thirdPartyEntry = har.log.entries[0];
+    if (!thirdPartyEntry) {
+      throw new Error("HAR fixture must contain an entry.");
+    }
+
+    har.log.entries.push({
+      ...thirdPartyEntry,
+      request: {
+        ...thirdPartyEntry.request,
+        url: "https://makerbench.schalkneethling.com/assets/app.js",
+      },
+    });
+
+    expect(
+      sanitizeHar(har).log.entries.map((entry) => entry.request.url),
+    ).toEqual([
+      "https://example.com/search?q=css",
+      "https://makerbench.schalkneethling.com/assets/app.js",
+    ]);
+  });
+
   it("retains performance evidence and only allowlisted headers", () => {
     const result = sanitizeHar(createHar());
     const [entry] = result.log.entries;
