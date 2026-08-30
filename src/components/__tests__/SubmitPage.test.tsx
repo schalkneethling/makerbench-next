@@ -41,15 +41,22 @@ describe("SubmitPage", () => {
     });
     const { rerender } = render(<SubmitPage />);
 
-    expect(screen.getByRole("status")).toHaveTextContent("Checking your session…");
-    expect(screen.getByRole("form", { name: "Submit a Resource" })).toHaveAttribute(
-      "aria-busy",
-      "true",
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Checking your session…",
     );
+    expect(
+      screen.getByRole("form", { name: "Submit a Resource" }),
+    ).toHaveAttribute("aria-busy", "true");
     expect(screen.getByRole("radio", { name: "Tool" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Submit Resource" })).toBeDisabled();
-    expect(screen.queryByRole("textbox", { name: "Your name" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("textbox", { name: "GitHub username" })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Submit Resource" }),
+    ).toBeDisabled();
+    expect(
+      screen.queryByRole("textbox", { name: "Your name" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("textbox", { name: "GitHub username" }),
+    ).not.toBeInTheDocument();
 
     vi.mocked(useAuth).mockReturnValue({
       ...authDefaults,
@@ -70,30 +77,43 @@ describe("SubmitPage", () => {
     rerender(<SubmitPage />);
 
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
-    expect(screen.getByRole("form", { name: "Submit a Resource" })).toHaveAttribute(
-      "aria-busy",
-      "false",
-    );
+    expect(
+      screen.getByRole("form", { name: "Submit a Resource" }),
+    ).toHaveAttribute("aria-busy", "false");
     expect(screen.getByRole("radio", { name: "Tool" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: "Submit Resource" })).toBeEnabled();
-    expect(screen.queryByRole("textbox", { name: "Your name" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("textbox", { name: "GitHub username" })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Submit Resource" }),
+    ).toBeEnabled();
+    expect(
+      screen.queryByRole("textbox", { name: "Your name" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("textbox", { name: "GitHub username" }),
+    ).not.toBeInTheDocument();
   });
 
   it("requires a binary type and anonymous attribution", async () => {
     const user = userEvent.setup();
     render(<SubmitPage />);
 
-    expect(screen.getByRole("heading", { name: "Submit a Resource" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Submit a Resource" }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("radio", { name: "Tool" })).not.toBeChecked();
     expect(screen.getByRole("radio", { name: "Resource" })).not.toBeChecked();
-    expect(screen.queryByRole("radio", { name: /article/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("radio", { name: /article/i }),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Your name" })).toBeRequired();
-    expect(screen.getByRole("textbox", { name: "GitHub username" })).toBeRequired();
+    expect(
+      screen.getByRole("textbox", { name: "GitHub username" }),
+    ).toBeRequired();
 
     await user.click(screen.getByRole("button", { name: "Submit Resource" }));
 
-    expect(screen.getByText("Please select a content type")).toBeInTheDocument();
+    expect(
+      screen.getByText("Please select a content type"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Your name is required")).toBeInTheDocument();
     expect(screen.getByText("GitHub username is required")).toBeInTheDocument();
   });
@@ -121,10 +141,22 @@ describe("SubmitPage", () => {
     render(<SubmitPage />);
 
     await user.click(screen.getByRole("radio", { name: "Resource" }));
-    await user.type(screen.getByRole("textbox", { name: "URL" }), "https://example.com/guide");
-    await user.type(screen.getByRole("textbox", { name: /^tags/i }), "testing{Enter}");
-    await user.type(screen.getByRole("textbox", { name: "Your name" }), "Ada Lovelace");
-    await user.type(screen.getByRole("textbox", { name: "GitHub username" }), "ada-lovelace");
+    await user.type(
+      screen.getByRole("textbox", { name: "URL" }),
+      "https://example.com/guide",
+    );
+    await user.type(
+      screen.getByRole("textbox", { name: /^tags/i }),
+      "testing{Enter}",
+    );
+    await user.type(
+      screen.getByRole("textbox", { name: "Your name" }),
+      "Ada Lovelace",
+    );
+    await user.type(
+      screen.getByRole("textbox", { name: "GitHub username" }),
+      "ada-lovelace",
+    );
     await user.click(screen.getByRole("button", { name: "Submit Resource" }));
 
     expect(await screen.findByText(/submission received/i)).toBeInTheDocument();
@@ -176,21 +208,31 @@ describe("SubmitPage", () => {
     const user = userEvent.setup();
     render(<SubmitPage />);
 
-    expect(screen.queryByRole("textbox", { name: "Your name" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("textbox", { name: "GitHub username" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("textbox", { name: "Your name" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("textbox", { name: "GitHub username" }),
+    ).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("radio", { name: "Tool" }));
-    await user.type(screen.getByRole("textbox", { name: "URL" }), "https://example.com/tool");
-    await user.type(screen.getByRole("textbox", { name: /^tags/i }), "testing{Enter}");
+    await user.type(
+      screen.getByRole("textbox", { name: "URL" }),
+      "https://example.com/tool",
+    );
+    await user.type(
+      screen.getByRole("textbox", { name: /^tags/i }),
+      "testing{Enter}",
+    );
     await user.click(screen.getByRole("button", { name: "Submit Resource" }));
 
     await screen.findByText(/submission received/i);
     expect(authorization).toBe("Bearer verified-token");
     expect(requestBody).toEqual({
-        type: "tool",
-        url: "https://example.com/tool",
-        tags: ["testing"],
-      });
+      type: "tool",
+      url: "https://example.com/tool",
+      tags: ["testing"],
+    });
   });
 
   it("asks a signed-in user for a missing verified name", () => {
@@ -213,7 +255,9 @@ describe("SubmitPage", () => {
     render(<SubmitPage />);
 
     expect(screen.getByRole("textbox", { name: "Your name" })).toBeRequired();
-    expect(screen.getByText(/account does not include a name/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/account does not include a name/i),
+    ).toBeInTheDocument();
   });
 
   it("renders structured server validation details", async () => {
@@ -233,14 +277,28 @@ describe("SubmitPage", () => {
     render(<SubmitPage />);
 
     await user.click(screen.getByRole("radio", { name: "Tool" }));
-    await user.type(screen.getByRole("textbox", { name: "URL" }), "https://example.com/tool");
-    await user.type(screen.getByRole("textbox", { name: /^tags/i }), "testing{Enter}");
-    await user.type(screen.getByRole("textbox", { name: "Your name" }), "Ada Lovelace");
-    await user.type(screen.getByRole("textbox", { name: "GitHub username" }), "ada-lovelace");
+    await user.type(
+      screen.getByRole("textbox", { name: "URL" }),
+      "https://example.com/tool",
+    );
+    await user.type(
+      screen.getByRole("textbox", { name: /^tags/i }),
+      "testing{Enter}",
+    );
+    await user.type(
+      screen.getByRole("textbox", { name: "Your name" }),
+      "Ada Lovelace",
+    );
+    await user.type(
+      screen.getByRole("textbox", { name: "GitHub username" }),
+      "ada-lovelace",
+    );
     await user.click(screen.getByRole("button", { name: "Submit Resource" }));
 
     expect(await screen.findByText(/submission failed/i)).toBeInTheDocument();
-    expect(screen.getByText(/url: this domain is blocked/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/url: this domain is blocked/i),
+    ).toBeInTheDocument();
   });
 
   it("shows safe submission diagnostics to admins outside development mode", async () => {
@@ -268,7 +326,8 @@ describe("SubmitPage", () => {
           {
             status: 503,
             headers: {
-              "X-MakerBench-Error-Code": "submission-rate-limit-configuration-unavailable",
+              "X-MakerBench-Error-Code":
+                "submission-rate-limit-configuration-unavailable",
             },
           },
         ),
@@ -278,8 +337,14 @@ describe("SubmitPage", () => {
     render(<SubmitPage />);
 
     await user.click(screen.getByRole("radio", { name: "Resource" }));
-    await user.type(screen.getByRole("textbox", { name: "URL" }), "https://example.com/guide");
-    await user.type(screen.getByRole("textbox", { name: /^tags/i }), "testing{Enter}");
+    await user.type(
+      screen.getByRole("textbox", { name: "URL" }),
+      "https://example.com/guide",
+    );
+    await user.type(
+      screen.getByRole("textbox", { name: /^tags/i }),
+      "testing{Enter}",
+    );
     await user.click(screen.getByRole("button", { name: "Submit Resource" }));
 
     expect(await screen.findByText(/submission failed/i)).toBeInTheDocument();
@@ -314,7 +379,8 @@ describe("SubmitPage", () => {
           {
             status: 503,
             headers: {
-              "X-MakerBench-Error-Code": "submission-rate-limit-configuration-unavailable",
+              "X-MakerBench-Error-Code":
+                "submission-rate-limit-configuration-unavailable",
             },
           },
         ),
@@ -324,8 +390,14 @@ describe("SubmitPage", () => {
     render(<SubmitPage />);
 
     await user.click(screen.getByRole("radio", { name: "Resource" }));
-    await user.type(screen.getByRole("textbox", { name: "URL" }), "https://example.com/guide");
-    await user.type(screen.getByRole("textbox", { name: /^tags/i }), "testing{Enter}");
+    await user.type(
+      screen.getByRole("textbox", { name: "URL" }),
+      "https://example.com/guide",
+    );
+    await user.type(
+      screen.getByRole("textbox", { name: /^tags/i }),
+      "testing{Enter}",
+    );
     await user.click(screen.getByRole("button", { name: "Submit Resource" }));
 
     expect(await screen.findByText(/submission failed/i)).toBeInTheDocument();

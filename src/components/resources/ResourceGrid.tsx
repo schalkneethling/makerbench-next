@@ -10,7 +10,11 @@ interface ResourceGridProps {
   onTagClick?: (tagName: string) => void;
 }
 
-export function ResourceGrid({ resources, isLoading = false, onTagClick }: ResourceGridProps) {
+export function ResourceGrid({
+  resources,
+  isLoading = false,
+  onTagClick,
+}: ResourceGridProps) {
   if (isLoading) {
     return (
       <div className="ResourceGrid" aria-live="polite" aria-busy="true">
@@ -24,7 +28,9 @@ export function ResourceGrid({ resources, isLoading = false, onTagClick }: Resou
   if (resources.length === 0) {
     return (
       <div className="ResourceGrid-empty">
-        <h2 className="ResourceGrid-emptyTitle heading-lg">No resources found</h2>
+        <h2 className="ResourceGrid-emptyTitle heading-lg">
+          No resources found
+        </h2>
         <p className="ResourceGrid-emptyDescription body-base">
           Try adjusting your search or filters.
         </p>

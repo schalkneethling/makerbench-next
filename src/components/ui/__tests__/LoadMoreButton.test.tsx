@@ -8,7 +8,9 @@ describe("LoadMoreButton", () => {
   it("renders when hasMore is true", () => {
     render(<LoadMoreButton hasMore={true} />);
 
-    expect(screen.getByRole("button", { name: /load more/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /load more/i }),
+    ).toBeInTheDocument();
   });
 
   it("is hidden when hasMore is false and not loading", () => {
@@ -35,7 +37,9 @@ describe("LoadMoreButton", () => {
   it("displays custom load count", () => {
     render(<LoadMoreButton hasMore={true} loadCount={10} />);
 
-    expect(screen.getByRole("button", { name: /load 10 more/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /load 10 more/i }),
+    ).toBeInTheDocument();
   });
 
   it("calls onClick when clicked", async () => {

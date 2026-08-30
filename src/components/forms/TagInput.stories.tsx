@@ -36,12 +36,18 @@ export const WithTags: Story = {
   render: () => {
     const [tags, setTags] = useState<string[]>(["react", "typescript"]);
 
-    return <TagInput label="Tags" tags={tags} onTagsChange={setTags} required />;
+    return (
+      <TagInput label="Tags" tags={tags} onTagsChange={setTags} required />
+    );
   },
   play: async ({ canvas, userEvent }) => {
-    await expect(canvas.getByRole("button", { name: /remove react/i })).toBeVisible();
+    await expect(
+      canvas.getByRole("button", { name: /remove react/i }),
+    ).toBeVisible();
     await userEvent.type(canvas.getByRole("textbox"), "vite{Enter}");
-    await expect(canvas.getByRole("button", { name: /remove vite/i })).toBeVisible();
+    await expect(
+      canvas.getByRole("button", { name: /remove vite/i }),
+    ).toBeVisible();
   },
 };
 

@@ -16,7 +16,9 @@ export const Primary: Story = {
     children: "Submit tool",
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: /submit tool/i })).toBeEnabled();
+    await expect(
+      canvas.getByRole("button", { name: /submit tool/i }),
+    ).toBeEnabled();
   },
 };
 
@@ -48,6 +50,8 @@ export const CssCheck: Story = {
   play: async ({ canvas }) => {
     const button = canvas.getByRole("button", { name: /submit/i });
     // Primary uses --color-primary (oklch workshop red); fails if global CSS did not load.
-    await expect(getComputedStyle(button).backgroundColor).toBe("oklch(0.61 0.19 32)");
+    await expect(getComputedStyle(button).backgroundColor).toBe(
+      "oklch(0.61 0.19 32)",
+    );
   },
 };

@@ -1,7 +1,10 @@
 import { useId, type InputHTMLAttributes } from "react";
 import { Input } from "./Input";
 
-export interface TextInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "id"> {
+export interface TextInputProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "id"
+> {
   /** Label text for the input */
   label: string;
   /** Error message to display */
@@ -33,10 +36,14 @@ export function TextInput({
   const errorId = `${id}-error`;
   const hintId = `${id}-hint`;
 
-  const describedBy = [error ? errorId : null, hint ? hintId : null].filter(Boolean).join(" ");
+  const describedBy = [error ? errorId : null, hint ? hintId : null]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <div className={`TextInput ${error ? "TextInput--error" : ""} ${className}`.trim()}>
+    <div
+      className={`TextInput ${error ? "TextInput--error" : ""} ${className}`.trim()}
+    >
       <label htmlFor={id} className="TextInput-label">
         {label}
         {required && (

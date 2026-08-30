@@ -17,7 +17,10 @@ export const Info: Story = {
     children: "Your bookmark was saved successfully.",
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("alert")).toHaveAttribute("aria-live", "polite");
+    await expect(canvas.getByRole("alert")).toHaveAttribute(
+      "aria-live",
+      "polite",
+    );
   },
 };
 
@@ -42,7 +45,9 @@ export const Dismissible: Story = {
     children: "Tool submitted for review.",
   },
   play: async ({ canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole("button", { name: /dismiss alert/i }));
+    await userEvent.click(
+      canvas.getByRole("button", { name: /dismiss alert/i }),
+    );
     await expect(canvas.queryByRole("alert")).not.toBeInTheDocument();
   },
 };

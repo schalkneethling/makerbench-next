@@ -49,7 +49,9 @@ export function TagInput({
   const hintId = `${id}-hint`;
   const tagsId = `${id}-tags`;
 
-  const describedBy = [error ? errorId : null, hint ? hintId : null].filter(Boolean).join(" ");
+  const describedBy = [error ? errorId : null, hint ? hintId : null]
+    .filter(Boolean)
+    .join(" ");
 
   const canAddMore = tags.length < maxTags;
 
@@ -86,7 +88,11 @@ export function TagInput({
     if (event.key === "Enter" || event.key === ",") {
       event.preventDefault();
       addTag(inputValue);
-    } else if (event.key === "Backspace" && inputValue === "" && tags.length > 0) {
+    } else if (
+      event.key === "Backspace" &&
+      inputValue === "" &&
+      tags.length > 0
+    ) {
       // Remove last tag when backspacing with empty input
       removeTag(tags.length - 1);
     }
@@ -119,7 +125,8 @@ export function TagInput({
 
         const lowerValue = trimmedValue.toLowerCase();
         const isDuplicate =
-          existingLower.includes(lowerValue) || newTags.some((t) => t.toLowerCase() === lowerValue);
+          existingLower.includes(lowerValue) ||
+          newTags.some((t) => t.toLowerCase() === lowerValue);
 
         if (!isDuplicate && tags.length + newTags.length < maxTags) {
           newTags.push(trimmedValue);
@@ -136,7 +143,9 @@ export function TagInput({
   }
 
   return (
-    <div className={`TagInput ${error ? "TagInput--error" : ""} ${className}`.trim()}>
+    <div
+      className={`TagInput ${error ? "TagInput--error" : ""} ${className}`.trim()}
+    >
       <label htmlFor={id} className="TagInput-label">
         {label}
         {required && (
@@ -155,7 +164,11 @@ export function TagInput({
 
       <div className="TagInput-container">
         {tags.length > 0 && (
-          <ul id={tagsId} className="TagInput-tags reset-list" aria-label="Selected tags">
+          <ul
+            id={tagsId}
+            className="TagInput-tags reset-list"
+            aria-label="Selected tags"
+          >
             {tags.map((tag, index) => {
               const removeLabelId = `${id}-remove-${index}`;
               return (

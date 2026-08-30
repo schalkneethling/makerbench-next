@@ -322,9 +322,9 @@ content: <p>Simple content</p>
 ### URLs in Mocks
 
 ```yaml
-url: "#"          # For anchor links
-url: /page        # For internal pages
-url: url          # Generic placeholder (miyagi converts)
+url: "#" # For anchor links
+url: /page # For internal pages
+url: url # Generic placeholder (miyagi converts)
 ```
 
 ### Icons

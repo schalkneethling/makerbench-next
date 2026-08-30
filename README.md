@@ -45,12 +45,8 @@ Core functionality is implemented:
 
 ```bash
 pnpm dev
-pnpm test
-pnpm lint
-pnpm lint:css
-pnpm typecheck
-pnpm build
-npx playwright test --project=chromium
+pnpm check:fast      # non-mutating local gate
+pnpm check:pr        # full pre-PR gate
 pnpm performance:capture # production performance evidence
 pnpm storybook          # component workshop at http://localhost:6006
 pnpm build-storybook    # static Storybook build

@@ -1,0 +1,17 @@
+# Dependencies and generated build/test output
+node_modules/
+dist/
+.netlify/
+coverage/
+performance/artifacts/
+playwright-report/
+test-results/
+storybook-static/
+
+# Generated or externally maintained artifacts
+.agents/skills/vercel-react-best-practices/
+github-issue-triage-report.html
+migrations/postgres/meta/
+performance/baselines/
+pnpm-lock.yaml
+public/mockServiceWorker.js

@@ -169,6 +169,8 @@ describe("HomePage", () => {
       { q: undefined, tags: ["javascript"] },
       { immediate: true },
     );
-    expect(screen.getByTestId("location")).toHaveTextContent("?tags=javascript&mode=filter");
+    expect(screen.getByTestId("location")).toHaveTextContent(
+      "?tags=javascript&mode=filter",
+    );
   });
 });

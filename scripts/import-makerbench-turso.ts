@@ -57,14 +57,17 @@ function toDate(value: string | null | undefined): Date | undefined {
   return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const VALID_IMAGE_SOURCES = new Set(["og", "screenshot", "fallback"]);
 
 function getValidUuid(value: string): string | undefined {
   return UUID_PATTERN.test(value) ? value : undefined;
 }
 
-function normalizeImageSource(value: unknown): "og" | "screenshot" | "fallback" | null {
+function normalizeImageSource(
+  value: unknown,
+): "og" | "screenshot" | "fallback" | null {
   return typeof value === "string" && VALID_IMAGE_SOURCES.has(value)
     ? (value as "og" | "screenshot" | "fallback")
     : null;
@@ -98,12 +101,15 @@ function getInvalidTimestampFields(bookmark: TursoBookmark): string[] {
     ["approved_at", bookmark.approved_at ?? bookmark.approvedAt],
   ] as const;
 
-  return fields.filter(([, value]) => value && !toDate(value)).map(([fieldName]) => fieldName);
+  return fields
+    .filter(([, value]) => value && !toDate(value))
+    .map(([fieldName]) => fieldName);
 }
 
 function getBookmarkTags(exportData: TursoExport): Map<string, string[]> {
   const tagsById = new Map(exportData.tags.map((tag) => [tag.id, tag.name]));
-  const bookmarkTags = exportData.bookmark_tags ?? exportData.bookmarkTags ?? [];
+  const bookmarkTags =
+    exportData.bookmark_tags ?? exportData.bookmarkTags ?? [];
   const tagsByBookmarkId = new Map<string, string[]>();
 
   for (const bookmarkTag of bookmarkTags) {
@@ -143,7 +149,9 @@ async function run() {
 
   const exportData = await readExport(sourcePath);
   const tagsByBookmarkId = getBookmarkTags(exportData);
-  const normalizedUrls = exportData.bookmarks.map((bookmark) => normalizeUrl(bookmark.url));
+  const normalizedUrls = exportData.bookmarks.map((bookmark) =>
+    normalizeUrl(bookmark.url),
+  );
   const duplicateUrls = normalizedUrls.filter(
     (url, index) => normalizedUrls.indexOf(url) !== index,
   );
@@ -158,7 +166,8 @@ async function run() {
     mode: shouldExecute ? "execute" : "dry-run",
     bookmarks: exportData.bookmarks.length,
     tags: exportData.tags.length,
-    bookmarkTags: exportData.bookmark_tags?.length ?? exportData.bookmarkTags?.length ?? 0,
+    bookmarkTags:
+      exportData.bookmark_tags?.length ?? exportData.bookmarkTags?.length ?? 0,
     duplicateUrls: new Set(duplicateUrls).size,
     invalidTimestampRows: invalidTimestampRows.length,
   });
@@ -174,11 +183,12 @@ async function run() {
     return;
   }
 
-  const [{ eq }, { db }, { resourcesTable, toolListingsTable }] = await Promise.all([
-    import("drizzle-orm"),
-    import("../src/db"),
-    import("../src/db/schema"),
-  ]);
+  const [{ eq }, { db }, { resourcesTable, toolListingsTable }] =
+    await Promise.all([
+      import("drizzle-orm"),
+      import("../src/db"),
+      import("../src/db/schema"),
+    ]);
   let inserted = 0;
   let skipped = 0;
 
@@ -225,9 +235,12 @@ async function run() {
       metaDescription: bookmark.description ?? "",
       tags: [...new Set(tagsByBookmarkId.get(bookmark.id) ?? [])],
       imageUrl: bookmark.image_url ?? null,
-      imageSource: normalizeImageSource(bookmark.image_source ?? bookmark.imageSource),
+      imageSource: normalizeImageSource(
+        bookmark.image_source ?? bookmark.imageSource,
+      ),
       submitterName: bookmark.submitter_name ?? bookmark.submitterName ?? null,
-      submitterGithubUrl: bookmark.submitter_github_url ?? bookmark.submitterGithubUrl ?? null,
+      submitterGithubUrl:
+        bookmark.submitter_github_url ?? bookmark.submitterGithubUrl ?? null,
       metadata: normalizeMetadata(bookmark.metadata),
       approvedAt: toDate(bookmark.approved_at ?? bookmark.approvedAt),
       createdAt: toDate(bookmark.created_at ?? bookmark.createdAt),

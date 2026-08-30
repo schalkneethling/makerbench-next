@@ -136,7 +136,11 @@ function createGetTagsHandler() {
  */
 function createSubmitBookmarkHandler() {
   return http.post(`${API_BASE}/api/submissions`, async ({ request }) => {
-    const body = (await request.json()) as { type?: string; url?: string; tags?: string[] };
+    const body = (await request.json()) as {
+      type?: string;
+      url?: string;
+      tags?: string[];
+    };
 
     // Validate URL is present
     if (!body.url) {
@@ -253,7 +257,10 @@ describe("searchBookmarks", () => {
     const result = await searchBookmarks({ tags: ["react"] });
 
     expect(result.bookmarks).toHaveLength(1);
-    expect(result.bookmarks[0].tags).toContainEqual({ id: "t2", name: "react" });
+    expect(result.bookmarks[0].tags).toContainEqual({
+      id: "t2",
+      name: "react",
+    });
   });
 
   it("combines query and tag filters", async () => {

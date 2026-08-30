@@ -45,7 +45,10 @@ export function TagCloud({
   }
 
   return (
-    <section className={`TagCloud ${className}`.trim()} aria-labelledby={headingId}>
+    <section
+      className={`TagCloud ${className}`.trim()}
+      aria-labelledby={headingId}
+    >
       <h2 id={headingId} className="visually-hidden">
         {label}
       </h2>

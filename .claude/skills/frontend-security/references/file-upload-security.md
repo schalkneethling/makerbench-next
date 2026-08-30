@@ -108,7 +108,9 @@ const ALLOWED_MIME_TYPES = {
   ".gif": ["image/gif"],
   ".webp": ["image/webp"],
   ".pdf": ["application/pdf"],
-  ".docx": ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+  ".docx": [
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ],
 };
 
 function validateMimeType(file) {
@@ -202,7 +204,10 @@ app.get("/files/:id", async (req, res) => {
 
   // Set safe headers
   res.setHeader("Content-Type", fileRecord.mimeType);
-  res.setHeader("Content-Disposition", `attachment; filename="${fileRecord.safeName}"`);
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="${fileRecord.safeName}"`,
+  );
   res.setHeader("X-Content-Type-Options", "nosniff");
 
   // Stream file

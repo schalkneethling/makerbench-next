@@ -15,8 +15,12 @@ import {
 } from "drizzle-orm/pg-core";
 
 const timestamps = {
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 };
 
 export const authSchema = pgSchema("auth");
@@ -41,9 +45,12 @@ export const toolListingsTable = pgTable(
     resourceId: uuid("resource_id")
       .notNull()
       .references(() => resourcesTable.id, { onDelete: "cascade" }),
-    submittedByUserId: uuid("submitted_by_user_id").references(() => authUsersTable.id, {
-      onDelete: "cascade",
-    }),
+    submittedByUserId: uuid("submitted_by_user_id").references(
+      () => authUsersTable.id,
+      {
+        onDelete: "cascade",
+      },
+    ),
     status: text("status", { enum: ["pending", "approved", "rejected"] })
       .default("pending")
       .notNull(),
@@ -85,9 +92,12 @@ export const bookmarksTable = pgTable(
     resourceId: uuid("resource_id")
       .notNull()
       .references(() => resourcesTable.id, { onDelete: "cascade" }),
-    parentId: uuid("parent_id").references((): AnyPgColumn => bookmarksTable.id, {
-      onDelete: "cascade",
-    }),
+    parentId: uuid("parent_id").references(
+      (): AnyPgColumn => bookmarksTable.id,
+      {
+        onDelete: "cascade",
+      },
+    ),
     titleOverride: text("title_override"),
     descriptionOverride: text("description_override"),
     notes: text("notes").default("").notNull(),
@@ -114,12 +124,18 @@ export const publicListingsTable = pgTable(
     resourceId: uuid("resource_id")
       .notNull()
       .references(() => resourcesTable.id, { onDelete: "cascade" }),
-    submittedByUserId: uuid("submitted_by_user_id").references(() => authUsersTable.id, {
-      onDelete: "cascade",
-    }),
-    submittedByBookmarkId: uuid("submitted_by_bookmark_id").references(() => bookmarksTable.id, {
-      onDelete: "set null",
-    }),
+    submittedByUserId: uuid("submitted_by_user_id").references(
+      () => authUsersTable.id,
+      {
+        onDelete: "cascade",
+      },
+    ),
+    submittedByBookmarkId: uuid("submitted_by_bookmark_id").references(
+      () => bookmarksTable.id,
+      {
+        onDelete: "set null",
+      },
+    ),
     submitterName: text("submitter_name"),
     submitterGithubUrl: text("submitter_github_url"),
     contentKind: text("content_kind", {
@@ -145,7 +161,10 @@ export const publicListingsTable = pgTable(
     ...timestamps,
   },
   (table) => [
-    index("idx_public_listings_status").on(table.status, table.createdAt.desc()),
+    index("idx_public_listings_status").on(
+      table.status,
+      table.createdAt.desc(),
+    ),
     index("idx_public_listings_tags").using("gin", table.tags),
     index("idx_public_listings_search").using(
       "gin",
@@ -233,7 +252,9 @@ export const publicStackItemsTable = pgTable(
       .array()
       .default(sql`'{}'::text[]`)
       .notNull(),
-    displayOrder: bigint("display_order", { mode: "number" }).default(0).notNull(),
+    displayOrder: bigint("display_order", { mode: "number" })
+      .default(0)
+      .notNull(),
     rejectionCode: text("rejection_code"),
     rejectionReason: text("rejection_reason"),
     reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
@@ -244,9 +265,18 @@ export const publicStackItemsTable = pgTable(
   },
   (table) => [
     uniqueIndex("unique_public_stack_item_bookmark").on(table.bookmarkId),
-    uniqueIndex("unique_public_stack_resource").on(table.publicStackId, table.resourceId),
-    index("idx_public_stack_items_status").on(table.status, table.createdAt.desc()),
-    index("idx_public_stack_items_stack").on(table.publicStackId, table.displayOrder),
+    uniqueIndex("unique_public_stack_resource").on(
+      table.publicStackId,
+      table.resourceId,
+    ),
+    index("idx_public_stack_items_status").on(
+      table.status,
+      table.createdAt.desc(),
+    ),
+    index("idx_public_stack_items_stack").on(
+      table.publicStackId,
+      table.displayOrder,
+    ),
     index("idx_public_stack_items_tags").using("gin", table.tags),
     index("idx_public_stack_items_search").using(
       "gin",
@@ -266,7 +296,9 @@ export const userRolesTable = pgTable(
       .notNull()
       .references(() => authUsersTable.id, { onDelete: "cascade" }),
     role: text("role", { enum: ["admin"] }).notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [uniqueIndex("unique_user_role").on(table.userId, table.role)],
 ).enableRLS();

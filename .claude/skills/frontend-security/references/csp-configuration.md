@@ -70,7 +70,10 @@ app.use(
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: [(req, res) => `'nonce-${res.locals.nonce}'`, "'strict-dynamic'"],
+      scriptSrc: [
+        (req, res) => `'nonce-${res.locals.nonce}'`,
+        "'strict-dynamic'",
+      ],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:"],
       objectSrc: ["'none'"],
@@ -137,10 +140,14 @@ Content-Security-Policy-Report-Only:
 Report endpoint:
 
 ```javascript
-app.post("/csp-report", express.json({ type: "application/csp-report" }), (req, res) => {
-  console.log("CSP Violation:", req.body);
-  res.status(204).end();
-});
+app.post(
+  "/csp-report",
+  express.json({ type: "application/csp-report" }),
+  (req, res) => {
+    console.log("CSP Violation:", req.body);
+    res.status(204).end();
+  },
+);
 ```
 
 ## Common Violations and Fixes

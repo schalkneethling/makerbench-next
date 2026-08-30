@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 
-import { getTags, type BookmarkApiError, type GetTagsParams, type Tag } from "../api";
+import {
+  getTags,
+  type BookmarkApiError,
+  type GetTagsParams,
+  type Tag,
+} from "../api";
 
 interface UseTagsState {
   tags: Tag[];
@@ -34,7 +39,8 @@ export function useTags(options: UseTagsOptions = {}): UseTagsState {
 
     let isActive = true;
     const startedAt =
-      typeof performance !== "undefined" && typeof performance.now === "function"
+      typeof performance !== "undefined" &&
+      typeof performance.now === "function"
         ? performance.now()
         : Date.now();
 
@@ -51,7 +57,8 @@ export function useTags(options: UseTagsOptions = {}): UseTagsState {
         }
 
         const durationMs = Math.round(
-          (typeof performance !== "undefined" && typeof performance.now === "function"
+          (typeof performance !== "undefined" &&
+          typeof performance.now === "function"
             ? performance.now()
             : Date.now()) - startedAt,
         );

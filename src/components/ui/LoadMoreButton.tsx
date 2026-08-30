@@ -1,6 +1,9 @@
 import { Button, type ButtonProps } from "./Button";
 
-export interface LoadMoreButtonProps extends Omit<ButtonProps, "children" | "variant"> {
+export interface LoadMoreButtonProps extends Omit<
+  ButtonProps,
+  "children" | "variant"
+> {
   /** Whether more items are available to load */
   hasMore: boolean;
   /** Number of items that will be loaded */

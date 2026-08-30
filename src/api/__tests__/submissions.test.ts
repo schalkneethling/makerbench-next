@@ -132,7 +132,8 @@ describe("submitPublicSubmission", () => {
           {
             status: 503,
             headers: {
-              "X-MakerBench-Error-Code": "submission-rate-limit-store-unavailable",
+              "X-MakerBench-Error-Code":
+                "submission-rate-limit-store-unavailable",
             },
           },
         ),

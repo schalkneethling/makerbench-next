@@ -1,6 +1,9 @@
 import { useId } from "react";
 import { TagBadge } from "../tags";
-import { getGithubUsernameFromProfileUrl, isValidGithubProfileUrl } from "../../lib/github";
+import {
+  getGithubUsernameFromProfileUrl,
+  isValidGithubProfileUrl,
+} from "../../lib/github";
 
 import "./ToolCard.css";
 
@@ -81,7 +84,8 @@ export function ToolCard({
   // Extract hostname for display
   const hostname = new URL(url).hostname.replace(/^www\./, "");
   const hasValidGithubProfile =
-    submitterGithubUrl !== undefined && isValidGithubProfileUrl(submitterGithubUrl);
+    submitterGithubUrl !== undefined &&
+    isValidGithubProfileUrl(submitterGithubUrl);
   const githubUsername =
     hasValidGithubProfile && submitterGithubUrl
       ? getGithubUsernameFromProfileUrl(submitterGithubUrl)
@@ -112,7 +116,9 @@ export function ToolCard({
           </h3>
           <p className="ToolCard-hostname ui-caption">{hostname}</p>
 
-          {description && <p className="ToolCard-description body-sm">{description}</p>}
+          {description && (
+            <p className="ToolCard-description body-sm">{description}</p>
+          )}
         </div>
       </a>
 

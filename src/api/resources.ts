@@ -140,7 +140,8 @@ async function fetchResourcesResponse(
     throw error;
   } finally {
     const now =
-      typeof performance !== "undefined" && typeof performance.now === "function"
+      typeof performance !== "undefined" &&
+      typeof performance.now === "function"
         ? performance.now()
         : Date.now();
 
@@ -164,5 +165,8 @@ export function searchResources(
   params: SearchResourcesParams = {},
   options: RequestOptions = {},
 ): Promise<ResourcesResponse> {
-  return fetchResourcesResponse(buildPath("/api/resources/search", params), options);
+  return fetchResourcesResponse(
+    buildPath("/api/resources/search", params),
+    options,
+  );
 }

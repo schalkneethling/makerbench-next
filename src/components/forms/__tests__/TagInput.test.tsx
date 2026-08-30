@@ -58,7 +58,13 @@ describe("TagInput", () => {
   it("does not add duplicate tags", async () => {
     const onTagsChange = vi.fn();
     const user = userEvent.setup();
-    render(<TagInput {...defaultProps} tags={["React"]} onTagsChange={onTagsChange} />);
+    render(
+      <TagInput
+        {...defaultProps}
+        tags={["React"]}
+        onTagsChange={onTagsChange}
+      />,
+    );
 
     const input = screen.getByRole("textbox", { name: "Tags" });
     await user.type(input, "react{Enter}");
@@ -69,7 +75,13 @@ describe("TagInput", () => {
   it("removes tag when remove button clicked", async () => {
     const onTagsChange = vi.fn();
     const user = userEvent.setup();
-    render(<TagInput {...defaultProps} tags={["React", "Vue"]} onTagsChange={onTagsChange} />);
+    render(
+      <TagInput
+        {...defaultProps}
+        tags={["React", "Vue"]}
+        onTagsChange={onTagsChange}
+      />,
+    );
 
     const removeButton = screen.getByRole("button", { name: "Remove React" });
     await user.click(removeButton);
@@ -80,7 +92,13 @@ describe("TagInput", () => {
   it("removes last tag on Backspace with empty input", async () => {
     const onTagsChange = vi.fn();
     const user = userEvent.setup();
-    render(<TagInput {...defaultProps} tags={["React", "Vue"]} onTagsChange={onTagsChange} />);
+    render(
+      <TagInput
+        {...defaultProps}
+        tags={["React", "Vue"]}
+        onTagsChange={onTagsChange}
+      />,
+    );
 
     const input = screen.getByRole("textbox", { name: "Tags" });
     await user.click(input);
@@ -107,7 +125,9 @@ describe("TagInput", () => {
 
     const input = screen.getByRole("textbox", { name: "Tags" });
     expect(input).toHaveAttribute("aria-invalid", "true");
-    expect(screen.getByRole("alert")).toHaveTextContent("At least one tag required");
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "At least one tag required",
+    );
   });
 
   it("remove button uses aria-labelledby with visually-hidden text", () => {
@@ -160,7 +180,13 @@ describe("TagInput", () => {
   it("filters out duplicates against existing tags when pasting", async () => {
     const onTagsChange = vi.fn();
     const user = userEvent.setup();
-    render(<TagInput {...defaultProps} tags={["React"]} onTagsChange={onTagsChange} />);
+    render(
+      <TagInput
+        {...defaultProps}
+        tags={["React"]}
+        onTagsChange={onTagsChange}
+      />,
+    );
 
     const input = screen.getByRole("textbox", { name: "Tags" });
     await user.click(input);
@@ -174,7 +200,12 @@ describe("TagInput", () => {
     const onTagsChange = vi.fn();
     const user = userEvent.setup();
     render(
-      <TagInput {...defaultProps} tags={["Existing"]} maxTags={3} onTagsChange={onTagsChange} />,
+      <TagInput
+        {...defaultProps}
+        tags={["Existing"]}
+        maxTags={3}
+        onTagsChange={onTagsChange}
+      />,
     );
 
     const input = screen.getByRole("textbox", { name: "Tags" });

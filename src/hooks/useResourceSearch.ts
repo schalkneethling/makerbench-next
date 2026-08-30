@@ -16,21 +16,27 @@ interface UseResourceSearchState {
 }
 
 interface UseResourceSearchReturn extends UseResourceSearchState {
-  search: (params: SearchResourcesParams, options?: { immediate?: boolean }) => Promise<void>;
+  search: (
+    params: SearchResourcesParams,
+    options?: { immediate?: boolean },
+  ) => Promise<void>;
   loadMore: () => Promise<void>;
   reset: () => void;
 }
 
 const DEBOUNCE_MS = 300;
 
-export function useResourceSearch(debounceMs = DEBOUNCE_MS): UseResourceSearchReturn {
+export function useResourceSearch(
+  debounceMs = DEBOUNCE_MS,
+): UseResourceSearchReturn {
   const [state, setState] = useState<UseResourceSearchState>({
     results: [],
     pagination: null,
     isLoading: false,
     error: null,
   });
-  const [searchParams, setSearchParams] = useState<SearchResourcesParams | null>(null);
+  const [searchParams, setSearchParams] =
+    useState<SearchResourcesParams | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const activeRequestIdRef = useRef(0);
@@ -41,7 +47,11 @@ export function useResourceSearch(debounceMs = DEBOUNCE_MS): UseResourceSearchRe
   }, []);
 
   const executeSearch = useCallback(
-    async (params: SearchResourcesParams, requestId: number, signal: AbortSignal) => {
+    async (
+      params: SearchResourcesParams,
+      requestId: number,
+      signal: AbortSignal,
+    ) => {
       try {
         const data = await searchResources(params, { signal });
 
@@ -71,7 +81,10 @@ export function useResourceSearch(debounceMs = DEBOUNCE_MS): UseResourceSearchRe
   );
 
   const search = useCallback(
-    async (params: SearchResourcesParams, options: { immediate?: boolean } = {}) => {
+    async (
+      params: SearchResourcesParams,
+      options: { immediate?: boolean } = {},
+    ) => {
       setSearchParams(params);
 
       if (debounceRef.current) {
@@ -121,7 +134,10 @@ export function useResourceSearch(debounceMs = DEBOUNCE_MS): UseResourceSearchRe
         { signal: controller.signal },
       );
 
-      if (controller.signal.aborted || requestId !== activeRequestIdRef.current) {
+      if (
+        controller.signal.aborted ||
+        requestId !== activeRequestIdRef.current
+      ) {
         return;
       }
 
@@ -132,7 +148,10 @@ export function useResourceSearch(debounceMs = DEBOUNCE_MS): UseResourceSearchRe
         error: null,
       }));
     } catch (err) {
-      if (controller.signal.aborted || requestId !== activeRequestIdRef.current) {
+      if (
+        controller.signal.aborted ||
+        requestId !== activeRequestIdRef.current
+      ) {
         return;
       }
 
