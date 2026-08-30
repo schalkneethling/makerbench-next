@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-export type LogoSize = "sm" | "base" | "lg" | "xl";
+type LogoSize = "sm" | "base" | "lg" | "xl";
 
 export interface LogoProps {
   size?: LogoSize;

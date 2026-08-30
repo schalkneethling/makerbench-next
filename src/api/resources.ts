@@ -56,8 +56,6 @@ const errorResponseSchema = v.object({
   details: v.optional(v.record(v.string(), v.array(v.string()))),
 });
 
-export type ResourceTag = v.InferOutput<typeof resourceTagSchema>;
-export type ResourceChild = v.InferOutput<typeof resourceChildSchema>;
 export type Resource = v.InferOutput<typeof resourceSchema>;
 export type ResourcesResponse = v.InferOutput<typeof resourcesDataSchema>;
 

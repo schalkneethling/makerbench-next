@@ -50,7 +50,7 @@ makerbench-next/
 │   ├── api/                  # HTTP client layer (fetch + Valibot response validation)
 │   ├── components/           # UI components (bookmarks, forms, layout, resources, search, tags, ui)
 │   │   └── **/*.stories.tsx  # Colocated Storybook stories (where present)
-│   ├── db/                   # Drizzle schema and query helpers (shared with functions)
+│   ├── db/                   # Drizzle schema (shared with functions)
 │   ├── hooks/                # React hooks and AuthProvider
 │   ├── lib/                  # Validation, services (metadata, screenshot, cloudinary), Supabase client
 │   ├── pages/                # Route-level page components
@@ -312,7 +312,7 @@ Supabase Postgres is the single source of truth. Drizzle ORM provides:
 
 - Type-safe schema in `src/db/schema.ts`
 - Migrations in `migrations/postgres/` (driven by `migrations/postgres/meta/_journal.json`)
-- Query helpers in `src/db/queries/`
+- Feature-scoped queries in Netlify Function handlers and their shared libraries
 
 Apply migrations with `pnpm db:migrate`. Generate new migrations with `pnpm db:generate` after schema changes.
 

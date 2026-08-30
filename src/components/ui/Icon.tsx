@@ -1,6 +1,6 @@
 import type { ComponentType, SVGProps } from "react";
 
-export type IconSize = "xs" | "sm" | "md" | "lg";
+type IconSize = "xs" | "sm" | "md" | "lg";
 
 export interface IconProps extends SVGProps<SVGSVGElement> {
   /** Heroicon (or compatible SVG component) to render */

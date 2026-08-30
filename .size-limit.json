@@ -1,0 +1,22 @@
+[
+  {
+    "name": "entry JavaScript",
+    "path": "dist/assets/index-*.js",
+    "limit": "132 kB"
+  },
+  {
+    "name": "entry CSS",
+    "path": "dist/assets/index-*.css",
+    "limit": "7 kB"
+  },
+  {
+    "name": "all JavaScript",
+    "path": "dist/assets/*.js",
+    "limit": "150 kB"
+  },
+  {
+    "name": "all CSS",
+    "path": "dist/assets/*.css",
+    "limit": "8 kB"
+  }
+]

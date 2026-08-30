@@ -8,7 +8,15 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", ".netlify", "env.d.ts", "public/mockServiceWorker.js"] },
+  {
+    ignores: [
+      "coverage",
+      "dist",
+      ".netlify",
+      "env.d.ts",
+      "public/mockServiceWorker.js",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -26,6 +34,15 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
+    },
+  },
+  {
+    files: ["**/*.{js,mjs,cjs}"],
+    extends: [js.configs.recommended],
+    languageOptions: {
+      ecmaVersion: "latest",
+      globals: globals.node,
+      sourceType: "module",
     },
   },
   storybook.configs["flat/recommended"],

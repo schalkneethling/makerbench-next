@@ -38,3 +38,4 @@ env.d.ts
 
 *storybook.log
 storybook-static
+coverage

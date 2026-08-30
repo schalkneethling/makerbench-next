@@ -14,5 +14,5 @@
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true
   },
-  "include": ["scripts/performance/**/*.ts"]
+  "include": ["scripts/**/*.ts"]
 }

@@ -2,12 +2,10 @@ import type { Config } from "drizzle-kit";
 import "varlock/auto-load";
 import { ENV } from "varlock/env";
 
-const dbUrl = ENV.SUPABASE_DATABASE_URL ?? ENV.DATABASE_URL;
+const dbUrl = ENV.SUPABASE_DATABASE_URL;
 
 if (!dbUrl) {
-  throw new Error(
-    "Missing SUPABASE_DATABASE_URL or DATABASE_URL environment variable",
-  );
+  throw new Error("Missing SUPABASE_DATABASE_URL environment variable");
 }
 
 export default {
