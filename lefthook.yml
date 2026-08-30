@@ -1,0 +1,20 @@
+pre-commit:
+  commands:
+    prettier:
+      glob: "*.{css,js,cjs,mjs,ts,tsx,json,jsonc,md,mdx,yaml,yml}"
+      run: pnpm exec prettier --check {staged_files}
+    eslint:
+      glob: "*.{js,cjs,mjs,ts,tsx}"
+      run: pnpm exec eslint --max-warnings=0 {staged_files}
+    stylelint:
+      glob: "*.css"
+      run: pnpm exec stylelint {staged_files}
+    diff-check:
+      run: git diff --cached --check
+    unresolved-index:
+      run: test -z "$(git ls-files --unmerged)"
+
+pre-push:
+  commands:
+    fast-quality:
+      run: pnpm check:fast

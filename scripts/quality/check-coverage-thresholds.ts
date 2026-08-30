@@ -88,6 +88,7 @@ export function findLoweredThresholds(
 function readThresholdsAtRevision(
   repositoryRoot: string,
   revision: string,
+  environment: NodeJS.ProcessEnv,
 ): CoverageThresholds | undefined {
   const matchingPath = execFileSync(
     "git",
@@ -95,6 +96,7 @@ function readThresholdsAtRevision(
     {
       cwd: repositoryRoot,
       encoding: "utf8",
+      env: environment,
       maxBuffer: MAX_COVERAGE_THRESHOLDS_BYTES,
       stdio: ["ignore", "pipe", "pipe"],
     },
@@ -110,6 +112,7 @@ function readThresholdsAtRevision(
     {
       cwd: repositoryRoot,
       encoding: "utf8",
+      env: environment,
       maxBuffer: MAX_COVERAGE_THRESHOLDS_BYTES,
       stdio: ["ignore", "pipe", "pipe"],
     },
@@ -137,15 +140,19 @@ function strongestThresholds(
 /** Reads an explicit base or the strongest floor reachable from the current stack. */
 export function readBaseThresholds(
   repositoryRoot: string,
-  baseRef = process.env.COVERAGE_BASE_REF,
+  baseRef?: string,
+  environment: NodeJS.ProcessEnv = process.env,
 ): CoverageThresholds | undefined {
-  if (baseRef === undefined) {
+  const selectedBaseRef = baseRef ?? environment.COVERAGE_BASE_REF;
+
+  if (selectedBaseRef === undefined) {
     const revisions = execFileSync(
       "git",
       ["log", "--format=%H", "HEAD", "--", "coverage-thresholds.json"],
       {
         cwd: repositoryRoot,
         encoding: "utf8",
+        env: environment,
         maxBuffer: 64 * 1024,
         stdio: ["ignore", "pipe", "pipe"],
       },
@@ -156,7 +163,11 @@ export function readBaseThresholds(
 
     return strongestThresholds(
       revisions.flatMap((revision) => {
-        const thresholds = readThresholdsAtRevision(repositoryRoot, revision);
+        const thresholds = readThresholdsAtRevision(
+          repositoryRoot,
+          revision,
+          environment,
+        );
         return thresholds === undefined ? [] : [thresholds];
       }),
     );
@@ -164,10 +175,11 @@ export function readBaseThresholds(
 
   const baseCommit = execFileSync(
     "git",
-    ["rev-parse", "--verify", `${baseRef}^{commit}`],
+    ["rev-parse", "--verify", `${selectedBaseRef}^{commit}`],
     {
       cwd: repositoryRoot,
       encoding: "utf8",
+      env: environment,
       maxBuffer: MAX_COVERAGE_THRESHOLDS_BYTES,
       stdio: ["ignore", "pipe", "pipe"],
     },
@@ -178,6 +190,7 @@ export function readBaseThresholds(
     {
       cwd: repositoryRoot,
       encoding: "utf8",
+      env: environment,
       maxBuffer: MAX_COVERAGE_THRESHOLDS_BYTES,
       stdio: ["ignore", "pipe", "pipe"],
     },
@@ -190,16 +203,17 @@ export function readBaseThresholds(
         ["merge-base", "--is-ancestor", baseCommit, headCommit],
         {
           cwd: repositoryRoot,
+          env: environment,
           stdio: "ignore",
         },
       );
     } catch {
       throw new Error(
-        `Coverage base ref ${baseRef} is stale because it is not an ancestor of HEAD.`,
+        `Coverage base ref ${selectedBaseRef} is stale because it is not an ancestor of HEAD.`,
       );
     }
   }
-  return readThresholdsAtRevision(repositoryRoot, baseRef);
+  return readThresholdsAtRevision(repositoryRoot, selectedBaseRef, environment);
 }
 
 /** Prevents a pull request from lowering an existing coverage floor. */

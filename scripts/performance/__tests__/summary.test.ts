@@ -172,6 +172,9 @@ describe("summary renderers", () => {
       "## Desktop — cold-home",
     );
     expect(renderPerformanceSummaryMarkdown(summary)).toContain(
+      "### First-party network totals",
+    );
+    expect(renderPerformanceSummaryMarkdown(summary)).toContain(
       "| Long animation frame duration (ms) | 0 | 1 | n/a | n/a | n/a |",
     );
     expect(renderPerformanceSummaryMarkdown(summary)).toContain(

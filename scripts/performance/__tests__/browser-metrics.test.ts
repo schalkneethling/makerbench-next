@@ -131,10 +131,12 @@ describe("browserMetricsInitScript", () => {
       mark: [],
       measure: [],
     };
+    const setResourceTimingBufferSize = vi.fn();
     const fakePerformance = {
       timeOrigin: 1_000,
       now: () => 120,
       getEntriesByType: (entryType: string) => timelineEntries[entryType] ?? [],
+      setResourceTimingBufferSize,
     } as unknown as Performance;
 
     vi.stubGlobal("window", fakeWindow);
@@ -145,6 +147,8 @@ describe("browserMetricsInitScript", () => {
     );
 
     browserMetricsInitScript({ maxEntries: 2, eventDurationThreshold: 16 });
+
+    expect(setResourceTimingBufferSize).toHaveBeenCalledWith(3);
 
     FakePerformanceObserver.queue("layout-shift", [
       createEntry("layout-shift", 10, {
@@ -197,10 +201,12 @@ describe("browserMetricsInitScript", () => {
 
   it("degrades to timeline metrics when PerformanceObserver is unavailable", () => {
     const fakeWindow: Record<string, unknown> = {};
+    const setResourceTimingBufferSize = vi.fn();
     const fakePerformance = {
       timeOrigin: 1_000,
       now: () => 120,
       getEntriesByType: () => [],
+      setResourceTimingBufferSize,
     } as unknown as Performance;
 
     vi.stubGlobal("window", fakeWindow);
@@ -215,6 +221,39 @@ describe("browserMetricsInitScript", () => {
     expect(snapshot.supportedEntryTypes).toEqual([]);
     expect(snapshot.lcp).toBeNull();
     expect(snapshot.cls).toBe(0);
+    expect(setResourceTimingBufferSize).toHaveBeenCalledWith(11);
+  });
+
+  it("sizes the native resource buffer and reports entries beyond the collector cap", () => {
+    const fakeWindow: Record<string, unknown> = {};
+    const resourceEntries = Array.from({ length: 501 }, (_, index) => {
+      return {
+        ...createEntry("resource", index),
+        serverTiming: [],
+      } as unknown as PerformanceResourceTiming;
+    });
+    const setResourceTimingBufferSize = vi.fn();
+    const fakePerformance = {
+      timeOrigin: 1_000,
+      now: () => 600,
+      getEntriesByType: (entryType: string) => {
+        return entryType === "resource" ? resourceEntries : [];
+      },
+      setResourceTimingBufferSize,
+    } as unknown as Performance;
+
+    vi.stubGlobal("window", fakeWindow);
+    vi.stubGlobal("performance", fakePerformance);
+    vi.stubGlobal("PerformanceObserver", undefined);
+
+    browserMetricsInitScript({ maxEntries: 500, eventDurationThreshold: 16 });
+
+    const collector = fakeWindow[METRICS_GLOBAL] as InstalledCollector;
+    const snapshot = collector.snapshot();
+
+    expect(setResourceTimingBufferSize).toHaveBeenCalledWith(501);
+    expect(snapshot.resources).toHaveLength(500);
+    expect(snapshot.droppedEntries.resource).toBe(1);
   });
 });
 

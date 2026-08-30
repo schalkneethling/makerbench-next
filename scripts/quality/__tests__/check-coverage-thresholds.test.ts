@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   findLoweredThresholds,
@@ -10,17 +10,17 @@ import {
   readBaseThresholds,
   readCoverageThresholdFile,
 } from "../check-coverage-thresholds";
+import { createIsolatedGitEnvironment } from "./git-environment";
 
 const temporaryDirectories: string[] = [];
-const isolatedGitEnvironment = {
+const isolatedGitEnvironment = createIsolatedGitEnvironment({
   ...process.env,
-  GIT_CONFIG_GLOBAL: "/dev/null",
-  GIT_CONFIG_NOSYSTEM: "1",
-  GIT_CONFIG_SYSTEM: "/dev/null",
-  GIT_TERMINAL_PROMPT: "0",
-};
+  GIT_DIR: "/parent/.git",
+  GIT_WORK_TREE: "/parent",
+});
 
 afterEach(() => {
+  vi.unstubAllEnvs();
   for (const directory of temporaryDirectories.splice(0)) {
     rmSync(directory, { recursive: true, force: true });
   }
@@ -87,11 +87,16 @@ describe("coverage threshold gate", () => {
   it("treats a stack with no committed floor as an initial floor", () => {
     const directory = createRepository();
 
-    expect(readBaseThresholds(directory, "HEAD")).toBeUndefined();
+    expect(
+      readBaseThresholds(directory, "HEAD", isolatedGitEnvironment),
+    ).toBeUndefined();
   });
 
   it("uses the strongest committed stack floor when no explicit base is selected", () => {
+    vi.stubEnv("COVERAGE_BASE_REF", "ci/coverage-base");
     const directory = createRepository();
+    const environment = { ...isolatedGitEnvironment };
+    delete environment.COVERAGE_BASE_REF;
     runGit(directory, ["update-ref", "refs/remotes/origin/main", "HEAD"]);
     const floors =
       '{"branches": 60, "functions": 60, "lines": 60, "statements": 60}';
@@ -105,7 +110,7 @@ describe("coverage threshold gate", () => {
     runGit(directory, ["add", "coverage-thresholds.json"]);
     runGit(directory, ["commit", "-qm", "attempt to lower coverage floors"]);
 
-    const baseline = readBaseThresholds(directory);
+    const baseline = readBaseThresholds(directory, undefined, environment);
     const candidate = readCoverageThresholdFile(
       join(directory, "coverage-thresholds.json"),
     );
@@ -118,9 +123,9 @@ describe("coverage threshold gate", () => {
     const directory = createRepository();
     const mainBranch = runGit(directory, ["branch", "--show-current"]).trim();
 
-    expect(() => readBaseThresholds(directory, "missing-base")).toThrow(
-      "rev-parse",
-    );
+    expect(() =>
+      readBaseThresholds(directory, "missing-base", isolatedGitEnvironment),
+    ).toThrow("rev-parse");
 
     runGit(directory, ["checkout", "-qb", "stale-base"]);
     writeFileSync(join(directory, "stale.txt"), "stale\n");
@@ -128,6 +133,8 @@ describe("coverage threshold gate", () => {
     runGit(directory, ["commit", "-qm", "stale fixture"]);
     runGit(directory, ["checkout", "-q", mainBranch]);
 
-    expect(() => readBaseThresholds(directory, "stale-base")).toThrow("stale");
+    expect(() =>
+      readBaseThresholds(directory, "stale-base", isolatedGitEnvironment),
+    ).toThrow("stale");
   });
 });

@@ -1,0 +1,37 @@
+name: Quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+      CI: true
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with: { node-version: 24.20.0 }
+      - run: corepack enable && corepack prepare pnpm@11.10.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: git fetch --no-tags origin "$BASE_SHA" --depth=1 && git branch --force ci/coverage-base FETCH_HEAD
+      - run: pnpm check:fast
+      - run: pnpm check:coverage && pnpm build && pnpm performance:budget
+        env:
+          COVERAGE_BASE_REF: ci/coverage-base
+      - name: Upload coverage evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-${{ github.run_id }}
+          path: coverage/
+          if-no-files-found: warn
+          retention-days: 7

@@ -1,6 +1,7 @@
 import {
   access,
   copyFile,
+  lstat,
   mkdtemp,
   mkdir,
   readFile,
@@ -9,19 +10,14 @@ import {
 } from "node:fs/promises";
 import { COPYFILE_EXCL } from "node:constants";
 import { tmpdir } from "node:os";
-import { basename, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { chromium, devices } from "playwright";
+import { chromium, devices, type Browser } from "playwright";
 import { strToU8, zipSync } from "fflate";
 
 import { installBrowserMetrics } from "./browser-metrics.ts";
-import {
-  sanitizeHar,
-  validateSanitizedHar,
-  writeSanitizedHar,
-  type SanitizedHar,
-} from "./har.ts";
+import { sanitizeHar, validateSanitizedHar, type SanitizedHar } from "./har.ts";
 import { runProductionScenarios } from "./scenarios.ts";
 import {
   createPerformanceSummary,
@@ -34,20 +30,47 @@ import {
 const DEFAULT_TARGET = "https://makerbench.schalkneethling.com";
 const DEFAULT_RUN_COUNT = 5;
 const MAX_RUN_COUNT = 20;
+const MAX_RAW_HAR_BYTES = 128 * 1024 * 1024;
 const BASELINE_ARTIFACT_PREFIX = "pre-taxonomy";
 
 interface CaptureOptions {
   target: URL;
   runCount: number;
   baselineDate?: string;
+  artifactId?: string;
 }
 
 interface CapturePaths {
   directory: string;
+  checkpointDirectory: string;
+  captureJson: string;
+  failureJson: string;
+  successJson: string;
   desktopHar: string;
   mobileHar: string;
   summaryJson: string;
   summaryMarkdown: string;
+}
+
+type CaptureStage =
+  | "browser-launch"
+  | "context-create"
+  | "scenario"
+  | "har-checkpoint"
+  | "finalization";
+
+interface CaptureLocation {
+  stage: CaptureStage;
+  device?: PerformanceDevice;
+  run?: number;
+}
+
+interface FailureEvidenceInput extends CaptureLocation {
+  target: URL;
+  capturedAt: string;
+  runCount: number;
+  completedRunCount: number;
+  error: unknown;
 }
 
 const deviceProfiles: ReadonlyArray<{
@@ -72,16 +95,28 @@ export async function captureProductionPerformance(
 ): Promise<CapturePaths> {
   const capturedAt = new Date().toISOString();
   const paths = createCapturePaths(options, capturedAt);
-  await assertOutputsDoNotExist(paths);
+  await assertCaptureDirectoryDoesNotExist(paths.directory);
+  await mkdir(paths.checkpointDirectory, { recursive: true });
+  await writeJsonExclusive(paths.captureJson, {
+    schemaVersion: 1,
+    status: "running",
+    target: options.target.origin,
+    capturedAt,
+    runCountPerDevice: options.runCount,
+    devices: deviceProfiles.map(({ name }) => name),
+  });
 
-  const temporaryDirectory = await mkdtemp(
-    join(tmpdir(), "makerbench-performance-"),
-  );
   const sanitizedHars = new Map<PerformanceDevice, SanitizedHar[]>();
   const runs: PerformanceRun[] = [];
+  let completedRunCount = 0;
+  let location: CaptureLocation = { stage: "browser-launch" };
 
-  let browser;
+  let browser: Browser | undefined;
+  let temporaryDirectory: string | undefined;
   try {
+    temporaryDirectory = await mkdtemp(
+      join(tmpdir(), "makerbench-performance-"),
+    );
     browser = await launchChromium();
 
     for (const profile of deviceProfiles) {
@@ -89,6 +124,11 @@ export async function captureProductionPerformance(
       sanitizedHars.set(profile.name, deviceHars);
 
       for (let run = 1; run <= options.runCount; run += 1) {
+        location = {
+          stage: "context-create",
+          device: profile.name,
+          run,
+        };
         process.stdout.write(
           `Capturing ${profile.name} run ${run}/${options.runCount}…\n`,
         );
@@ -101,6 +141,8 @@ export async function captureProductionPerformance(
           ...profile.descriptor,
           locale: "en-US",
         });
+        let scenarioRuns: PerformanceRun[] | undefined;
+        let scenarioError: unknown;
 
         try {
           await context.tracing.startHar(rawHarPath, {
@@ -108,16 +150,17 @@ export async function captureProductionPerformance(
             mode: "full",
           });
 
+          location = { stage: "scenario", device: profile.name, run };
           const page = await context.newPage();
           await installBrowserMetrics(page);
-          runs.push(
-            ...(await runProductionScenarios(
-              page,
-              options.target,
-              profile.name,
-              run,
-            )),
+          scenarioRuns = await runProductionScenarios(
+            page,
+            options.target,
+            profile.name,
+            run,
           );
+        } catch (error) {
+          scenarioError = error;
         } finally {
           try {
             await context.tracing.stopHar();
@@ -126,11 +169,34 @@ export async function captureProductionPerformance(
           }
         }
 
-        const rawHar: unknown = JSON.parse(await readFile(rawHarPath, "utf8"));
-        deviceHars.push(sanitizeHar(rawHar));
+        location = {
+          stage: "har-checkpoint",
+          device: profile.name,
+          run,
+        };
+        const rawHar = await readBoundedRawHar(rawHarPath);
+        const sanitizedHar = sanitizeHar(rawHar);
+        await writeSanitizedHarArchive(
+          join(paths.checkpointDirectory, `${profile.name}-${run}.har.zip`),
+          sanitizedHar,
+        );
+        deviceHars.push(sanitizedHar);
+
+        if (scenarioError !== undefined) {
+          location = { stage: "scenario", device: profile.name, run };
+          throw scenarioError;
+        }
+
+        if (!scenarioRuns) {
+          throw new Error("Production scenario capture produced no results.");
+        }
+
+        runs.push(...scenarioRuns);
+        completedRunCount += 1;
       }
     }
 
+    location = { stage: "finalization" };
     const desktopHar = mergeSanitizedHars(
       requireDeviceHars(sanitizedHars, "desktop"),
     );
@@ -150,9 +216,46 @@ export async function captureProductionPerformance(
       summary,
       temporaryDirectory,
     );
-  } finally {
-    await browser?.close();
+    await browser.close();
+    browser = undefined;
     await rm(temporaryDirectory, { recursive: true, force: true });
+    temporaryDirectory = undefined;
+    await writeJsonExclusive(paths.successJson, {
+      schemaVersion: 1,
+      status: "passed",
+      target: options.target.origin,
+      capturedAt,
+      completedRunCount,
+      expectedRunCount: options.runCount * deviceProfiles.length,
+    });
+  } catch (error) {
+    await writeCaptureFailureEvidence(paths.failureJson, {
+      ...location,
+      target: options.target,
+      capturedAt,
+      runCount: options.runCount,
+      completedRunCount,
+      error,
+    });
+
+    const failure = describeCaptureFailure(location.stage);
+    throw new Error(failure.message, { cause: error });
+  } finally {
+    try {
+      await browser?.close();
+    } catch {
+      process.stderr.write("Performance browser cleanup did not complete.\n");
+    }
+
+    if (temporaryDirectory) {
+      try {
+        await rm(temporaryDirectory, { recursive: true, force: true });
+      } catch {
+        process.stderr.write(
+          "Temporary performance evidence cleanup did not complete.\n",
+        );
+      }
+    }
   }
 
   return paths;
@@ -193,6 +296,7 @@ export function parseCaptureOptions(
   let target = new URL(DEFAULT_TARGET);
   let runCount = DEFAULT_RUN_COUNT;
   let baselineDate: string | undefined;
+  let artifactId: string | undefined;
 
   for (const argument of arguments_) {
     if (argument === "--") {
@@ -214,13 +318,25 @@ export function parseCaptureOptions(
       continue;
     }
 
+    if (argument.startsWith("--artifact=")) {
+      artifactId = parseArtifactId(argument.slice("--artifact=".length));
+      continue;
+    }
+
     throw new Error(`Unknown performance capture option: ${argument}`);
+  }
+
+  if (baselineDate && artifactId) {
+    throw new Error(
+      "Performance capture cannot combine --baseline and --artifact.",
+    );
   }
 
   return {
     target,
     runCount,
     ...(baselineDate ? { baselineDate } : {}),
+    ...(artifactId ? { artifactId } : {}),
   };
 }
 
@@ -253,6 +369,10 @@ function createCapturePaths(
     const directory = join("performance", "baselines", options.baselineDate);
     return {
       directory,
+      checkpointDirectory: join(directory, "checkpoints"),
+      captureJson: join(directory, "capture.json"),
+      failureJson: join(directory, "failure.json"),
+      successJson: join(directory, "success.json"),
       desktopHar: join(
         directory,
         `${BASELINE_ARTIFACT_PREFIX}-desktop.har.zip`,
@@ -263,10 +383,14 @@ function createCapturePaths(
     };
   }
 
-  const captureId = capturedAt.replaceAll(/[:.]/g, "-");
+  const captureId = options.artifactId ?? capturedAt.replaceAll(/[:.]/g, "-");
   const directory = join("performance", "artifacts", captureId);
   return {
     directory,
+    checkpointDirectory: join(directory, "checkpoints"),
+    captureJson: join(directory, "capture.json"),
+    failureJson: join(directory, "failure.json"),
+    successJson: join(directory, "success.json"),
     desktopHar: join(directory, "desktop.har.zip"),
     mobileHar: join(directory, "mobile.har.zip"),
     summaryJson: join(directory, "summary.json"),
@@ -274,32 +398,13 @@ function createCapturePaths(
   };
 }
 
-/** Fails before capture when any immutable output already exists. */
-async function assertOutputsDoNotExist(paths: CapturePaths): Promise<void> {
-  const outputs = [
-    paths.desktopHar,
-    paths.mobileHar,
-    paths.summaryJson,
-    paths.summaryMarkdown,
-  ];
-
-  for (const output of outputs) {
-    try {
-      await access(output);
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        "code" in error &&
-        error.code === "ENOENT"
-      ) {
-        continue;
-      }
-
-      throw error;
-    }
-
+/** Fails before capture when the immutable output directory already exists. */
+async function assertCaptureDirectoryDoesNotExist(
+  directory: string,
+): Promise<void> {
+  if (await pathExists(directory)) {
     throw new Error(
-      `Performance capture will not overwrite existing artifact: ${output}`,
+      `Performance capture will not overwrite existing artifact directory: ${directory}`,
     );
   }
 }
@@ -313,7 +418,7 @@ async function writeCaptureOutputs(
   temporaryDirectory: string,
 ): Promise<void> {
   const stagedDirectory = join(temporaryDirectory, "outputs");
-  const stagedPaths: CapturePaths = {
+  const stagedPaths = {
     directory: stagedDirectory,
     desktopHar: join(stagedDirectory, basename(paths.desktopHar)),
     mobileHar: join(stagedDirectory, basename(paths.mobileHar)),
@@ -322,8 +427,8 @@ async function writeCaptureOutputs(
   };
 
   await mkdir(stagedDirectory, { recursive: true });
-  await writeHarArchive(stagedPaths.desktopHar, desktopHar, temporaryDirectory);
-  await writeHarArchive(stagedPaths.mobileHar, mobileHar, temporaryDirectory);
+  await writeSanitizedHarArchive(stagedPaths.desktopHar, desktopHar);
+  await writeSanitizedHarArchive(stagedPaths.mobileHar, mobileHar);
   await writeFile(
     stagedPaths.summaryJson,
     renderPerformanceSummaryJson(summary),
@@ -386,16 +491,15 @@ async function pathExists(path: string): Promise<boolean> {
   }
 }
 
-/** Creates a single-file ZIP through the sanitizer's exclusive writer. */
-async function writeHarArchive(
+/** Creates a validated, body-free single-file HAR ZIP without overwriting. */
+export async function writeSanitizedHarArchive(
   outputPath: string,
-  har: SanitizedHar,
-  temporaryDirectory: string,
-): Promise<void> {
+  input: unknown,
+): Promise<SanitizedHar> {
+  const har = sanitizeHar(input);
+  validateSanitizedHar(har);
   const archiveEntryName = basename(outputPath, ".zip");
-  const sanitizedHarPath = join(temporaryDirectory, archiveEntryName);
-  await writeSanitizedHar(sanitizedHarPath, har);
-  const serializedHar = await readFile(sanitizedHarPath, "utf8");
+  const serializedHar = `${JSON.stringify(har, null, 2)}\n`;
   const archive = zipSync(
     {
       [archiveEntryName]: strToU8(serializedHar),
@@ -403,7 +507,106 @@ async function writeHarArchive(
     { level: 9 },
   );
 
+  await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, archive, {
+    flag: "wx",
+    mode: 0o600,
+  });
+
+  return har;
+}
+
+/** Reads a raw HAR only after enforcing its allocation bound. */
+async function readBoundedRawHar(path: string): Promise<unknown> {
+  const before = await lstat(path);
+  if (!before.isFile() || before.size > MAX_RAW_HAR_BYTES) {
+    throw new Error(
+      `Raw HAR must be a file no larger than ${MAX_RAW_HAR_BYTES} bytes.`,
+    );
+  }
+
+  const serialized = await readFile(path, "utf8");
+  if (Buffer.byteLength(serialized, "utf8") > MAX_RAW_HAR_BYTES) {
+    throw new Error(
+      `Raw HAR exceeded ${MAX_RAW_HAR_BYTES} bytes while being read.`,
+    );
+  }
+
+  return JSON.parse(serialized) as unknown;
+}
+
+/** Writes a redacted, fixed-vocabulary artifact for every failed capture. */
+export async function writeCaptureFailureEvidence(
+  outputPath: string,
+  input: FailureEvidenceInput,
+): Promise<void> {
+  const failure = describeCaptureFailure(input.stage);
+
+  await writeJsonExclusive(outputPath, {
+    schemaVersion: 1,
+    status: "failed",
+    target: input.target.origin,
+    capturedAt: input.capturedAt,
+    runCountPerDevice: input.runCount,
+    completedRunCount: input.completedRunCount,
+    expectedRunCount: input.runCount * deviceProfiles.length,
+    failure: {
+      category: failure.category,
+      message: failure.message,
+      stage: input.stage,
+      ...(input.device ? { device: input.device } : {}),
+      ...(input.run ? { run: input.run } : {}),
+    },
+  });
+
+  // The original error is deliberately not serialized because browser errors
+  // can contain redirected URLs, response bodies, or other production data.
+  void input.error;
+}
+
+/** Maps internal capture stages to secret-free operator evidence. */
+function describeCaptureFailure(stage: CaptureStage): {
+  category: string;
+  message: string;
+} {
+  switch (stage) {
+    case "browser-launch":
+      return {
+        category: "browser-unavailable",
+        message: "The performance browser could not be started.",
+      };
+    case "context-create":
+      return {
+        category: "browser-context-failed",
+        message: "A fresh performance browser context could not be created.",
+      };
+    case "scenario":
+      return {
+        category: "production-scenario-failed",
+        message:
+          "The production scenario did not complete after bounded retries.",
+      };
+    case "har-checkpoint":
+      return {
+        category: "evidence-sanitization-failed",
+        message: "Captured network evidence could not be safely sanitized.",
+      };
+    case "finalization":
+      return {
+        category: "evidence-finalization-failed",
+        message: "The complete performance evidence could not be finalized.",
+      };
+  }
+}
+
+/** Exclusively writes stable JSON evidence with private file permissions. */
+async function writeJsonExclusive(
+  outputPath: string,
+  value: unknown,
+): Promise<void> {
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(outputPath, `${JSON.stringify(value, null, 2)}\n`, {
+    encoding: "utf8",
     flag: "wx",
     mode: 0o600,
   });
@@ -461,6 +664,17 @@ function parseRunCount(value: string): number {
   }
 
   return runCount;
+}
+
+/** Restricts deterministic artifact directories to one safe path segment. */
+function parseArtifactId(value: string): string {
+  if (!/^[a-z0-9][a-z0-9_-]{0,63}$/i.test(value)) {
+    throw new Error(
+      "Performance artifact id must be 1-64 ASCII letters, numbers, underscores, or hyphens.",
+    );
+  }
+
+  return value;
 }
 
 /** Restricts committed baseline directories to calendar-date names. */
