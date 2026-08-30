@@ -1,12 +1,11 @@
 import { configDefaults, defineConfig } from "vitest/config";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
 import { playwright } from "@vitest/browser-playwright";
-const dirname =
-  typeof __dirname !== "undefined"
-    ? __dirname
-    : path.dirname(fileURLToPath(import.meta.url));
+
+process.env.APP_ENV ??= "test";
+
+const dirname = import.meta.dirname;
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
@@ -31,7 +30,11 @@ export default defineConfig({
         extends: true,
         test: {
           name: "components",
-          include: ["src/components/**/*.test.tsx", "src/hooks/**/*.test.tsx"],
+          include: [
+            "src/components/**/*.test.tsx",
+            "src/hooks/**/*.test.tsx",
+            "src/pages/**/*.test.tsx",
+          ],
           environment: "happy-dom",
           setupFiles: ["./src/test/setup.ts"],
         },

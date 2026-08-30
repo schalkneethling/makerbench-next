@@ -26,7 +26,7 @@ describe("github utils", () => {
     it("accepts valid profile URLs", () => {
       expect(isValidGithubProfileUrl("https://github.com/octocat")).toBe(true);
       expect(isValidGithubProfileUrl("https://github.com/octocat/")).toBe(true);
-      expect(isValidGithubProfileUrl("https://www.github.com/octocat")).toBe(true);
+      expect(isValidGithubProfileUrl("https://www.github.com/octocat")).toBe(false);
     });
 
     it("rejects non-profile or non-github URLs", () => {

@@ -65,7 +65,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: `pnpm dev --port=${playwrightPort} --strictPort`,
+    command: `cross-env APP_ENV=test pnpm dev --port=${playwrightPort} --strictPort`,
     url: playwrightBaseUrl,
     reuseExistingServer: !process.env.CI,
   },

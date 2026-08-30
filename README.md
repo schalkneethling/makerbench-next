@@ -4,8 +4,8 @@ MakerBench is a curated bookmarking platform for developer and maker tools, reso
 
 ## Requirements
 
-- Node.js 24.x
-- pnpm 11.5.0, as pinned by `package.json`
+- Node.js 24.20.0, as pinned by `.nvmrc` and `package.json`
+- pnpm 11.10.0, as pinned by `package.json`
 
 Runtime/package manager decision:
 

@@ -14,8 +14,8 @@ For the complete workflows, see:
 ## Prerequisites
 
 - A Supabase project with access to its database and Auth settings
-- Node.js 24.x
-- pnpm 11.5.0, as pinned by `package.json`
+- Node.js 24.20.0, as pinned by `.nvmrc` and `package.json`
+- pnpm 11.10.0, as pinned by `package.json`
 - The repository's Varlock and 1Password setup for resolving `.env.schema`
 
 ## Create or select the Supabase project
@@ -58,6 +58,9 @@ checked-in Varlock/1Password references. Use the exact names below:
 | `SUBMISSION_RATE_LIMIT_SECRET`         | Server only       | 64-character hexadecimal HMAC secret                           |
 | `SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS`   | Server only       | Attempts allowed per fixed window                              |
 | `SUBMISSION_RATE_LIMIT_WINDOW_SECONDS` | Server only       | Fixed-window duration in seconds                               |
+| `INSPECTION_RATE_LIMIT_SECRET`         | Server only       | 64-character hexadecimal HMAC secret                           |
+| `INSPECTION_RATE_LIMIT_MAX_ATTEMPTS`   | Server only       | Inspection attempts allowed per fixed window                   |
+| `INSPECTION_RATE_LIMIT_WINDOW_SECONDS` | Server only       | Inspection fixed-window duration in seconds                    |
 
 `SENTRY_DSN` is a separate optional server-side setting supported by the
 Functions; it is not required by `.env.schema`. Netlify supplies `CONTEXT`

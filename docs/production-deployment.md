@@ -14,9 +14,9 @@ Related runbooks:
 
 ## Runtime baseline
 
-- Node.js 24.x
-- pnpm 11.5.0, pinned by `package.json`
-- Netlify build command: `pnpm build`
+- Node.js 24.20.0, as pinned by `.nvmrc` and `package.json`
+- pnpm 11.10.0, pinned by `package.json`
+- Netlify build command: `pnpm build:production`
 - Static publish directory: `dist`
 - Functions directory: `netlify/functions`
 
@@ -60,6 +60,9 @@ context that needs them:
 - `SUBMISSION_RATE_LIMIT_SECRET` - server-only HMAC secret (exactly 64 hexadecimal characters)
 - `SUBMISSION_RATE_LIMIT_MAX_ATTEMPTS` - positive integer, at most 1000
 - `SUBMISSION_RATE_LIMIT_WINDOW_SECONDS` - positive integer, at most 86400
+- `INSPECTION_RATE_LIMIT_SECRET` - server-only HMAC secret (exactly 64 hexadecimal characters)
+- `INSPECTION_RATE_LIMIT_MAX_ATTEMPTS` - positive integer, at most 1000
+- `INSPECTION_RATE_LIMIT_WINDOW_SECONDS` - positive integer, at most 86400
 - `SENTRY_DSN` (optional)
 
 The `VITE_` variables must be available during the frontend build and to the
@@ -68,12 +71,13 @@ must not be committed or placed in frontend source. Netlify Functions read
 runtime values through `Netlify.env`; Netlify supplies `CONTEXT` automatically.
 
 Use the required variable names in [`.env.schema`](../.env.schema).
-The blank `SUBMISSION_RATE_LIMIT_SECRET` assignment there is deliberate: it
-declares a sensitive external value without a repository default while allowing
-frontend-only builds to run. Configure it in Netlify before enabling public
-submissions; the submission Function requires it at runtime and fails closed
-with a generic 503 when it is absent, is not exactly 64 characters, or contains
-non-hexadecimal characters. Generate a suitable value with
+The blank `SUBMISSION_RATE_LIMIT_SECRET` and `INSPECTION_RATE_LIMIT_SECRET`
+assignments there are deliberate: they declare sensitive external values
+without repository defaults while allowing frontend-only builds to run.
+Configure them in Netlify before enabling public submissions or interactive
+library inspection; the corresponding Function requires its secret at runtime
+and fails closed with a generic 503 when it is absent, is not exactly 64
+characters, or contains non-hexadecimal characters. Generate each value with
 `openssl rand -hex 32` and store it only in Netlify's secure environment
 settings.
 `SENTRY_DSN` is a separate optional Netlify runtime setting. Do not configure
@@ -127,7 +131,7 @@ the Netlify production build unless a separate publish step is introduced.
 The normal flow is Git-based deployment:
 
 1. Merge or push the release commit to the branch connected to production.
-2. Netlify runs `pnpm build`.
+2. Netlify runs `pnpm build:production` with the production environment.
 3. Netlify publishes `dist` and deploys Functions from `netlify/functions`.
 
 ## 6. Verify the deployment

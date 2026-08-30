@@ -1,7 +1,6 @@
-import { render, screen, act } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, act, fireEvent, within } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HomePage } from "../HomePage";
 import { useBookmarks, useSearch, useTags } from "../../hooks";
@@ -55,6 +54,11 @@ describe("HomePage", () => {
     });
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
   it("defers tag loading until the idle callback runs", () => {
     let idleCallback: IdleRequestCallback | undefined;
     const requestIdleCallbackMock = vi.fn((callback: IdleRequestCallback) => {
@@ -85,7 +89,13 @@ describe("HomePage", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.queryByRole("button", { name: "javascript" })).not.toBeInTheDocument();
+    expect(vi.mocked(useTags)).toHaveBeenLastCalledWith({
+      enabled: false,
+      limit: 10,
+    });
+    expect(
+      screen.queryByRole("region", { name: "Filter by tag" }),
+    ).not.toBeInTheDocument();
     expect(requestIdleCallbackMock).toHaveBeenCalledOnce();
 
     act(() => {
@@ -95,14 +105,19 @@ describe("HomePage", () => {
       });
     });
 
-    expect(screen.getByRole("button", { name: "javascript" })).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("region", { name: "Filter by tag" })).getByRole(
+        "button",
+        { name: "javascript" },
+      ),
+    ).toBeInTheDocument();
     expect(vi.mocked(useTags)).toHaveBeenLastCalledWith({
       enabled: true,
       limit: 10,
     });
   });
 
-  it("loads tags after the timeout fallback and keeps tag filtering wired up", async () => {
+  it("loads tags after the timeout fallback and keeps tag filtering wired up", () => {
     vi.useFakeTimers();
     vi.stubGlobal("requestIdleCallback", undefined);
     vi.stubGlobal("cancelIdleCallback", undefined);
@@ -124,8 +139,6 @@ describe("HomePage", () => {
       error: null,
     }));
 
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-
     render(
       <MemoryRouter>
         <HomePage />
@@ -133,20 +146,29 @@ describe("HomePage", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.queryByRole("button", { name: "javascript" })).not.toBeInTheDocument();
+    expect(vi.mocked(useTags)).toHaveBeenLastCalledWith({
+      enabled: false,
+      limit: 10,
+    });
+    expect(
+      screen.queryByRole("region", { name: "Filter by tag" }),
+    ).not.toBeInTheDocument();
 
     act(() => {
       vi.runAllTimers();
     });
 
-    await user.click(screen.getByRole("button", { name: "javascript" }));
+    fireEvent.click(
+      within(screen.getByRole("region", { name: "Filter by tag" })).getByRole(
+        "button",
+        { name: "javascript" },
+      ),
+    );
 
     expect(searchMock).toHaveBeenCalledWith(
       { q: undefined, tags: ["javascript"] },
       { immediate: true },
     );
     expect(screen.getByTestId("location")).toHaveTextContent("?tags=javascript&mode=filter");
-
-    vi.useRealTimers();
   });
 });
